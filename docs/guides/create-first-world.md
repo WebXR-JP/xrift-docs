@@ -138,5 +138,5 @@ xrift upload world
 
 ## 次のステップ
 
-- [World Components](/world-components/overview) でコンポーネントの詳細を確認
+- [World Components](/world-components/components/) でコンポーネントの詳細を確認
 - [CLI コマンド](/cli/commands) で利用可能なコマンドを確認

@@ -16,14 +16,7 @@ const sidebars: SidebarsConfig = {
       label: 'ワールド開発',
       items: [
         'guides/create-first-world',
-        'world-components/overview',
-        {
-          type: 'category',
-          label: 'Components',
-          items: [
-            'world-components/components/index',
-          ],
-        },
+        'world-components/components/index',
       ],
     },
     {

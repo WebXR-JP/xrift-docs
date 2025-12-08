@@ -40,5 +40,5 @@ npm run dev
 ## 次のステップ
 
 - [最初のワールドを作成する](/guides/create-first-world) でカスタマイズ方法を学ぶ
-- [World Components](/world-components/overview) でコンポーネントの使い方を学ぶ
+- [World Components](/world-components/components/) でコンポーネントの使い方を学ぶ
 - [CLI コマンドリファレンス](/cli/commands) で利用可能なコマンドを確認

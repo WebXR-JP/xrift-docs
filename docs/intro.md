@@ -14,7 +14,7 @@ XRift は、WebXR を使った没入型 3D ワールドを簡単に構築する�
 XRift では、独自の 3D ワールドを作成できます。React Three Fiber をベースにしたコンポーネントライブラリを使って、VR/AR 対応のインタラクティブな空間を構築できます。
 
 - [ワールド開発を始める](/getting-started/installation)
-- [World Components](/world-components/overview)
+- [World Components](/world-components/components/)
 
 ### アイテム
 
@@ -39,7 +39,7 @@ XRift では、独自の 3D ワールドを作成できます。React Three Fibe
 
 WebXR ワールドを構築するための React コンポーネントライブラリ。
 
-- [コンポーネント一覧](/world-components/overview)
+- [コンポーネント一覧](/world-components/components/)
 - [GitHub](https://github.com/WebXR-JP/xrift-world-components)
 
 ## クイックスタート

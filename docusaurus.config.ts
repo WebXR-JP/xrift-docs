@@ -97,7 +97,7 @@ const config: Config = {
             },
             {
               label: 'ワールド開発',
-              to: '/world-components/overview',
+              to: '/world-components/components/',
             },
             {
               label: 'アイテム開発',
