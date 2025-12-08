@@ -45,6 +45,6 @@ npm run dev
 
 ## 次のステップ
 
-- [CLI コマンドリファレンス](/cli/commands) で利用可能なコマンドを確認
-- [World Components](/world-components/overview) でコンポーネントの使い方を学ぶ
 - [最初のワールドを作成する](/guides/create-first-world) チュートリアルに挑戦
+- [World Components](/world-components/overview) でコンポーネントの使い方を学ぶ
+- [CLI コマンドリファレンス](/cli/commands) で利用可能なコマンドを確認
