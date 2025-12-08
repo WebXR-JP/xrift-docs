@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # 最初のワールドを作成する
 
-このチュートリアルでは、XRift を使ってワールドを作成します。
+このチュートリアルでは、XRift CLI を使ってワールドプロジェクトを作成し、カスタマイズする方法を説明します。
 
 ## 前提条件
 
@@ -20,135 +20,111 @@ xrift create my-first-world
 cd my-first-world
 ```
 
+対話形式でプロジェクト名などを設定できます。`-y` オプションでスキップも可能です。
+
 ## Step 2: 開発サーバーの起動
 
 ```bash
 npm run dev
 ```
 
-ブラウザで `http://localhost:5173` を開きます。
+ブラウザで `http://localhost:5173` を開くと、サンプルワールドが表示されます。
 
-## Step 3: プロジェクト構成
+## Step 3: テンプレートの内容を確認
 
-作成されたプロジェクトは以下のような構成になっています：
+作成されたプロジェクトには、すでに動作するサンプルワールドが含まれています：
 
 ```
 my-first-world/
 ├── src/
-│   ├── World.tsx        # メインのワールドコンポーネント
-│   └── components/      # カスタムコンポーネント
-├── public/              # アセット（モデル、テクスチャなど）
+│   ├── World.tsx          # メインのワールドコンポーネント
+│   └── components/        # サンプルコンポーネント
+├── public/                # アセット（モデル、テクスチャ、スカイボックスなど）
 ├── package.json
-├── tsconfig.json
 └── vite.config.ts
 ```
 
-## Step 4: ワールドの編集
+### テンプレートに含まれるもの
+
+- **地面と壁** - 物理演算が有効な床と境界
+- **スカイボックス** - 360度パノラマ背景
+- **ライティング** - 環境光とシャドウ付き指向性ライト
+- **インタラクティブボタン** - クリック可能なオブジェクトのサンプル
+- **3Dモデル（Duck）** - 物理演算付きのサンプルモデル
+- **回転オブジェクト** - アニメーションのサンプル
+- **Mirror** - 反射面のサンプル
+- **VideoScreen** - 動画再生のサンプル
+
+## Step 4: ワールドをカスタマイズ
 
 `src/World.tsx` を編集してワールドをカスタマイズします。
 
-### 4.1 オブジェクトの追加
-
-シンプルなキューブを追加します：
+### オブジェクトを追加する
 
 ```tsx
-export function World() {
-  return (
-    <>
-      {/* ライティング */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
-
-      {/* 地面 */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[20, 20]} />
-        <meshStandardMaterial color="#444" />
-      </mesh>
-
-      {/* キューブを追加 */}
-      <mesh position={[0, 0.5, -2]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="hotpink" />
-      </mesh>
-    </>
-  );
-}
+{/* 新しいキューブを追加 */}
+<mesh position={[3, 0.5, 0]}>
+  <boxGeometry args={[1, 1, 1]} />
+  <meshStandardMaterial color="orange" />
+</mesh>
 ```
 
-### 4.2 アニメーションの追加
+### インタラクションを追加する
 
-キューブを回転させてみましょう：
-
-```tsx
-import { useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
-import type { Mesh } from 'three';
-
-function RotatingCube() {
-  const meshRef = useRef<Mesh>(null);
-
-  useFrame((_, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta;
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[0, 0.5, -2]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="hotpink" />
-    </mesh>
-  );
-}
-```
-
-### 4.3 インタラクションの追加
-
-クリック可能なオブジェクトを追加します：
+`Interactable` コンポーネントでクリック可能なオブジェクトを作成できます：
 
 ```tsx
 import { Interactable } from '@xrift/world-components';
 
-function InteractiveButton() {
-  const handleInteract = () => {
-    console.log('ボタンがクリックされました！');
-  };
-
-  return (
-    <Interactable id="my-button" onInteract={handleInteract}>
-      <mesh position={[2, 0.5, -2]}>
-        <boxGeometry args={[0.5, 0.5, 0.5]} />
-        <meshStandardMaterial color="skyblue" />
-      </mesh>
-    </Interactable>
-  );
-}
+<Interactable id="my-button" onInteract={() => console.log('クリック！')}>
+  <mesh position={[0, 1, -2]}>
+    <sphereGeometry args={[0.5]} />
+    <meshStandardMaterial color="hotpink" />
+  </mesh>
+</Interactable>
 ```
 
-### 4.4 状態の同期
+### 状態を同期する
 
-`useInstanceState` を使うと、ワールド内の全ユーザー間で状態を同期できます：
+`useInstanceState` を使うと、全ユーザー間で状態を同期できます：
 
 ```tsx
 import { useInstanceState, Interactable } from '@xrift/world-components';
 
-function SyncedCounter() {
-  const [count, setCount] = useInstanceState('counter', 0);
+function SyncedLight() {
+  const [isOn, setIsOn] = useInstanceState('light', false);
 
   return (
-    <Interactable id="counter-button" onInteract={() => setCount(count + 1)}>
-      <mesh position={[0, 1, -3]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={count % 2 === 0 ? 'green' : 'red'} />
+    <Interactable id="light-switch" onInteract={() => setIsOn(!isOn)}>
+      <mesh position={[0, 2, 0]}>
+        <sphereGeometry args={[0.3]} />
+        <meshStandardMaterial
+          color={isOn ? 'yellow' : 'gray'}
+          emissive={isOn ? 'yellow' : 'black'}
+        />
       </mesh>
     </Interactable>
   );
 }
 ```
 
-## Step 5: ビルドとデプロイ
+## Step 5: アセットを追加する
 
-プロダクションビルドを作成します：
+3Dモデルやテクスチャは `public/` ディレクトリに配置します：
+
+```
+public/
+├── models/
+│   └── my-model.glb
+├── textures/
+│   └── wood.jpg
+└── skybox/
+    └── sky.jpg
+```
+
+## Step 6: ビルドとデプロイ
+
+プロダクションビルドを作成：
 
 ```bash
 npm run build
@@ -162,5 +138,5 @@ xrift upload world
 
 ## 次のステップ
 
-- [World Components](/world-components/overview) で利用可能なコンポーネントを確認
+- [World Components](/world-components/overview) でコンポーネントの詳細を確認
 - [CLI コマンド](/cli/commands) で利用可能なコマンドを確認
