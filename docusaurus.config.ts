@@ -67,9 +67,8 @@ const config: Config = {
     },
     image: 'img/ogp.png',
     navbar: {
-      title: 'XRift',
       logo: {
-        alt: 'XRift Logo',
+        alt: 'XRift',
         src: 'img/logo.svg',
       },
       items: [
