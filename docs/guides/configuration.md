@@ -29,8 +29,8 @@ sidebar_position: 2
 |-----------|-----|:----:|------|
 | `distDir` | string | ○ | アップロードするビルド成果物のディレクトリ |
 | `buildCommand` | string | | アップロード前に実行するビルドコマンド |
-| `title` | string | | ワールドのタイトル（初回アップロード時のデフォルト値） |
-| `description` | string | | ワールドの説明（初回アップロード時のデフォルト値） |
+| `title` | string | | ワールドのタイトル |
+| `description` | string | | ワールドの説明 |
 | `thumbnailPath` | string | | サムネイル画像のパス（`distDir` からの相対パス） |
 | `ignore` | string[] | | アップロードから除外するファイルの glob パターン |
 
@@ -60,7 +60,7 @@ sidebar_position: 2
 
 ### title / description
 
-初回アップロード時に、タイトルや説明の入力プロンプトのデフォルト値として使用されます。
+ワールドのタイトルと説明を設定します。
 
 ```json
 {
