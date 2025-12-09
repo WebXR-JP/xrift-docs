@@ -10,16 +10,18 @@ sidebar_position: 2
 
 ```json
 {
-  "distDir": "dist",
-  "buildCommand": "npm run build",
-  "title": "My World",
-  "description": "サンプルワールドです",
-  "thumbnailPath": "thumbnail.png",
-  "ignore": [
-    "**/*.map",
-    ".DS_Store",
-    "Thumbs.db"
-  ]
+  "world": {
+    "distDir": "./dist",
+    "title": "My World",
+    "description": "サンプルワールドです",
+    "thumbnailPath": "thumbnail.png",
+    "buildCommand": "npm run build",
+    "ignore": [
+      "**/.DS_Store",
+      "**/Thumbs.db",
+      "**/*.map"
+    ]
+  }
 }
 ```
 
@@ -28,44 +30,36 @@ sidebar_position: 2
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|:----:|------|
 | `distDir` | string | ○ | アップロードするビルド成果物のディレクトリ |
-| `buildCommand` | string | | アップロード前に実行するビルドコマンド |
-| `title` | string | | ワールドのタイトル |
-| `description` | string | | ワールドの説明 |
+| `title` | string | | ワールドのタイトル（未設定の場合、アップロード時に入力） |
+| `description` | string | | ワールドの説明（未設定の場合、アップロード時に入力） |
 | `thumbnailPath` | string | | サムネイル画像のパス（`distDir` からの相対パス） |
+| `buildCommand` | string | | アップロード前に実行するビルドコマンド |
 | `ignore` | string[] | | アップロードから除外するファイルの glob パターン |
 
 ## 各項目の詳細
 
 ### distDir
 
-アップロード対象のディレクトリを指定します。通常は `dist` です。
+アップロード対象のディレクトリを指定します。
 
 ```json
 {
-  "distDir": "dist"
+  "world": {
+    "distDir": "./dist"
+  }
 }
 ```
-
-### buildCommand
-
-`xrift upload world` 実行時に、アップロード前に自動実行されるコマンドです。
-
-```json
-{
-  "buildCommand": "npm run build"
-}
-```
-
-これを設定しておくと、手動でビルドする必要がなくなります。
 
 ### title / description
 
-ワールドのタイトルと説明を設定します。
+ワールドのタイトルと説明を設定します。これらはオプショナルですが、設定しておくと `xrift upload world` 実行時のプロンプトでデフォルト値として使用されます。
 
 ```json
 {
-  "title": "My Awesome World",
-  "description": "インタラクティブな3Dワールドです"
+  "world": {
+    "title": "My Awesome World",
+    "description": "インタラクティブな3Dワールドです"
+  }
 }
 ```
 
@@ -75,12 +69,28 @@ sidebar_position: 2
 
 ```json
 {
-  "distDir": "dist",
-  "thumbnailPath": "thumbnail.png"
+  "world": {
+    "distDir": "./dist",
+    "thumbnailPath": "thumbnail.png"
+  }
 }
 ```
 
 この場合、`dist/thumbnail.png` がサムネイルとして使用されます。
+
+### buildCommand
+
+`xrift upload world` 実行時に、アップロード前に自動実行されるコマンドです。
+
+```json
+{
+  "world": {
+    "buildCommand": "npm run build"
+  }
+}
+```
+
+これを設定しておくと、手動でビルドする必要がなくなります。
 
 ### ignore
 
@@ -88,11 +98,12 @@ sidebar_position: 2
 
 ```json
 {
-  "ignore": [
-    "**/*.map",
-    "**/*.d.ts",
-    ".DS_Store",
-    "Thumbs.db"
-  ]
+  "world": {
+    "ignore": [
+      "**/.DS_Store",
+      "**/Thumbs.db",
+      "**/*.map"
+    ]
+  }
 }
 ```
