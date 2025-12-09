@@ -27,14 +27,14 @@ sidebar_position: 2
 
 ## 設定項目
 
-| フィールド | 型 | 必須 | 説明 |
-|-----------|-----|:----:|------|
-| `distDir` | string | ○ | アップロードするビルド成果物のディレクトリ |
-| `title` | string | | ワールドのタイトル（未設定の場合、アップロード時に入力） |
-| `description` | string | | ワールドの説明（未設定の場合、アップロード時に入力） |
-| `thumbnailPath` | string | | サムネイル画像のパス（`distDir` からの相対パス） |
-| `buildCommand` | string | | アップロード前に実行するビルドコマンド |
-| `ignore` | string[] | | アップロードから除外するファイルの glob パターン |
+| フィールド | 型 | 説明 |
+|-----------|-----|------|
+| `distDir` | string | アップロードするビルド成果物のディレクトリ |
+| `title` | string | ワールドのタイトル（未設定の場合、アップロード時に入力） |
+| `description` | string | ワールドの説明（未設定の場合、アップロード時に入力） |
+| `thumbnailPath` | string | サムネイル画像のパス（`distDir` からの相対パス） |
+| `buildCommand` | string | アップロード前に実行するビルドコマンド |
+| `ignore` | string[] | アップロードから除外するファイルの glob パターン |
 
 ## 各項目の詳細
 
