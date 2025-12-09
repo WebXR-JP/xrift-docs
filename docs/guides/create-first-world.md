@@ -122,11 +122,17 @@ public/
     └── sky.jpg
 ```
 
-`public/` に配置したファイルは、相対パスでアクセスできます：
+`public/` に配置したファイルは、`useXRift` から取得した `baseUrl` を使ってアクセスします：
 
 ```tsx
-// public/models/my-model.glb を読み込む
-<primitive object={useGLTF('/models/my-model.glb').scene} />
+import { useXRift } from '@xrift/world-components';
+import { useGLTF } from '@react-three/drei';
+
+function MyModel() {
+  const { baseUrl } = useXRift();
+  const { scene } = useGLTF(`${baseUrl}/models/my-model.glb`);
+  return <primitive object={scene} />;
+}
 ```
 
 ## Step 6: ビルドとデプロイ
