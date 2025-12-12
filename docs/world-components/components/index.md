@@ -74,7 +74,15 @@ import { ScreenShareDisplay } from '@xrift/world-components';
 | `id` | `string` | - | スクリーンの一意なID（必須） |
 | `position` | `[number, number, number]` | `[0, 2, -5]` | スクリーンの位置 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの回転 |
-| `scale` | `[number, number]` | `[4, 4 * (9/16)]` | スクリーンのサイズ [幅, 高さ] |
+| `width` | `number` | `4` | スクリーンの幅（高さは16:9で自動計算） |
+
+:::tip[アスペクト比の維持]
+映像のアスペクト比は自動的に維持されます。16:9以外の映像でも黒帯が入り正しく表示されます。
+:::
+
+:::note[制限事項]
+共有できる画面はワールドにつき1つまでです。`ScreenShareDisplay` を複数配置することは可能ですが、すべて同じ画面が表示されます。
+:::
 
 ---
 
