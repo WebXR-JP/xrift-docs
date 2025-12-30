@@ -9,20 +9,12 @@ XRift を使い始めるには、まず CLI をインストールします。
 ## 前提条件
 
 - Node.js 18.0.0 以上
-- npm または yarn
+- npm
 
 ## CLI のインストール
 
-### npm を使用する場合
-
 ```bash
 npm install -g @xrift/cli
-```
-
-### yarn を使用する場合
-
-```bash
-yarn global add @xrift/cli
 ```
 
 ## インストールの確認
