@@ -108,6 +108,50 @@ function SyncedLight() {
 }
 ```
 
+### 衝突判定を追加する
+
+XRift は物理演算に [@react-three/rapier](https://github.com/pmndrs/react-three-rapier) を使用しています。`RigidBody` でオブジェクトに衝突判定を追加できます：
+
+```tsx
+import { RigidBody } from '@react-three/rapier';
+
+{/* プレイヤーが通れない壁 */}
+<RigidBody type="fixed">
+  <mesh position={[0, 1, -5]}>
+    <boxGeometry args={[10, 2, 0.5]} />
+    <meshStandardMaterial color="gray" />
+  </mesh>
+</RigidBody>
+
+{/* 落下するオブジェクト */}
+<RigidBody type="dynamic">
+  <mesh position={[0, 5, 0]}>
+    <sphereGeometry args={[0.5]} />
+    <meshStandardMaterial color="red" />
+  </mesh>
+</RigidBody>
+```
+
+#### RigidBody の type
+
+| Type | 説明 |
+|------|------|
+| `fixed` | 動かない静的オブジェクト（壁、床など） |
+| `dynamic` | 重力や衝突の影響を受けるオブジェクト |
+| `kinematicPosition` | コードで位置を制御するオブジェクト |
+
+:::tip
+見えない壁を作りたい場合は、`<mesh>` を省略して `<CuboidCollider>` だけを配置できます：
+
+```tsx
+import { RigidBody, CuboidCollider } from '@react-three/rapier';
+
+<RigidBody type="fixed">
+  <CuboidCollider args={[5, 1, 0.25]} position={[0, 1, -5]} />
+</RigidBody>
+```
+:::
+
 ## Step 5: アセットを追加する
 
 3Dモデルやテクスチャは `public/` ディレクトリに配置します：
