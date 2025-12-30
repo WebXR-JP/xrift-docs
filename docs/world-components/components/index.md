@@ -86,6 +86,34 @@ import { ScreenShareDisplay } from '@xrift/world-components';
 
 ---
 
+### SpawnPoint
+
+ワールド内でプレイヤーが出現する地点を指定します。
+
+```tsx
+import { SpawnPoint } from '@xrift/world-components';
+
+<SpawnPoint />
+<SpawnPoint position={[0, 0, 5]} yaw={180} />
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `position` | `[number, number, number]` | `[0, 0, 0]` | スポーン位置 |
+| `yaw` | `number` | `0` | スポーン時の向き（度数法 0-360） |
+
+:::tip[開発時ヘルパー]
+開発環境では、半透明の円柱（下から上にかけて透明度が増すグラデーション）と黄緑色矢印でスポーン位置と方向を視覚化します。本番ビルドではヘルパーは表示されません。
+:::
+
+:::note[複数のSpawnPoint]
+複数の `SpawnPoint` を配置した場合、最後に設定されたものが有効になります。
+:::
+
+---
+
 ## フック
 
 ### useInstanceState
@@ -145,3 +173,29 @@ function MyComponent() {
 | `isSharing` | `boolean` | 自分が共有中かどうか |
 | `startScreenShare` | `() => void` | 共有開始 |
 | `stopScreenShare` | `() => void` | 共有停止 |
+
+---
+
+### useSpawnPoint
+
+プラットフォーム側がスポーン地点情報を取得するためのフックです。
+
+```tsx
+import { useSpawnPoint } from '@xrift/world-components';
+
+function MyPlatform() {
+  const spawnPoint = useSpawnPoint();
+  // spawnPoint: { position: [x, y, z], yaw: number }
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `position` | `[number, number, number]` | スポーン位置 |
+| `yaw` | `number` | スポーン時の向き（度数法） |
+
+:::note[使用先]
+このフックは xrift-frontend（プラットフォーム）側での使用を想定しています。ワールド開発者は `SpawnPoint` コンポーネントを使用してください。
+:::
