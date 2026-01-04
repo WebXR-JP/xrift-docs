@@ -206,13 +206,13 @@ function MyPlatform() {
 
 ### useUsers
 
-ワールドに参加しているユーザー情報を取得するフックです。自分自身（ローカルユーザー）と他の参加者（リモートユーザー）の情報にアクセスできます。
+ワールドに参加しているユーザー情報と位置情報を取得するフックです。自分自身（ローカルユーザー）と他の参加者（リモートユーザー）の情報にアクセスできます。
 
 ```tsx
 import { useUsers } from '@xrift/world-components';
 
 function ParticipantCount() {
-  const { localUser, remoteUsers } = useUsers();
+  const { localUser, remoteUsers, getMovement, getLocalMovement } = useUsers();
 
   const totalCount = (localUser ? 1 : 0) + remoteUsers.length;
 
@@ -230,21 +230,194 @@ function ParticipantCount() {
 |----------|------|-------------|
 | `localUser` | `User \| null` | 自分自身のユーザー情報 |
 | `remoteUsers` | `User[]` | 他の参加者のユーザー情報の配列 |
+| `getMovement` | `(socketId: string) => PlayerMovement \| undefined` | 指定ユーザーの位置情報を取得 |
+| `getLocalMovement` | `() => PlayerMovement` | 自分の位置情報を取得 |
 
 #### User 型
 
 ```typescript
 interface User {
-  id: string;              // ユーザーID
+  id: string;              // 認証ユーザーID
+  socketId: string;        // ソケット接続ID
   displayName: string;     // 表示名
   avatarUrl: string | null; // アバターアイコンURL
   isGuest: boolean;        // ゲストかどうか
 }
 ```
 
+#### PlayerMovement 型
+
+```typescript
+interface PlayerMovement {
+  position: { x: number; y: number; z: number };
+  direction: { x: number; z: number };
+  horizontalSpeed: number;
+  verticalSpeed: number;
+  rotation: { yaw: number; pitch: number };
+  isGrounded: boolean;
+  isJumping: boolean;
+  isInVR?: boolean;
+  vrTracking?: VRTrackingData;
+}
+```
+
+#### useFrame 内での位置情報取得
+
+`getMovement()` と `getLocalMovement()` は `useFrame` 内で毎フレーム呼び出すことができます。これらの関数は再レンダリングを発生させずに最新の位置情報を取得できます。
+
+```tsx
+import { useUsers } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import { Group } from 'three';
+
+function FollowCamera() {
+  const groupRef = useRef<Group>(null);
+  const { getLocalMovement } = useUsers();
+
+  useFrame(() => {
+    const movement = getLocalMovement();
+    if (!groupRef.current) return;
+
+    // 自分の位置の少し上にオブジェクトを配置
+    groupRef.current.position.set(
+      movement.position.x,
+      movement.position.y + 3,
+      movement.position.z
+    );
+  });
+
+  return (
+    <group ref={groupRef}>
+      <pointLight intensity={1} />
+    </group>
+  );
+}
+```
+
 #### ユースケース
 
-- **参加者数の表示**: ワールド内の参加人数をリアルタイムで表示
-- **参加者リストの表示**: 参加者一覧UIを作成
-- **ユーザーに応じた演出**: ユーザー数に応じてワールドの演出を変更
-- **ゲストと認証ユーザーの区別**: `isGuest` を使って権限や表示を分ける
+##### ユーザーの頭上にHUDを表示
+
+```tsx
+import { useUsers } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import { Group } from 'three';
+import { Text } from '@react-three/drei';
+
+function UserHUD({ user, getMovement }) {
+  const groupRef = useRef<Group>(null);
+
+  useFrame(() => {
+    const movement = getMovement(user.socketId);
+    if (!movement || !groupRef.current) return;
+
+    // ユーザーの頭の上に配置
+    groupRef.current.position.set(
+      movement.position.x,
+      movement.position.y + 2,
+      movement.position.z
+    );
+  });
+
+  return (
+    <group ref={groupRef}>
+      <Text fontSize={0.2}>{user.displayName}</Text>
+    </group>
+  );
+}
+
+function UserHUDs() {
+  const { remoteUsers, getMovement } = useUsers();
+
+  return (
+    <>
+      {remoteUsers.map(user => (
+        <UserHUD key={user.socketId} user={user} getMovement={getMovement} />
+      ))}
+    </>
+  );
+}
+```
+
+##### 近くにいるユーザーを検出
+
+```tsx
+import { useUsers } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useState } from 'react';
+
+function ProximityDetector() {
+  const { remoteUsers, getMovement, getLocalMovement } = useUsers();
+  const [nearbyUsers, setNearbyUsers] = useState<string[]>([]);
+
+  useFrame(() => {
+    const myPos = getLocalMovement().position;
+    const nearby: string[] = [];
+
+    remoteUsers.forEach(user => {
+      const movement = getMovement(user.socketId);
+      if (!movement) return;
+
+      const distance = Math.sqrt(
+        Math.pow(myPos.x - movement.position.x, 2) +
+        Math.pow(myPos.y - movement.position.y, 2) +
+        Math.pow(myPos.z - movement.position.z, 2)
+      );
+
+      if (distance < 5) {
+        nearby.push(user.displayName);
+      }
+    });
+
+    // 配列の内容が変わった場合のみ更新
+    if (JSON.stringify(nearby) !== JSON.stringify(nearbyUsers)) {
+      setNearbyUsers(nearby);
+    }
+  });
+
+  return null;
+}
+```
+
+##### ユーザー間の距離を計算
+
+```tsx
+import { useUsers } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import { Line } from '@react-three/drei';
+
+function DistanceLine({ targetUser, getMovement, getLocalMovement }) {
+  const lineRef = useRef<any>(null);
+
+  useFrame(() => {
+    const myPos = getLocalMovement().position;
+    const targetMovement = getMovement(targetUser.socketId);
+    if (!targetMovement || !lineRef.current) return;
+
+    lineRef.current.geometry.setPositions([
+      myPos.x, myPos.y + 1, myPos.z,
+      targetMovement.position.x, targetMovement.position.y + 1, targetMovement.position.z
+    ]);
+  });
+
+  return (
+    <Line
+      ref={lineRef}
+      points={[[0, 0, 0], [0, 0, 0]]}
+      color="yellow"
+      lineWidth={2}
+    />
+  );
+}
+```
+
+:::tip[パフォーマンスのヒント]
+`getMovement()` と `getLocalMovement()` は `useFrame` 内で毎フレーム呼び出しても問題ありません。これらは内部的にキャッシュされた値を返すため、パフォーマンスへの影響は最小限です。
+:::
+
+:::note[remoteUsers の更新タイミング]
+`remoteUsers` 配列はユーザーの参加/離脱時のみ更新されます。ユーザーの位置情報の変化では再レンダリングは発生しません。位置情報は常に `getMovement()` を使用して取得してください。
+:::
