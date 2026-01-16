@@ -57,6 +57,49 @@ import { VideoScreen } from '@xrift/world-components';
 
 ---
 
+### RichVideoPlayer
+
+`VideoScreen` をベースにしたUIコントロール付きのビデオプレイヤーです。再生/停止ボタン、プログレスバー、音量バーなどVR対応のコントロールUIを備えています。
+
+```tsx
+import { RichVideoPlayer } from '@xrift/world-components';
+
+<RichVideoPlayer
+  id="my-video"
+  url="https://example.com/video.mp4"
+  position={[0, 2, -5]}
+  width={4}
+/>
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | スクリーンの一意なID（必須） |
+| `position` | `[number, number, number]` | `[0, 2, -5]` | スクリーンの位置 |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの回転 |
+| `width` | `number` | `4` | スクリーンの幅（高さは16:9で自動計算） |
+| `url` | `string` | - | 動画のURL |
+| `playing` | `boolean` | `true` | 初期再生状態 |
+| `volume` | `number` | `1` | 初期音量（0〜1） |
+| `sync` | `'global' \| 'local'` | `'global'` | 同期モード |
+
+#### 機能
+
+- **再生/停止ボタン**: ▶/|| アイコンで再生状態を切り替え
+- **プログレスバー**: 20セグメントに分割された進捗バー。クリックで動画の最初に戻る
+- **音量バー**: 0-100%を10刻みで調整。🔈/🔇アイコンでミュート状態を表示
+- **VR対応**: `Interactable` を使用したVRコントローラー操作に対応
+
+:::tip[同期モード]
+`sync` プロパティで同期モードを選択できます：
+- `'global'`: 全ユーザー間で再生状態を同期（デフォルト）
+- `'local'`: 各ユーザーが独立して再生を制御
+:::
+
+---
+
 ### ScreenShareDisplay
 
 画面共有の映像を3D空間内にスクリーンとして表示します。`ScreenShareContext` から映像と状態を取得します。
