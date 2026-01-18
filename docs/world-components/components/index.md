@@ -87,6 +87,7 @@ import { RichVideoPlayer } from '@xrift/world-components';
 
 #### 機能
 
+- **URL入力ボタン**: 🔗 アイコンをクリックするとURL入力オーバーレイが表示され、動画ソースを動的に切り替え可能
 - **再生/停止ボタン**: ▶/|| アイコンで再生状態を切り替え
 - **プログレスバー**: 20セグメントに分割された進捗バー。クリックで動画の最初に戻る
 - **音量バー**: 0-100%を10刻みで調整。🔈/🔇アイコンでミュート状態を表示
@@ -96,6 +97,46 @@ import { RichVideoPlayer } from '@xrift/world-components';
 `sync` プロパティで同期モードを選択できます：
 - `'global'`: 全ユーザー間で再生状態を同期（デフォルト）
 - `'local'`: 各ユーザーが独立して再生を制御
+:::
+
+---
+
+### LiveVideoPlayer
+
+HLS/DASH などのライブストリーミング再生に対応したビデオプレイヤーです。`RichVideoPlayer` と同様のUIコントロールを備えつつ、ライブ配信向けに最適化されています。
+
+```tsx
+import { LiveVideoPlayer } from '@xrift/world-components';
+
+<LiveVideoPlayer
+  id="my-live"
+  url="https://example.com/live/stream.m3u8"
+  position={[0, 2, -5]}
+  width={4}
+/>
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | スクリーンの一意なID（必須） |
+| `position` | `[number, number, number]` | `[0, 2, -5]` | スクリーンの位置 |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの回転 |
+| `width` | `number` | `4` | スクリーンの幅（高さは16:9で自動計算） |
+| `url` | `string` | - | ストリームのURL（HLS/DASH対応） |
+| `playing` | `boolean` | `true` | 初期再生状態 |
+| `volume` | `number` | `1` | 初期音量（0〜1） |
+
+#### 機能
+
+- **URL入力ボタン**: 🔗 アイコンをクリックするとURL入力オーバーレイが表示され、ストリームソースを動的に切り替え可能
+- **再生/停止ボタン**: ▶/|| アイコンで再生状態を切り替え
+- **音量バー**: 0-100%を10刻みで調整。🔈/🔇アイコンでミュート状態を表示
+- **VR対応**: `Interactable` を使用したVRコントローラー操作に対応
+
+:::note[RichVideoPlayer との違い]
+`LiveVideoPlayer` はライブストリーミング向けに設計されているため、プログレスバー（シーク機能）がありません。録画済み動画の再生には `RichVideoPlayer` を使用してください。
 :::
 
 ---
