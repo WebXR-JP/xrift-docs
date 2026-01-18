@@ -159,6 +159,61 @@ import { SpawnPoint } from '@xrift/world-components';
 
 ---
 
+### TextInput
+
+3D空間内でテキスト入力を可能にするコンポーネントです。children方式で外観を自由にカスタマイズできます。
+
+```tsx
+import { TextInput } from '@xrift/world-components';
+
+<TextInput
+  id="my-input"
+  value={inputValue}
+  onSubmit={handleSubmit}
+  placeholder="テキストを入力..."
+>
+  <mesh>
+    <boxGeometry args={[1, 0.5, 0.1]} />
+    <meshStandardMaterial color="#333" />
+  </mesh>
+</TextInput>
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | 入力フィールドの一意なID（必須） |
+| `children` | `ReactNode` | - | 3Dオブジェクト（外観）（必須） |
+| `placeholder` | `string` | - | プレースホルダーテキスト |
+| `maxLength` | `number` | - | 最大文字数 |
+| `value` | `string` | - | 現在の値 |
+| `onSubmit` | `(value: string) => void` | - | 入力完了時のコールバック |
+| `interactionText` | `string` | `'クリックして入力'` | インタラクション時に表示するテキスト |
+| `disabled` | `boolean` | `false` | 入力を無効にするか |
+
+#### 仕組み
+
+`TextInput` コンポーネントは以下のアーキテクチャで動作します：
+
+1. **TextInput**: children として渡された3Dオブジェクトをクリック可能な入力フィールドとして表示
+2. **オーバーレイ入力**: クリック時に2Dのテキスト入力UIがオーバーレイとして表示され、実際の入力を受け付けます
+3. **XRiftContext連携**: world-componentsはXRiftContext経由でオーバーレイ表示をリクエストします
+
+:::tip[外観のカスタマイズ]
+`children` に任意の3Dオブジェクトを渡すことで、入力フィールドの外観を自由にカスタマイズできます。ボタン風のデザインや、ワールドの世界観に合わせた見た目を実現できます。
+:::
+
+:::note[関連するContext/Hook]
+プラットフォーム側では以下のAPIを使用してTextInputの動作を実装しています：
+- `TextInputContext`
+- `useTextInputContext`
+- `TextInputContextValue`
+- `TextInputRequest`
+:::
+
+---
+
 ## フック
 
 ### useInstanceState
