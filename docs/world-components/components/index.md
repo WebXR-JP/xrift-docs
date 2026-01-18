@@ -57,14 +57,14 @@ import { VideoScreen } from '@xrift/world-components';
 
 ---
 
-### RichVideoPlayer
+### VideoPlayer
 
 `VideoScreen` をベースにしたUIコントロール付きのビデオプレイヤーです。再生/停止ボタン、プログレスバー、音量バーなどVR対応のコントロールUIを備えています。
 
 ```tsx
-import { RichVideoPlayer } from '@xrift/world-components';
+import { VideoPlayer } from '@xrift/world-components';
 
-<RichVideoPlayer
+<VideoPlayer
   id="my-video"
   url="https://example.com/video.mp4"
   position={[0, 2, -5]}
@@ -103,7 +103,7 @@ import { RichVideoPlayer } from '@xrift/world-components';
 
 ### LiveVideoPlayer
 
-HLS/DASH などのライブストリーミング再生に対応したビデオプレイヤーです。`RichVideoPlayer` と同様のUIコントロールを備えつつ、ライブ配信向けに最適化されています。
+HLS/DASH などのライブストリーミング再生に対応したビデオプレイヤーです。`VideoPlayer` と同様のUIコントロールを備えつつ、ライブ配信向けに最適化されています。
 
 ```tsx
 import { LiveVideoPlayer } from '@xrift/world-components';
@@ -135,8 +135,8 @@ import { LiveVideoPlayer } from '@xrift/world-components';
 - **音量バー**: 0-100%を10刻みで調整。🔈/🔇アイコンでミュート状態を表示
 - **VR対応**: `Interactable` を使用したVRコントローラー操作に対応
 
-:::note[RichVideoPlayer との違い]
-`LiveVideoPlayer` はライブストリーミング向けに設計されているため、プログレスバー（シーク機能）がありません。録画済み動画の再生には `RichVideoPlayer` を使用してください。
+:::note[VideoPlayer との違い]
+`LiveVideoPlayer` はライブストリーミング向けに設計されているため、プログレスバー（シーク機能）がありません。録画済み動画の再生には `VideoPlayer` を使用してください。
 :::
 
 ---
