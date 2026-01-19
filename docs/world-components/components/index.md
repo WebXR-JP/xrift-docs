@@ -259,7 +259,7 @@ import { TextInput } from '@xrift/world-components';
 
 ### useInstanceState
 
-ワールド内の全ユーザー間で状態を同期します。React の `useState` と同じインターフェースです。
+インスタンス内の全ユーザー間で状態を同期します。React の `useState` と同じインターフェースです。
 
 ```tsx
 import { useInstanceState } from '@xrift/world-components';
