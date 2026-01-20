@@ -79,6 +79,8 @@ sidebar_position: 2
 
 この場合、`dist/thumbnail.png` がサムネイルとして使用されます。
 
+**推奨サイズ**: 1280x720 ピクセル
+
 ### buildCommand
 
 `xrift upload world` 実行時に、アップロード前に自動実行されるコマンドです。
