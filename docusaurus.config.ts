@@ -27,7 +27,7 @@ const config: Config = {
 
   i18n: {
     defaultLocale: 'ja',
-    locales: ['ja'],
+    locales: ['en', 'ja'],
   },
 
   presets: [
@@ -77,6 +77,9 @@ const config: Config = {
           sidebarId: 'docsSidebar',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          type: 'localeDropdown',
         },
         {
           href: 'https://xrift.net/',

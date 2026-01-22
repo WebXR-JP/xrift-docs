@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Getting Started",
+    "description": "The label for category 'Getting Started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.ワールド開発": {
+    "message": "World Development",
+    "description": "The label for category 'ワールド開発' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.アイテム開発": {
+    "message": "Item Development",
+    "description": "The label for category 'アイテム開発' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.CLI (xrift-cli)": {
+    "message": "CLI (xrift-cli)",
+    "description": "The label for category 'CLI (xrift-cli)' in sidebar 'docsSidebar'"
+  }
+}
