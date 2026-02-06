@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # API リファレンス
 
-xrift-world-components で提供されるコンポーネントとフックの一覧です。
+xrift-world-components で提供されるコンポーネント、フック、定数の一覧です。
 
 ## コンポーネント
 
@@ -653,3 +653,34 @@ function DistanceLine({ targetUser, getMovement, getLocalMovement }) {
 :::note[remoteUsers の更新タイミング]
 `remoteUsers` 配列はユーザーの参加/離脱時のみ更新されます。ユーザーの位置情報の変化では再レンダリングは発生しません。位置情報は常に `getMovement()` を使用して取得してください。
 :::
+
+---
+
+## 定数
+
+### LAYERS
+
+Three.js のレイヤーシステムを活用した定数です。カメラやRaycasterのレイヤー設定に使用します。
+
+```typescript
+import { LAYERS } from '@xrift/world-components';
+```
+
+| 定数名 | 値 | 説明 |
+|--------|-----|------|
+| `LAYERS.DEFAULT` | `0` | デフォルトレイヤー（すべてのオブジェクトが初期状態で属する） |
+| `LAYERS.FIRST_PERSON_ONLY` | `9` | 一人称視点のみ表示（VRMFirstPerson用） |
+| `LAYERS.THIRD_PERSON_ONLY` | `10` | 三人称視点のみ表示（VRMFirstPerson用） |
+| `LAYERS.INTERACTABLE` | `11` | インタラクト可能オブジェクト（Raycast対象） |
+
+#### 関連する型
+
+```typescript
+type LayerName = 'DEFAULT' | 'FIRST_PERSON_ONLY' | 'THIRD_PERSON_ONLY' | 'INTERACTABLE';
+type LayerNumber = 0 | 9 | 10 | 11;
+```
+
+#### ユースケース
+
+- Raycasterでインタラクション対象を検出する際のレイヤー設定
+- VRモードでの一人称/三人称の表示切り替え
