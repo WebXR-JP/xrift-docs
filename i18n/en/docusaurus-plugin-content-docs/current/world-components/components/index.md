@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # API Reference
 
-A list of components and hooks provided by xrift-world-components.
+A list of components, hooks, and constants provided by xrift-world-components.
 
 ## Components
 
@@ -653,3 +653,34 @@ function DistanceLine({ targetUser, getMovement, getLocalMovement }) {
 :::note[remoteUsers Update Timing]
 The `remoteUsers` array is updated only when users join or leave. Changes in user positions do not trigger re-renders. Always use `getMovement()` to retrieve position information.
 :::
+
+---
+
+## Constants
+
+### LAYERS
+
+Constants utilizing Three.js's layer system. Used for configuring layers on cameras and Raycasters.
+
+```typescript
+import { LAYERS } from '@xrift/world-components';
+```
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `LAYERS.DEFAULT` | `0` | Default layer (all objects belong to this layer initially) |
+| `LAYERS.FIRST_PERSON_ONLY` | `9` | First-person view only (for VRMFirstPerson) |
+| `LAYERS.THIRD_PERSON_ONLY` | `10` | Third-person view only (for VRMFirstPerson) |
+| `LAYERS.INTERACTABLE` | `11` | Interactable objects (Raycast targets) |
+
+#### Related Types
+
+```typescript
+type LayerName = 'DEFAULT' | 'FIRST_PERSON_ONLY' | 'THIRD_PERSON_ONLY' | 'INTERACTABLE';
+type LayerNumber = 0 | 9 | 10 | 11;
+```
+
+#### Use Cases
+
+- Setting layers for detecting interaction targets with Raycaster
+- Switching between first-person/third-person views in VR mode
