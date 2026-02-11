@@ -351,7 +351,7 @@ export const MyWorld = () => {
 
 ### DevEnvironment
 
-`xrift-world-template` の `dev.tsx` にベタ書きされていた開発環境機能を、再利用可能なコンポーネントとして切り出したものです。各ワールドプロジェクトの `dev.tsx` が数行で済むようになります。
+ローカル開発用の環境を提供するコンポーネントです。ワールドテンプレートの `dev.tsx` で使用します。
 
 ```tsx
 import { DevEnvironment, XRiftProvider } from '@xrift/world-components'

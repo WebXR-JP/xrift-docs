@@ -351,7 +351,7 @@ export const MyWorld = () => {
 
 ### DevEnvironment
 
-A reusable component that extracts the development environment features previously hard-coded in `xrift-world-template`'s `dev.tsx`. This allows each world project's `dev.tsx` to be reduced to just a few lines.
+A component that provides a local development environment. Used in the world template's `dev.tsx`.
 
 ```tsx
 import { DevEnvironment, XRiftProvider } from '@xrift/world-components'
