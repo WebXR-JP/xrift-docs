@@ -406,6 +406,10 @@ createRoot(rootElement).render(
 | Space / E | Jump |
 | ESC | Release pointer lock |
 
+:::caution[Usage]
+This component is for local preview when running `npm run dev` in a world development project. Do not use it inside actual world content such as `World.tsx`.
+:::
+
 :::note[Prerequisites]
 Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDependency).
 :::
