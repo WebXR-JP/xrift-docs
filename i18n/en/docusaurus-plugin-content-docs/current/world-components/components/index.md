@@ -349,6 +349,69 @@ export const MyWorld = () => {
 
 ---
 
+### DevEnvironment
+
+A reusable component that extracts the development environment features previously hard-coded in `xrift-world-template`'s `dev.tsx`. This allows each world project's `dev.tsx` to be reduced to just a few lines.
+
+```tsx
+import { DevEnvironment, XRiftProvider } from '@xrift/world-components'
+import { World } from './World'
+import xriftConfig from '../xrift.json'
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <XRiftProvider baseUrl="/">
+      <DevEnvironment physicsConfig={xriftConfig.physics}>
+        <World />
+      </DevEnvironment>
+    </XRiftProvider>
+  </StrictMode>
+)
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | - | World content (Required) |
+| `camera` | `{ position?: [x, y, z]; fov?: number }` | `{ fov: 50 }` | Camera settings |
+| `moveSpeed` | `number` | `5.0` | Movement speed |
+| `shadows` | `boolean` | `true` | Enable/disable shadows |
+| `spawnPosition` | `[x, y, z]` | `[0.11, 1.6, 7.59]` | Spawn position |
+| `respawnThreshold` | `number` | `-10` | Y-coordinate threshold for respawn |
+| `physicsConfig` | `PhysicsConfig` | - | Physics settings |
+
+#### PhysicsConfig
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `gravity` | `number` | `9.81` | Gravitational acceleration |
+| `allowInfiniteJump` | `boolean` | `true` | Allow infinite jumping |
+
+#### Features
+
+- **First-Person Player**: Physics-based WASD movement, jumping, and respawning
+- **View Controls**: View manipulation via PointerLockControls
+- **Interaction**: Raycasting to INTERACTABLE layer + click interaction
+- **Crosshair UI**: Center-screen crosshair (highlights on hit)
+- **Guide UI**: Pointer lock state guidance UI
+- **Controls Help UI**: UI displaying control instructions
+
+#### Controls
+
+| Input | Description |
+|-------|-------------|
+| Click | Start pointer lock / Interact |
+| WASD / Arrow Keys | Movement |
+| Space / E | Jump |
+| ESC | Release pointer lock |
+
+:::note[Prerequisites]
+Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDependency).
+:::
+
+---
+
 ## Hooks
 
 ### useInstanceState
