@@ -349,6 +349,69 @@ export const MyWorld = () => {
 
 ---
 
+### DevEnvironment
+
+ローカル開発用の環境を提供するコンポーネントです。ワールドテンプレートの `dev.tsx` で使用します。
+
+```tsx
+import { DevEnvironment, XRiftProvider } from '@xrift/world-components'
+import { World } from './World'
+import xriftConfig from '../xrift.json'
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <XRiftProvider baseUrl="/">
+      <DevEnvironment physicsConfig={xriftConfig.physics}>
+        <World />
+      </DevEnvironment>
+    </XRiftProvider>
+  </StrictMode>
+)
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | - | ワールドコンテンツ（必須） |
+| `camera` | `{ position?: [x, y, z]; fov?: number }` | `{ fov: 50 }` | カメラ設定 |
+| `moveSpeed` | `number` | `5.0` | 移動速度 |
+| `shadows` | `boolean` | `true` | シャドウの有効/無効 |
+| `spawnPosition` | `[x, y, z]` | `[0.11, 1.6, 7.59]` | スポーン位置 |
+| `respawnThreshold` | `number` | `-10` | リスポーンのY座標閾値 |
+| `physicsConfig` | `PhysicsConfig` | - | 物理設定 |
+
+#### PhysicsConfig
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `gravity` | `number` | `9.81` | 重力加速度 |
+| `allowInfiniteJump` | `boolean` | `true` | 無限ジャンプの許可 |
+
+#### 提供する機能
+
+- **ファーストパーソンプレイヤー**: 物理ベースのWASD移動・ジャンプ・リスポーン
+- **視点操作**: PointerLockControls による視点操作
+- **インタラクション**: INTERACTABLE レイヤーへのレイキャスト + クリックインタラクション
+- **クロスヘアUI**: 画面中央のクロスヘア（ヒット時ハイライト）
+- **案内UI**: ポインターロック状態の案内UI
+- **操作説明UI**: 操作方法を表示するUI
+
+#### 操作方法
+
+| 操作 | 説明 |
+|------|------|
+| クリック | ポインターロック開始 / インタラクト |
+| WASD / 矢印キー | 移動 |
+| Space / E | ジャンプ |
+| ESC | ポインターロック解除 |
+
+:::note[前提条件]
+`@react-three/rapier`（`^2.0.0`）のインストールが必要です（optional peerDependency）。
+:::
+
+---
+
 ## フック
 
 ### useInstanceState
