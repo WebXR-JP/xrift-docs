@@ -353,6 +353,10 @@ export const MyWorld = () => {
 
 ローカル開発用の環境を提供するコンポーネントです。ワールドテンプレートの `dev.tsx` で使用します。
 
+:::caution[使用場所について]
+このコンポーネントはワールド開発プロジェクトで `npm run dev` を実行した際のローカル確認用です。`World.tsx` などの実際のワールドコンテンツ内では使用しないでください。
+:::
+
 ```tsx
 import { DevEnvironment, XRiftProvider } from '@xrift/world-components'
 import { World } from './World'
@@ -405,10 +409,6 @@ createRoot(rootElement).render(
 | WASD / 矢印キー | 移動 |
 | Space / E | ジャンプ |
 | ESC | ポインターロック解除 |
-
-:::caution[使用場所について]
-このコンポーネントはワールド開発プロジェクトで `npm run dev` を実行した際のローカル確認用です。`World.tsx` などの実際のワールドコンテンツ内では使用しないでください。
-:::
 
 :::note[前提条件]
 `@react-three/rapier`（`^2.0.0`）のインストールが必要です（optional peerDependency）。

@@ -353,6 +353,10 @@ export const MyWorld = () => {
 
 A component that provides a local development environment. Used in the world template's `dev.tsx`.
 
+:::caution[Usage]
+This component is for local preview when running `npm run dev` in a world development project. Do not use it inside actual world content such as `World.tsx`.
+:::
+
 ```tsx
 import { DevEnvironment, XRiftProvider } from '@xrift/world-components'
 import { World } from './World'
@@ -405,10 +409,6 @@ createRoot(rootElement).render(
 | WASD / Arrow Keys | Movement |
 | Space / E | Jump |
 | ESC | Release pointer lock |
-
-:::caution[Usage]
-This component is for local preview when running `npm run dev` in a world development project. Do not use it inside actual world content such as `World.tsx`.
-:::
 
 :::note[Prerequisites]
 Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDependency).
