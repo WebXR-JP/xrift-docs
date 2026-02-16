@@ -10,12 +10,7 @@ sidebar_position: 3
 
 ## インストール
 
-VS Code の拡張機能マーケットプレイスから「Triplex」を検索してインストールします。
-
-1. VS Code を開く
-2. 拡張機能パネル（`Cmd + Shift + X`）を開く
-3. 「Triplex」で検索
-4. 「Install」をクリック
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=trytriplex.triplex-vsce) からインストールします。
 
 ## XRift プロジェクトでの使い方
 
