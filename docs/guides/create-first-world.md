@@ -176,6 +176,10 @@ function MyModel() {
 }
 ```
 
+:::caution
+`baseUrl` は末尾にスラッシュを含んでいます。パスを組み立てる際に `${baseUrl}/my-model.glb` のようにスラッシュを追加すると二重スラッシュになるため、`${baseUrl}my-model.glb` と記述してください。
+:::
+
 ## Step 6: ビルドとデプロイ
 
 プロダクションビルドを作成：
