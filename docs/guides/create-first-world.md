@@ -171,7 +171,7 @@ import { useGLTF } from '@react-three/drei';
 
 function MyModel() {
   const { baseUrl } = useXRift();
-  const { scene } = useGLTF(`${baseUrl}/my-model.glb`);
+  const { scene } = useGLTF(`${baseUrl}my-model.glb`);
   return <primitive object={scene} />;
 }
 ```
