@@ -158,12 +158,9 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier';
 
 ```
 public/
-├── models/
-│   └── my-model.glb
-├── textures/
-│   └── wood.jpg
-└── skybox/
-    └── sky.jpg
+├── my-model.glb
+├── wood.jpg
+└── sky.jpg
 ```
 
 `public/` に配置したファイルは、`useXRift` から取得した `baseUrl` を使ってアクセスします：
@@ -174,7 +171,7 @@ import { useGLTF } from '@react-three/drei';
 
 function MyModel() {
   const { baseUrl } = useXRift();
-  const { scene } = useGLTF(`${baseUrl}/models/my-model.glb`);
+  const { scene } = useGLTF(`${baseUrl}/my-model.glb`);
   return <primitive object={scene} />;
 }
 ```
