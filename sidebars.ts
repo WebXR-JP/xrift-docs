@@ -17,6 +17,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/create-first-world',
         'guides/configuration',
+        'guides/triplex',
         'world-components/components/index',
       ],
     },

@@ -158,12 +158,9 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier';
 
 ```
 public/
-├── models/
-│   └── my-model.glb
-├── textures/
-│   └── wood.jpg
-└── skybox/
-    └── sky.jpg
+├── my-model.glb
+├── wood.jpg
+└── sky.jpg
 ```
 
 `public/` に配置したファイルは、`useXRift` から取得した `baseUrl` を使ってアクセスします：
@@ -174,10 +171,14 @@ import { useGLTF } from '@react-three/drei';
 
 function MyModel() {
   const { baseUrl } = useXRift();
-  const { scene } = useGLTF(`${baseUrl}/models/my-model.glb`);
+  const { scene } = useGLTF(`${baseUrl}my-model.glb`);
   return <primitive object={scene} />;
 }
 ```
+
+:::caution
+`baseUrl` は末尾にスラッシュを含んでいます。パスを組み立てる際に `${baseUrl}/my-model.glb` のようにスラッシュを追加すると二重スラッシュになるため、`${baseUrl}my-model.glb` と記述してください。
+:::
 
 ## Step 6: ビルドとデプロイ
 

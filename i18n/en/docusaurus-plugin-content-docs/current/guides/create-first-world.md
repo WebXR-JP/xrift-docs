@@ -158,12 +158,9 @@ Place 3D models and textures in the `public/` directory:
 
 ```
 public/
-├── models/
-│   └── my-model.glb
-├── textures/
-│   └── wood.jpg
-└── skybox/
-    └── sky.jpg
+├── my-model.glb
+├── wood.jpg
+└── sky.jpg
 ```
 
 Files placed in `public/` are accessed using `baseUrl` obtained from `useXRift`:
@@ -174,10 +171,14 @@ import { useGLTF } from '@react-three/drei';
 
 function MyModel() {
   const { baseUrl } = useXRift();
-  const { scene } = useGLTF(`${baseUrl}/models/my-model.glb`);
+  const { scene } = useGLTF(`${baseUrl}my-model.glb`);
   return <primitive object={scene} />;
 }
 ```
+
+:::caution
+`baseUrl` includes a trailing slash. Do not add an extra slash when building paths — use `${baseUrl}my-model.glb` instead of `${baseUrl}/my-model.glb` to avoid double slashes.
+:::
 
 ## Step 6: Build and Deploy
 
