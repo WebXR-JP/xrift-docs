@@ -36,6 +36,7 @@ const sidebars: SidebarsConfig = {
         'cli/commands',
       ],
     },
+    'public-api/v1',
   ],
 };
 
