@@ -6,112 +6,320 @@ sidebar_position: 1
 
 外部開発者が API キーを使って XRift のデータにアクセスするための Public API リファレンスです。
 
+**ベース URL**: `https://api.xrift.net/api/public/v1`
+
 ## 認証
 
-2 種類の認証方式をサポートしています。
+2 種類の認証方式をサポートしています。リクエスト時に `Authorization` ヘッダーでトークンを送信してください。
 
 | 認証方式 | ヘッダー | 用途 |
 |---|---|---|
 | API キー | `Authorization: Bearer xrift_sk_xxx` | サードパーティ開発者向け（スコープ + レート制限あり） |
 | CLI トークン | `Authorization: Bearer xrf_xxx` | CLI / 内部ツール向け（全権限、レート制限なし） |
 
-### リクエスト例
+- API キーは `xrift_sk_` プレフィックスで識別されます
+- CLI トークンは `xrf_` プレフィックスで識別されます
+- いずれの形式にも該当しないトークンは `401` エラーになります
 
-```bash
-curl -H "Authorization: Bearer xrift_sk_xxx" \
-  https://api.xrift.net/api/public/v1/worlds
-```
+### スコープ
 
-## エンドポイント一覧
+API キー認証ではスコープによるアクセス制御が行われます。必要なスコープが不足している場合は `403` エラーが返されます。
 
-**ベース URL**: `https://api.xrift.net/api/public/v1`
+| スコープ | アクセス対象 |
+|---|---|
+| `read:worlds` | ワールド一覧・検索・詳細 |
+| `read:users` | ユーザー公開プロフィール |
+| `read:instances` | インスタンス一覧・詳細 |
 
-| メソッド | パス | スコープ | 説明 |
-|---|---|---|---|
-| GET | `/worlds` | `read:worlds` | ワールド一覧（ページネーション付き） |
-| GET | `/worlds/search?q=xxx` | `read:worlds` | ワールド検索 |
-| GET | `/worlds/:id` | `read:worlds` | ワールド詳細 |
-| GET | `/users/:id` | `read:users` | ユーザー公開プロフィール |
-| GET | `/instances` | `read:instances` | インスタンス一覧（ページネーション付き） |
-| GET | `/instances/:id` | `read:instances` | インスタンス詳細 |
+:::tip
+CLI トークンはスコープチェックをスキップし、全エンドポイントにアクセスできます。
+:::
 
-## クエリパラメータ
+## エンドポイント
 
-一覧系エンドポイントでは以下のクエリパラメータが使用できます。
+### GET /worlds
+
+ワールド一覧を取得します（ページネーション付き）。
+
+- **スコープ**: `read:worlds`
+
+#### パラメータ
 
 | パラメータ | 型 | デフォルト | 説明 |
 |---|---|---|---|
 | `limit` | number | 20 | 取得件数（最大 50） |
 | `offset` | number | 0 | オフセット |
-| `worldId` | string | - | インスタンス一覧のワールドフィルター |
 
-### リクエスト例
+#### リクエスト例
 
 ```bash
-# ワールド一覧を10件取得
 curl -H "Authorization: Bearer xrift_sk_xxx" \
   "https://api.xrift.net/api/public/v1/worlds?limit=10&offset=0"
-
-# ワールド検索
-curl -H "Authorization: Bearer xrift_sk_xxx" \
-  "https://api.xrift.net/api/public/v1/worlds/search?q=tokyo"
-
-# 特定ワールドのインスタンス一覧
-curl -H "Authorization: Bearer xrift_sk_xxx" \
-  "https://api.xrift.net/api/public/v1/instances?worldId=xxx"
 ```
 
-## レスポンス形式
-
-### 一覧
+#### レスポンス例
 
 ```json
 {
-  "data": [...],
+  "data": [
+    {
+      "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "name": "My World",
+      "description": "サンプルワールド",
+      "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "isPublic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
   "pagination": {
     "total": 100,
+    "limit": 10,
+    "offset": 0
+  }
+}
+```
+
+---
+
+### GET /worlds/search
+
+ワールドをキーワードで検索します。
+
+- **スコープ**: `read:worlds`
+
+#### パラメータ
+
+| パラメータ | 型 | 必須 | デフォルト | 説明 |
+|---|---|---|---|---|
+| `q` | string | **必須** | - | 検索キーワード |
+| `limit` | number | - | 20 | 取得件数（最大 50） |
+| `offset` | number | - | 0 | オフセット |
+
+#### リクエスト例
+
+```bash
+curl -H "Authorization: Bearer xrift_sk_xxx" \
+  "https://api.xrift.net/api/public/v1/worlds/search?q=tokyo&limit=5"
+```
+
+#### レスポンス例
+
+```json
+{
+  "data": [
+    {
+      "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "name": "Tokyo Tower World",
+      "description": "東京タワーを再現したワールド"
+    }
+  ],
+  "pagination": {
+    "total": 3,
+    "limit": 5,
+    "offset": 0
+  }
+}
+```
+
+#### エラー
+
+| ステータス | 条件 | レスポンス |
+|---|---|---|
+| 400 | `q` パラメータが未指定 | `{ "error": "Query parameter \"q\" is required" }` |
+
+---
+
+### GET /worlds/:id
+
+指定した ID のワールド詳細を取得します。
+
+- **スコープ**: `read:worlds`
+
+#### パスパラメータ
+
+| パラメータ | 型 | 説明 |
+|---|---|---|
+| `id` | string | ワールド ID |
+
+#### リクエスト例
+
+```bash
+curl -H "Authorization: Bearer xrift_sk_xxx" \
+  "https://api.xrift.net/api/public/v1/worlds/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+#### レスポンス例
+
+```json
+{
+  "data": {
+    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "name": "My World",
+    "description": "サンプルワールド",
+    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "isPublic": true,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### エラー
+
+| ステータス | 条件 | レスポンス |
+|---|---|---|
+| 404 | ワールドが存在しない | `{ "error": "World not found" }` |
+
+---
+
+### GET /users/:id
+
+指定した ID のユーザー公開プロフィールを取得します。
+
+- **スコープ**: `read:users`
+
+#### パスパラメータ
+
+| パラメータ | 型 | 説明 |
+|---|---|---|
+| `id` | string | ユーザー ID |
+
+#### リクエスト例
+
+```bash
+curl -H "Authorization: Bearer xrift_sk_xxx" \
+  "https://api.xrift.net/api/public/v1/users/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+#### レスポンス例
+
+```json
+{
+  "data": {
+    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "displayName": "sawa-zen",
+    "avatarUrl": "https://example.com/avatar.png",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### エラー
+
+| ステータス | 条件 | レスポンス |
+|---|---|---|
+| 404 | ユーザーが存在しない | `{ "error": "User not found" }` |
+
+---
+
+### GET /instances
+
+アクティブなインスタンス一覧を取得します（ページネーション付き）。
+
+- **スコープ**: `read:instances`
+
+#### パラメータ
+
+| パラメータ | 型 | 必須 | デフォルト | 説明 |
+|---|---|---|---|---|
+| `worldId` | string | - | - | 指定したワールドのインスタンスのみ取得 |
+| `limit` | number | - | 20 | 取得件数（最大 50） |
+| `offset` | number | - | 0 | オフセット |
+
+#### リクエスト例
+
+```bash
+# 全インスタンス一覧
+curl -H "Authorization: Bearer xrift_sk_xxx" \
+  "https://api.xrift.net/api/public/v1/instances"
+
+# 特定ワールドのインスタンスのみ
+curl -H "Authorization: Bearer xrift_sk_xxx" \
+  "https://api.xrift.net/api/public/v1/instances?worldId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+#### レスポンス例
+
+```json
+{
+  "data": [
+    {
+      "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "worldId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "total": 5,
     "limit": 20,
     "offset": 0
   }
 }
 ```
 
-### 詳細
+---
+
+### GET /instances/:id
+
+指定した ID のインスタンス詳細を取得します。
+
+- **スコープ**: `read:instances`
+
+#### パスパラメータ
+
+| パラメータ | 型 | 説明 |
+|---|---|---|
+| `id` | string | インスタンス ID |
+
+#### リクエスト例
+
+```bash
+curl -H "Authorization: Bearer xrift_sk_xxx" \
+  "https://api.xrift.net/api/public/v1/instances/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+#### レスポンス例
 
 ```json
 {
   "data": {
-    "id": "xxx",
-    ...
+    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "worldId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "createdAt": "2026-01-01T00:00:00.000Z"
   }
 }
 ```
 
-### エラー
+#### エラー
 
-```json
-{
-  "error": "エラーメッセージ"
-}
-```
+| ステータス | 条件 | レスポンス |
+|---|---|---|
+| 404 | インスタンスが存在しない | `{ "error": "Instance not found" }` |
 
-## HTTP ステータスコード
+## 共通エラーレスポンス
 
-| コード | 意味 |
-|---|---|
-| 200 | 成功 |
-| 400 | リクエスト不正 |
-| 401 | 認証失敗 |
-| 403 | スコープ不足 |
-| 404 | リソース未発見 |
-| 429 | レート制限超過 |
+全エンドポイント共通で返される可能性のあるエラーです。
+
+| ステータス | 意味 | レスポンス例 |
+|---|---|---|
+| 401 | 認証ヘッダーが未指定 | `{ "error": "Authentication required" }` |
+| 401 | トークン形式が不正 | `{ "error": "Invalid token format" }` |
+| 401 | API キーが無効 | `{ "error": "Invalid API key" }` |
+| 401 | API キーが無効化済み | `{ "error": "API key is deactivated" }` |
+| 401 | API キーが期限切れ | `{ "error": "API key has expired" }` |
+| 401 | CLI トークンが無効 | `{ "error": "Invalid CLI token" }` |
+| 401 | CLI トークンが期限切れ | `{ "error": "CLI token has expired" }` |
+| 403 | スコープ不足 | `{ "error": "Insufficient scope. Required: read:worlds" }` |
+| 429 | レート制限超過 | `{ "error": "Rate limit exceeded" }` |
 
 ## レート制限
 
 - 1 時間あたり **1,000 リクエスト**（デフォルト）
 - API キー認証のみ適用（CLI トークンは対象外）
+- 固定ウィンドウ方式で計算されます
 
-レスポンスヘッダーで現在の使用状況を確認できます。
+レスポンスヘッダーで現在の使用状況を確認できます（API キー認証時のみ付与）。
 
 | ヘッダー | 説明 |
 |---|---|
