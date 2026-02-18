@@ -18,5 +18,9 @@
   "sidebar.docsSidebar.category.CLI (xrift-cli)": {
     "message": "CLI (xrift-cli)",
     "description": "The label for category 'CLI (xrift-cli)' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.API": {
+    "message": "API",
+    "description": "The label for category 'API' in sidebar 'docsSidebar'"
   }
 }
