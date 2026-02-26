@@ -723,6 +723,72 @@ The `remoteUsers` array is updated only when users join or leave. Changes in use
 
 ---
 
+### useTeleport
+
+A hook for teleporting the player to a specified position. Supports use cases such as portals, elevators, and warp zones.
+
+```tsx
+import { useTeleport } from '@xrift/world-components';
+
+function MyComponent() {
+  const { teleport } = useTeleport();
+
+  const handleTeleport = useCallback(() => {
+    teleport({ position: [50, 0, 30], yaw: 180 });
+  }, [teleport]);
+}
+```
+
+#### API
+
+```typescript
+interface TeleportDestination {
+  position: [number, number, number]
+  yaw?: number // Degrees (0-360). Maintains current orientation when omitted
+}
+
+const { teleport } = useTeleport()
+```
+
+#### Parameters (TeleportDestination)
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `position` | `[number, number, number]` | Yes | Teleport destination coordinates [x, y, z] |
+| `yaw` | `number` | No | Orientation after teleport (degrees 0-360). Maintains current orientation when omitted |
+
+#### Usage Example
+
+##### Teleport with a Portal
+
+```tsx
+import { useTeleport, Interactable } from '@xrift/world-components'
+import { useCallback } from 'react'
+
+function MyWorld() {
+  const { teleport } = useTeleport()
+
+  const handlePortal = useCallback(() => {
+    teleport({ position: [50, 0, 30], yaw: 180 })
+  }, [teleport])
+
+  return (
+    <Interactable id="portal" onInteract={handlePortal}>
+      <mesh>
+        <torusGeometry />
+        <meshStandardMaterial color="purple" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+:::tip[Omitting yaw]
+When `yaw` is omitted, the player's current orientation is maintained after teleporting. Only specify it when you want the player to face a specific direction.
+:::
+
+---
+
 ## Constants
 
 ### LAYERS
