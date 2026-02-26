@@ -723,6 +723,72 @@ function DistanceLine({ targetUser, getMovement, getLocalMovement }) {
 
 ---
 
+### useTeleport
+
+プレイヤーを指定した座標に瞬間移動させるフックです。ポータル、エレベーター、ワープゾーンなどのユースケースに対応します。
+
+```tsx
+import { useTeleport } from '@xrift/world-components';
+
+function MyComponent() {
+  const { teleport } = useTeleport();
+
+  const handleTeleport = useCallback(() => {
+    teleport({ position: [50, 0, 30], yaw: 180 });
+  }, [teleport]);
+}
+```
+
+#### API
+
+```typescript
+interface TeleportDestination {
+  position: [number, number, number]
+  yaw?: number // 度数法（0-360）省略時は現在の向きを維持
+}
+
+const { teleport } = useTeleport()
+```
+
+#### パラメータ（TeleportDestination）
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| `position` | `[number, number, number]` | Yes | テレポート先の座標 [x, y, z] |
+| `yaw` | `number` | No | テレポート後の向き（度数法 0-360）。省略時は現在の向きを維持 |
+
+#### 使用例
+
+##### ポータルでテレポート
+
+```tsx
+import { useTeleport, Interactable } from '@xrift/world-components'
+import { useCallback } from 'react'
+
+function MyWorld() {
+  const { teleport } = useTeleport()
+
+  const handlePortal = useCallback(() => {
+    teleport({ position: [50, 0, 30], yaw: 180 })
+  }, [teleport])
+
+  return (
+    <Interactable id="portal" onInteract={handlePortal}>
+      <mesh>
+        <torusGeometry />
+        <meshStandardMaterial color="purple" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+:::tip[yaw の省略]
+`yaw` を省略するとテレポート後もプレイヤーの現在の向きが維持されます。特定の方向を向かせたい場合のみ指定してください。
+:::
+
+---
+
 ## 定数
 
 ### LAYERS
