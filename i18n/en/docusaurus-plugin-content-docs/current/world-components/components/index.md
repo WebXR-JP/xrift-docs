@@ -725,7 +725,7 @@ The `remoteUsers` array is updated only when users join or leave. Changes in use
 
 ### useTeleport
 
-A hook for teleporting the player to a specified position. Supports use cases such as portals, elevators, and warp zones.
+A hook for teleporting your own avatar to a specified position. Supports use cases such as portals, elevators, and warp zones.
 
 ```tsx
 import { useTeleport } from '@xrift/world-components';

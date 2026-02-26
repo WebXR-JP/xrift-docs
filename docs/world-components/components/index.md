@@ -725,7 +725,7 @@ function DistanceLine({ targetUser, getMovement, getLocalMovement }) {
 
 ### useTeleport
 
-プレイヤーを指定した座標に瞬間移動させるフックです。ポータル、エレベーター、ワープゾーンなどのユースケースに対応します。
+自分自身のアバターを指定した座標に瞬間移動させるフックです。ポータル、エレベーター、ワープゾーンなどのユースケースに対応します。
 
 ```tsx
 import { useTeleport } from '@xrift/world-components';
