@@ -416,6 +416,40 @@ createRoot(rootElement).render(
 
 ---
 
+### Portal
+
+他のインスタンスへの移動ポータルを表示するコンポーネントです。渦巻きシェーダーエフェクト、移動先のサムネイル・ワールド名・インスタンス名・人数、パーティクル、グロー、クリック可能な台座で構成されます。
+
+`instanceId` を指定すると、対象インスタンスの情報を自動取得して表示します。台座をクリックすると確認モーダル（useConfirm）を経て対象インスタンスへ遷移します。
+
+```tsx
+import { Portal } from '@xrift/world-components'
+
+function MyWorld() {
+  return (
+    <Portal
+      instanceId="target-instance-id"
+      position={[5, 0, 0]}
+      rotation={[0, Math.PI / 2, 0]}
+    />
+  )
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `instanceId` | `string` | - | 移動先のインスタンスID（必須） |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | ポータルの座標 |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | ポータルの回転 |
+
+:::note[内部で使用するフック]
+`Portal` は内部で `useInstance` フックを使用してインスタンス情報の取得と遷移を行っています。
+:::
+
+---
+
 ## フック
 
 ### useInstanceState
@@ -786,6 +820,104 @@ function MyWorld() {
 :::tip[yaw の省略]
 `yaw` を省略するとテレポート後もプレイヤーの現在の向きが維持されます。特定の方向を向かせたい場合のみ指定してください。
 :::
+
+---
+
+### useInstance
+
+インスタンス情報の取得と確認付き遷移を提供するフックです。内部で `useConfirm` を使い、遷移前に確認モーダルを表示します。
+
+```tsx
+import { useInstance } from '@xrift/world-components'
+
+function MyComponent() {
+  const { info, navigateWithConfirm } = useInstance('target-instance-id')
+
+  if (!info) return null
+
+  return (
+    <mesh onClick={navigateWithConfirm}>
+      {/* インスタンス名: {info.name} */}
+    </mesh>
+  )
+}
+```
+
+#### 引数
+
+| 引数 | Type | Description |
+|-----|------|-------------|
+| `instanceId` | `string` | 取得するインスタンスのID |
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `info` | `InstanceInfo \| null` | インスタンス情報（取得前は null） |
+| `navigateWithConfirm` | `() => Promise<void>` | 確認モーダル付きでインスタンスへ遷移 |
+
+#### InstanceInfo 型
+
+| フィールド | Type | Description |
+|-----------|------|-------------|
+| `id` | `string` | インスタンスID |
+| `name` | `string` | インスタンス名 |
+| `description` | `string \| null` | 説明 |
+| `currentUsers` | `number` | 現在のユーザー数 |
+| `maxCapacity` | `number` | 最大収容人数 |
+| `isPublic` | `boolean` | 公開かどうか |
+| `allowGuests` | `boolean` | ゲスト許可 |
+| `owner` | `{ id, displayName, userIconUrl? }` | オーナー情報（任意） |
+| `world` | `WorldInfo` | 所属ワールドの情報 |
+
+---
+
+### useWorld
+
+ワールド情報の取得を提供するフックです。
+
+```tsx
+import { useWorld } from '@xrift/world-components'
+
+function MyComponent() {
+  const { info } = useWorld('target-world-id')
+
+  if (!info) return null
+
+  return (
+    <mesh>
+      {/* ワールド名: {info.name} */}
+    </mesh>
+  )
+}
+```
+
+#### 引数
+
+| 引数 | Type | Description |
+|-----|------|-------------|
+| `worldId` | `string` | 取得するワールドのID |
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `info` | `WorldInfo \| null` | ワールド情報（取得前は null） |
+
+#### WorldInfo 型
+
+| フィールド | Type | Description |
+|-----------|------|-------------|
+| `id` | `string` | ワールドID |
+| `name` | `string` | ワールド名 |
+| `description` | `string \| null` | 説明 |
+| `thumbnailUrl` | `string \| null` | サムネイルURL |
+| `isPublic` | `boolean` | 公開かどうか |
+| `instanceCount` | `number` | インスタンス数 |
+| `totalVisitCount` | `number` | 総訪問数 |
+| `uniqueVisitorCount` | `number` | ユニーク訪問者数 |
+| `favoriteCount` | `number` | お気に入り数 |
+| `owner` | `{ id, displayName, userIconUrl? }` | オーナー情報（任意） |
 
 ---
 
