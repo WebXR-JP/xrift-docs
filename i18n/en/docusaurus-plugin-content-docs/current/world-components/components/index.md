@@ -827,6 +827,83 @@ When `yaw` is omitted, the player's current orientation is maintained after tele
 
 ---
 
+### useConfirm
+
+A hook for displaying a confirmation modal to the user. Use it to ask for confirmation before important actions such as world navigation.
+
+```tsx
+import { useConfirm } from '@xrift/world-components';
+
+function MyComponent() {
+  const { requestConfirm } = useConfirm();
+
+  const handleAction = async () => {
+    const ok = await requestConfirm({ message: 'Move to another world?' });
+    if (ok) {
+      // Proceed with the action
+    }
+  };
+}
+```
+
+#### Returns
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `requestConfirm` | `(options: ConfirmOptions) => Promise<boolean>` | Display a confirmation modal and return the result |
+
+#### ConfirmOptions
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `message` | `string` | Yes | Message displayed to the user |
+| `title` | `string` | No | Dialog title |
+| `confirmLabel` | `string` | No | Label for the confirm button |
+| `cancelLabel` | `string` | No | Label for the cancel button |
+
+#### Usage Example
+
+##### Confirm before navigating to an external site
+
+```tsx
+import { useConfirm, Interactable } from '@xrift/world-components'
+
+function ExternalLink() {
+  const { requestConfirm } = useConfirm()
+
+  const handleClick = async () => {
+    const ok = await requestConfirm({
+      title: 'Navigate to external site',
+      message: 'You are about to leave this world. Continue?',
+      confirmLabel: 'Go',
+      cancelLabel: 'Cancel',
+    })
+    if (ok) {
+      window.open('https://example.com', '_blank')
+    }
+  }
+
+  return (
+    <Interactable id="external-link" onInteract={handleClick}>
+      <mesh>
+        <boxGeometry args={[1, 1, 0.2]} />
+        <meshStandardMaterial color="cyan" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+:::tip[iOS Safari Popup Blocker Workaround]
+On mobile browsers like iPhone, `window.open` and external site navigation are blocked unless triggered by a user gesture. By using `useConfirm` to display a confirmation dialog, you create a user-gesture event chain that allows navigation to proceed without being blocked.
+:::
+
+:::note[Relationship with Portal component]
+The `Portal` component internally uses `useConfirm` via the `useInstance` hook. When using Portal, you don't need to call `useConfirm` directly.
+:::
+
+---
+
 ### useInstance
 
 A hook that provides instance information retrieval and navigation with confirmation. It internally uses `useConfirm` to display a confirmation modal before navigation.

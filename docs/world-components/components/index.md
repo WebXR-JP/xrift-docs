@@ -827,6 +827,83 @@ function MyWorld() {
 
 ---
 
+### useConfirm
+
+ユーザーに確認モーダルを表示するフックです。ワールド移動など重要なアクションの前に確認を求めることができます。
+
+```tsx
+import { useConfirm } from '@xrift/world-components';
+
+function MyComponent() {
+  const { requestConfirm } = useConfirm();
+
+  const handleAction = async () => {
+    const ok = await requestConfirm({ message: 'ワールドを移動しますか？' });
+    if (ok) {
+      // 確認された場合の処理
+    }
+  };
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `requestConfirm` | `(options: ConfirmOptions) => Promise<boolean>` | 確認モーダルを表示し、結果を返す |
+
+#### ConfirmOptions
+
+| Property | Type | 必須 | Description |
+|----------|------|------|-------------|
+| `message` | `string` | Yes | ユーザーに表示するメッセージ |
+| `title` | `string` | No | ダイアログのタイトル |
+| `confirmLabel` | `string` | No | 確認ボタンのラベル |
+| `cancelLabel` | `string` | No | キャンセルボタンのラベル |
+
+#### 使用例
+
+##### 外部サイトへの遷移前に確認
+
+```tsx
+import { useConfirm, Interactable } from '@xrift/world-components'
+
+function ExternalLink() {
+  const { requestConfirm } = useConfirm()
+
+  const handleClick = async () => {
+    const ok = await requestConfirm({
+      title: '外部サイトへ移動',
+      message: '外部サイトへ移動します。よろしいですか？',
+      confirmLabel: '移動する',
+      cancelLabel: 'キャンセル',
+    })
+    if (ok) {
+      window.open('https://example.com', '_blank')
+    }
+  }
+
+  return (
+    <Interactable id="external-link" onInteract={handleClick}>
+      <mesh>
+        <boxGeometry args={[1, 1, 0.2]} />
+        <meshStandardMaterial color="cyan" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+:::tip[iOS Safari のポップアップブロック回避]
+iPhone 等のモバイルブラウザでは、ユーザー操作を起点としない `window.open` や外部サイトへの遷移がブロックされます。`useConfirm` で確認ダイアログを挟むことで、ユーザー操作起点のイベントチェーンを作り、ブラウザのポップアップブロックを回避できます。
+:::
+
+:::note[Portal コンポーネントとの関係]
+`Portal` コンポーネントは内部で `useInstance` フックを経由して `useConfirm` を使用しています。Portal を使う場合は `useConfirm` を直接呼ぶ必要はありません。
+:::
+
+---
+
 ### useInstance
 
 インスタンス情報の取得と確認付き遷移を提供するフックです。内部で `useConfirm` を使い、遷移前に確認モーダルを表示します。
