@@ -428,7 +428,7 @@ import { Portal } from '@xrift/world-components'
 function MyWorld() {
   return (
     <Portal
-      instanceId="target-instance-id"
+      instanceId="ceffb128-23c7-4120-b4e6-19bf6c604c47"
       position={[5, 0, 0]}
       rotation={[0, Math.PI / 2, 0]}
     />
@@ -443,6 +443,10 @@ function MyWorld() {
 | `instanceId` | `string` | - | 移動先のインスタンスID（必須） |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | ポータルの座標 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | ポータルの回転 |
+
+:::tip[インスタンスIDの確認方法]
+インスタンスIDはインスタンスページのURLに含まれる UUID です。例えば `https://app.xrift.net/instance/ceffb128-23c7-4120-b4e6-19bf6c604c47` の場合、`ceffb128-23c7-4120-b4e6-19bf6c604c47` がインスタンスIDです。
+:::
 
 :::note[内部で使用するフック]
 `Portal` は内部で `useInstance` フックを使用してインスタンス情報の取得と遷移を行っています。

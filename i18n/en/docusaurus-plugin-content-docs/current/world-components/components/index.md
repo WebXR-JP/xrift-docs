@@ -428,7 +428,7 @@ import { Portal } from '@xrift/world-components'
 function MyWorld() {
   return (
     <Portal
-      instanceId="target-instance-id"
+      instanceId="ceffb128-23c7-4120-b4e6-19bf6c604c47"
       position={[5, 0, 0]}
       rotation={[0, Math.PI / 2, 0]}
     />
@@ -443,6 +443,10 @@ function MyWorld() {
 | `instanceId` | `string` | - | ID of the destination instance (Required) |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | Position of the portal |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the portal |
+
+:::tip[How to find the Instance ID]
+The instance ID is a UUID found in the instance page URL. For example, in `https://app.xrift.net/instance/ceffb128-23c7-4120-b4e6-19bf6c604c47`, the instance ID is `ceffb128-23c7-4120-b4e6-19bf6c604c47`.
+:::
 
 :::note[Internally Used Hook]
 `Portal` internally uses the `useInstance` hook to fetch instance information and handle navigation.
