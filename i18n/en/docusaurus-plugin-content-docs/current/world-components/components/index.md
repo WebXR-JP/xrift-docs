@@ -416,6 +416,40 @@ Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDepen
 
 ---
 
+### Portal
+
+A component that displays a portal for moving to another instance. It consists of a swirl shader effect, destination thumbnail/world name/instance name/user count, particles, glow, and a clickable pedestal.
+
+When `instanceId` is specified, it automatically fetches and displays information about the target instance. Clicking the pedestal triggers a confirmation modal (useConfirm) before transitioning to the target instance.
+
+```tsx
+import { Portal } from '@xrift/world-components'
+
+function MyWorld() {
+  return (
+    <Portal
+      instanceId="target-instance-id"
+      position={[5, 0, 0]}
+      rotation={[0, Math.PI / 2, 0]}
+    />
+  )
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `instanceId` | `string` | - | ID of the destination instance (Required) |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | Position of the portal |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the portal |
+
+:::note[Internally Used Hook]
+`Portal` internally uses the `useInstance` hook to fetch instance information and handle navigation.
+:::
+
+---
+
 ## Hooks
 
 ### useInstanceState
@@ -786,6 +820,104 @@ function MyWorld() {
 :::tip[Omitting yaw]
 When `yaw` is omitted, the player's current orientation is maintained after teleporting. Only specify it when you want the player to face a specific direction.
 :::
+
+---
+
+### useInstance
+
+A hook that provides instance information retrieval and navigation with confirmation. It internally uses `useConfirm` to display a confirmation modal before navigation.
+
+```tsx
+import { useInstance } from '@xrift/world-components'
+
+function MyComponent() {
+  const { info, navigateWithConfirm } = useInstance('target-instance-id')
+
+  if (!info) return null
+
+  return (
+    <mesh onClick={navigateWithConfirm}>
+      {/* Instance name: {info.name} */}
+    </mesh>
+  )
+}
+```
+
+#### Arguments
+
+| Argument | Type | Description |
+|-----|------|-------------|
+| `instanceId` | `string` | ID of the instance to retrieve |
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `info` | `InstanceInfo \| null` | Instance information (null before fetching) |
+| `navigateWithConfirm` | `() => Promise<void>` | Navigate to instance with confirmation modal |
+
+#### InstanceInfo Type
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Instance ID |
+| `name` | `string` | Instance name |
+| `description` | `string \| null` | Description |
+| `currentUsers` | `number` | Current number of users |
+| `maxCapacity` | `number` | Maximum capacity |
+| `isPublic` | `boolean` | Whether it is public |
+| `allowGuests` | `boolean` | Whether guests are allowed |
+| `owner` | `{ id, displayName, userIconUrl? }` | Owner information (optional) |
+| `world` | `WorldInfo` | Information about the world it belongs to |
+
+---
+
+### useWorld
+
+A hook that provides world information retrieval.
+
+```tsx
+import { useWorld } from '@xrift/world-components'
+
+function MyComponent() {
+  const { info } = useWorld('target-world-id')
+
+  if (!info) return null
+
+  return (
+    <mesh>
+      {/* World name: {info.name} */}
+    </mesh>
+  )
+}
+```
+
+#### Arguments
+
+| Argument | Type | Description |
+|-----|------|-------------|
+| `worldId` | `string` | ID of the world to retrieve |
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `info` | `WorldInfo \| null` | World information (null before fetching) |
+
+#### WorldInfo Type
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | World ID |
+| `name` | `string` | World name |
+| `description` | `string \| null` | Description |
+| `thumbnailUrl` | `string \| null` | Thumbnail URL |
+| `isPublic` | `boolean` | Whether it is public |
+| `instanceCount` | `number` | Number of instances |
+| `totalVisitCount` | `number` | Total visit count |
+| `uniqueVisitorCount` | `number` | Unique visitor count |
+| `favoriteCount` | `number` | Favorite count |
+| `owner` | `{ id, displayName, userIconUrl? }` | Owner information (optional) |
 
 ---
 
