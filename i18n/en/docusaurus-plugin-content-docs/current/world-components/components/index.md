@@ -487,6 +487,101 @@ function Counter() {
 
 ---
 
+### useInstanceEvent
+
+A hook for sending and receiving instance events. You can receive platform events (`user-joined`, `user-left`) and send/receive custom world events.
+
+```tsx
+import { useInstanceEvent } from '@xrift/world-components';
+
+// Receive platform events (receive only, cannot emit)
+useInstanceEvent('user-joined', (data) => {
+  console.log('User joined:', data)
+})
+
+// Send and receive custom events
+const emitReaction = useInstanceEvent('reaction', (data) => {
+  console.log('Reaction received:', data)
+})
+emitReaction({ emoji: '👍', userId: 'user-1' })
+```
+
+#### Arguments
+
+| Argument | Type | Description |
+|-----|------|-------------|
+| `eventName` | `string` | Event name |
+| `callback` | `(data: T) => void` | Callback when event is received |
+
+#### Return Value
+
+`(data: T) => void` - Event emit function. Returns a no-op for platform reserved events (`user-joined`, `user-left`).
+
+#### Event Types
+
+| Type | Event Name | Send | Receive | Description |
+|------|-----------|:----:|:-------:|-------------|
+| Platform | `user-joined` | - | ✅ | User joined the instance |
+| Platform | `user-left` | - | ✅ | User left the instance |
+| Custom | Any string | ✅ | ✅ | World-specific events |
+
+#### Use Cases
+
+##### Reaction System
+
+```tsx
+import { useInstanceEvent } from '@xrift/world-components';
+import { useCallback, useState } from 'react';
+
+function ReactionSystem() {
+  const [reactions, setReactions] = useState<{ emoji: string }[]>([]);
+
+  const emitReaction = useInstanceEvent('reaction', (data: { emoji: string }) => {
+    setReactions(prev => [...prev, data]);
+  });
+
+  const sendReaction = useCallback((emoji: string) => {
+    emitReaction({ emoji });
+  }, [emitReaction]);
+
+  return (
+    <mesh onClick={() => sendReaction('👍')}>
+      <boxGeometry args={[1, 1, 0.2]} />
+      <meshStandardMaterial color="yellow" />
+    </mesh>
+  );
+}
+```
+
+##### Join/Leave Detection
+
+```tsx
+import { useInstanceEvent } from '@xrift/world-components';
+
+function JoinLeaveNotifier() {
+  useInstanceEvent('user-joined', (data) => {
+    console.log('User joined:', data);
+  });
+
+  useInstanceEvent('user-left', (data) => {
+    console.log('User left:', data);
+  });
+
+  return null;
+}
+```
+
+:::tip[Choosing between useInstanceEvent and useInstanceState]
+- **useInstanceEvent**: Best for transient event notifications (reactions, effect triggers, etc.).
+- **useInstanceState**: Best for persistent synchronized state (counters, ON/OFF states, etc.).
+:::
+
+:::note[Behavior in Development Environment]
+In the development environment, a local EventEmitter is used, so events are only sent and received within the same browser. In production, the platform injects a WebSocket implementation, and events are shared across all users in the instance.
+:::
+
+---
+
 ### useScreenShareContext
 
 A hook to retrieve the state of screen sharing.
