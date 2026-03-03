@@ -487,6 +487,101 @@ function Counter() {
 
 ---
 
+### useInstanceEvent
+
+インスタンスイベントの送受信を行うフックです。プラットフォームイベント（`user-joined`, `user-left`）の受信や、ワールド独自のカスタムイベントの送受信ができます。
+
+```tsx
+import { useInstanceEvent } from '@xrift/world-components';
+
+// プラットフォームイベントの受信（受信のみ、emit 不可）
+useInstanceEvent('user-joined', (data) => {
+  console.log('User joined:', data)
+})
+
+// カスタムイベントの送受信
+const emitReaction = useInstanceEvent('reaction', (data) => {
+  console.log('Reaction received:', data)
+})
+emitReaction({ emoji: '👍', userId: 'user-1' })
+```
+
+#### 引数
+
+| 引数 | Type | Description |
+|-----|------|-------------|
+| `eventName` | `string` | イベント名 |
+| `callback` | `(data: T) => void` | イベント受信時のコールバック |
+
+#### 戻り値
+
+`(data: T) => void` - イベント送信関数。プラットフォーム予約イベント（`user-joined`, `user-left`）の場合は no-op になります。
+
+#### イベントの種類
+
+| 種類 | イベント名 | 送信 | 受信 | 説明 |
+|------|-----------|:----:|:----:|------|
+| プラットフォーム | `user-joined` | - | ✅ | ユーザーがインスタンスに入室 |
+| プラットフォーム | `user-left` | - | ✅ | ユーザーがインスタンスから退室 |
+| カスタム | 任意の文字列 | ✅ | ✅ | ワールド独自のイベント |
+
+#### ユースケース
+
+##### リアクション機能
+
+```tsx
+import { useInstanceEvent } from '@xrift/world-components';
+import { useCallback, useState } from 'react';
+
+function ReactionSystem() {
+  const [reactions, setReactions] = useState<{ emoji: string }[]>([]);
+
+  const emitReaction = useInstanceEvent('reaction', (data: { emoji: string }) => {
+    setReactions(prev => [...prev, data]);
+  });
+
+  const sendReaction = useCallback((emoji: string) => {
+    emitReaction({ emoji });
+  }, [emitReaction]);
+
+  return (
+    <mesh onClick={() => sendReaction('👍')}>
+      <boxGeometry args={[1, 1, 0.2]} />
+      <meshStandardMaterial color="yellow" />
+    </mesh>
+  );
+}
+```
+
+##### 入退室の検知
+
+```tsx
+import { useInstanceEvent } from '@xrift/world-components';
+
+function JoinLeaveNotifier() {
+  useInstanceEvent('user-joined', (data) => {
+    console.log('User joined:', data);
+  });
+
+  useInstanceEvent('user-left', (data) => {
+    console.log('User left:', data);
+  });
+
+  return null;
+}
+```
+
+:::tip[カスタムイベントとインスタンスステートの使い分け]
+- **useInstanceEvent**: 一時的なイベント通知（リアクション、エフェクトトリガーなど）に適しています。
+- **useInstanceState**: 永続的な同期状態（カウンター、ON/OFF状態など）に適しています。
+:::
+
+:::note[開発環境での動作]
+開発環境ではローカル EventEmitter が使用されるため、同一ブラウザ内でのみイベントが送受信されます。本番環境ではプラットフォームが WebSocket 実装を注入し、インスタンス内の全ユーザー間でイベントが共有されます。
+:::
+
+---
+
 ### useScreenShareContext
 
 画面共有の状態を取得するフックです。
