@@ -454,6 +454,37 @@ function MyWorld() {
 
 ---
 
+### BillboardY
+
+子要素をカメラに対してY軸回転のみで追従させるコンポーネントです。drei の `<Billboard>` は全軸で回転しますが、`BillboardY` はY軸のみ回転するため「上方向」が維持されます。炎、パーティクル、ネームプレート、看板などに最適です。
+
+Mirror（Reflector）と併用しても、鏡の中で正しい向きで表示されます。
+
+```tsx
+import { BillboardY } from '@xrift/world-components'
+
+function NamePlate() {
+  return (
+    <BillboardY position={[0, 2, 0]}>
+      <mesh>
+        <planeGeometry args={[2, 0.5]} />
+        <meshStandardMaterial color="#333" />
+      </mesh>
+    </BillboardY>
+  )
+}
+```
+
+#### Props
+
+`<group>` と同じ Props を受け取ります（`position`, `rotation`, `scale` など）。
+
+:::tip[フックとして使う]
+`useBillboardY` フックを使うと、任意の Object3D に対してY軸ビルボードを適用できます。詳しくは[useBillboardY](#usebillboardy)を参照してください。
+:::
+
+---
+
 ## フック
 
 ### useInstanceState
@@ -1094,6 +1125,43 @@ function MyComponent() {
 | `uniqueVisitorCount` | `number` | ユニーク訪問者数 |
 | `favoriteCount` | `number` | お気に入り数 |
 | `owner` | `{ id, displayName, userIconUrl? }` | オーナー情報（任意） |
+
+---
+
+### useBillboardY
+
+対象の Object3D を毎フレームカメラに向けてY軸のみ回転させるフックです。`BillboardY` コンポーネントの内部で使用されていますが、任意の Object3D に適用したい場合に直接使えます。
+
+内部では sentinel Mesh の `onBeforeRender` を使用しているため、Mirror（Reflector）の virtualCamera でも正しい回転が適用されます。
+
+```tsx
+import { useBillboardY } from '@xrift/world-components'
+import type { Group } from 'three'
+
+function CustomBillboard() {
+  const ref = useBillboardY<Group>()
+
+  return (
+    <group ref={ref}>
+      <mesh>
+        <planeGeometry args={[1, 1.5]} />
+        <meshBasicMaterial map={fireTexture} />
+      </mesh>
+    </group>
+  )
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `ref` | `RefObject<T>` | 対象の Object3D にアタッチする ref |
+
+#### 関連
+
+- `BillboardY` コンポーネント — このフックを `<group>` でラップしたもの
+- `getBillboardYRotation(cameraWorldPos, targetWorldPos)` — 回転角度を計算する純粋関数（InstancedMesh などで手動計算する場合に使用）
 
 ---
 
