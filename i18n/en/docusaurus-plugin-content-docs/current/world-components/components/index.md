@@ -672,7 +672,7 @@ function ParticipantCount() {
 interface User {
   id: string;              // User ID
   displayName: string;     // Display name
-  avatarUrl: string | null; // Avatar icon URL
+  userIconUrl: string | null; // Avatar icon URL
   isGuest: boolean;        // Whether the user is a guest
 }
 ```
