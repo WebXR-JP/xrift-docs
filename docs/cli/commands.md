@@ -38,13 +38,14 @@ xrift whoami
 
 ### xrift create
 
-新しいワールドプロジェクトを作成します。
+新しいプロジェクトを作成します。サブコマンドなしで実行すると、対話型で作成するプロジェクトの種類を選択できます。
 
 ```bash
-xrift create [name] [options]
+xrift create                          # 対話型で種類を選択
+xrift create world [name] [options]   # ワールドプロジェクトを作成
 ```
 
-### オプション
+### オプション（`xrift create world`）
 
 | オプション | 説明 |
 |-----------|------|
@@ -56,14 +57,17 @@ xrift create [name] [options]
 ### 例
 
 ```bash
-# 対話形式でプロジェクトを作成
-xrift create my-world
+# 対話形式で種類を選択してプロジェクトを作成
+xrift create
+
+# ワールドプロジェクトを対話形式で作成
+xrift create world my-world
 
 # 対話なしでプロジェクトを作成
-xrift create my-world -y
+xrift create world my-world -y
 
 # 現在のディレクトリに作成
-xrift create --here
+xrift create world --here
 ```
 
 ## デプロイ

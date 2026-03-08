@@ -38,13 +38,14 @@ xrift whoami
 
 ### xrift create
 
-Creates a new world project.
+Creates a new project. When run without a subcommand, an interactive prompt lets you select the project type.
 
 ```bash
-xrift create [name] [options]
+xrift create                          # Interactive type selection
+xrift create world [name] [options]   # Create a world project
 ```
 
-### Options
+### Options (`xrift create world`)
 
 | Option | Description |
 |-----------|------|
@@ -56,14 +57,17 @@ xrift create [name] [options]
 ### Examples
 
 ```bash
-# Create a project interactively
-xrift create my-world
+# Select project type interactively
+xrift create
+
+# Create a world project interactively
+xrift create world my-world
 
 # Create a project without interaction
-xrift create my-world -y
+xrift create world my-world -y
 
 # Create in the current directory
-xrift create --here
+xrift create world --here
 ```
 
 ## Deployment
