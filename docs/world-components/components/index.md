@@ -703,7 +703,7 @@ function ParticipantCount() {
 interface User {
   id: string;              // ユーザーID
   displayName: string;     // 表示名
-  avatarUrl: string | null; // アバターアイコンURL
+  userIconUrl: string | null; // アバターアイコンURL
   isGuest: boolean;        // ゲストかどうか
 }
 ```
