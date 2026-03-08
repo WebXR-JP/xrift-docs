@@ -33,11 +33,14 @@ xrift login
 # Check current user
 xrift whoami
 
-# Create a new project
-xrift create <project-name>
+# Create a new project (interactive type selection)
+xrift create
 
-# Upload world
-xrift upload world
+# Create a world project directly
+xrift create world <project-name>
+
+# Upload world (auto-detected from xrift.json)
+xrift upload
 ```
 
 For details, refer to the [Command Reference](/cli/commands).

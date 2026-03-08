@@ -49,7 +49,7 @@ A React component library for building WebXR worlds.
 npm install -g @xrift/cli
 
 # Create a new world
-xrift create my-world
+xrift create world my-world
 
 # Navigate to the project and start the development server
 cd my-world

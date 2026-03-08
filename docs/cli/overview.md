@@ -33,11 +33,14 @@ xrift login
 # 現在のユーザーを確認
 xrift whoami
 
-# 新しいプロジェクトを作成
-xrift create <project-name>
+# 新しいプロジェクトを作成（対話型で種類を選択）
+xrift create
 
-# ワールドをアップロード
-xrift upload world
+# ワールドプロジェクトを直接作成
+xrift create world <project-name>
+
+# ワールドをアップロード（xrift.json から自動判定）
+xrift upload
 ```
 
 詳細は [コマンドリファレンス](/cli/commands) を参照してください。

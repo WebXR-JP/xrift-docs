@@ -16,7 +16,7 @@ sidebar_position: 1
 新しいワールドプロジェクトを作成します：
 
 ```bash
-xrift create my-first-world
+xrift create world my-first-world
 cd my-first-world
 ```
 

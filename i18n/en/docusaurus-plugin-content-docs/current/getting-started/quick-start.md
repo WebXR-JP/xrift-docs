@@ -9,7 +9,7 @@ Here are the steps to create a world project using XRift CLI and start the devel
 ## Creating a New Project
 
 ```bash
-xrift create my-world
+xrift create world my-world
 ```
 
 You will configure the project name and other settings interactively. You can skip the interaction with the `-y` option.

@@ -16,7 +16,7 @@ In this tutorial, we will explain how to create a world project using the XRift 
 Create a new world project:
 
 ```bash
-xrift create my-first-world
+xrift create world my-first-world
 cd my-first-world
 ```
 
