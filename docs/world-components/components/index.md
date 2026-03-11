@@ -1125,64 +1125,7 @@ function MyComponent() {
 | `uniqueVisitorCount` | `number` | ユニーク訪問者数 |
 | `favoriteCount` | `number` | お気に入り数 |
 | `owner` | `{ id, displayName, userIconUrl? }` | オーナー情報（任意） |
-| `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | ワールドが必要とする権限（外部接続先・コードセキュリティ緩和ルール） |
-
-##### allowedCodeRules 一覧
-
-`@xrift/code-security` で定義されているコードセキュリティルールです。ワールドがこれらのルールの緩和を必要とする場合、`permissions.allowedCodeRules` に含まれます。
-
-**動的コード実行**
-
-| ルール | 説明 |
-|--------|------|
-| `no-eval` | 文字列をコードとして実行する `eval()` の使用を許可 |
-| `no-new-function` | `Function` コンストラクタによるコード動的生成を許可 |
-| `no-string-timeout` | `setTimeout`/`setInterval` への文字列引数を許可 |
-| `no-javascript-blob` | JavaScript Blob を使ったスクリプト動的生成を許可 |
-
-**難読化**
-
-| ルール | 説明 |
-|--------|------|
-| `no-obfuscation` | 難読化されたコードパターンを許可 |
-
-**ネットワーク通信**
-
-| ルール | 説明 |
-|--------|------|
-| `no-network-without-permission` | fetch や WebSocket 等のネットワーク通信を許可 |
-| `no-unauthorized-domain` | `allowedDomains` に含まれないドメインへの接続を許可 |
-| `no-rtc-connection` | WebRTC ピア接続を許可 |
-| `no-external-import` | 外部 URL からの JavaScript モジュール読み込みを許可 |
-
-**ストレージ・データ**
-
-| ルール | 説明 |
-|--------|------|
-| `no-storage-access` | localStorage / sessionStorage へのアクセスを許可 |
-| `no-cookie-access` | Cookie の読み書きを許可 |
-| `no-indexeddb-access` | IndexedDB へのアクセスを許可 |
-| `no-storage-event` | 他タブのストレージ変更イベントの監視を許可 |
-
-**DOM 操作**
-
-| ルール | 説明 |
-|--------|------|
-| `no-dangerous-dom` | innerHTML やスクリプト要素の挿入を許可 |
-
-**ブラウザ API**
-
-| ルール | 説明 |
-|--------|------|
-| `no-navigator-access` | 位置情報・カメラ・マイク・クリップボード等へのアクセスを許可 |
-
-**グローバル汚染**
-
-| ルール | 説明 |
-|--------|------|
-| `no-sensitive-api-override` | fetch 等のセキュリティ上重要な API の書き換えを許可 |
-| `no-global-override` | window / document 等のグローバルオブジェクトの書き換えを許可 |
-| `no-prototype-pollution` | 組み込みオブジェクトのプロトタイプ変更を許可 |
+| `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | ワールドが必要とする権限（[詳細](/guides/configuration#permissions)） |
 
 ---
 
