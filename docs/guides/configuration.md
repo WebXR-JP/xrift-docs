@@ -20,7 +20,11 @@ sidebar_position: 2
       "**/.DS_Store",
       "**/Thumbs.db",
       "**/*.map"
-    ]
+    ],
+    "permissions": {
+      "allowedDomains": ["api.example.com"],
+      "allowedCodeRules": ["no-storage-access"]
+    }
   }
 }
 ```
@@ -36,6 +40,7 @@ sidebar_position: 2
 | `buildCommand` | string | アップロード前に実行するビルドコマンド |
 | `ignore` | string[] | アップロードから除外するファイルの glob パターン |
 | `physics` | object | ワールドの物理設定 |
+| `permissions` | object | ワールドが必要とする権限設定 |
 
 ## 各項目の詳細
 
@@ -168,3 +173,86 @@ sidebar_position: 2
   }
 }
 ```
+
+### permissions
+
+ワールドが必要とする権限を宣言します。ここで宣言された権限は、ユーザーがインスタンスに入室する際に承認画面として表示されます。
+
+| 設定 | 型 | 説明 |
+|------|-----|------|
+| `allowedDomains` | string[] | ワールドが通信する外部ドメインのリスト |
+| `allowedCodeRules` | string[] | 緩和が必要なコードセキュリティルールのリスト |
+
+#### 基本設定
+
+```json
+{
+  "world": {
+    "permissions": {
+      "allowedDomains": ["api.example.com", "cdn.example.com"],
+      "allowedCodeRules": ["no-storage-access", "no-network-without-permission"]
+    }
+  }
+}
+```
+
+#### allowedDomains
+
+ワールドのコードが通信する外部ドメインを指定します。`@xrift/code-security` のコード解析により、許可されていないドメインへの通信は検出・ブロックされます。
+
+#### allowedCodeRules
+
+`@xrift/code-security` で定義されているコードセキュリティルールの緩和を宣言します。デフォルトでは安全でない操作（eval、外部通信、ストレージアクセスなど）はブロックされますが、ワールドの機能上必要な場合にここで緩和を宣言します。
+
+##### 動的コード実行
+
+| ルール | 説明 |
+|--------|------|
+| `no-eval` | `eval()` による文字列のコード実行を許可 |
+| `no-new-function` | `Function` コンストラクタによるコード動的生成を許可 |
+| `no-string-timeout` | `setTimeout`/`setInterval` への文字列引数を許可 |
+| `no-javascript-blob` | JavaScript Blob を使ったスクリプト動的生成を許可 |
+
+##### 難読化
+
+| ルール | 説明 |
+|--------|------|
+| `no-obfuscation` | 難読化されたコードパターンを許可 |
+
+##### ネットワーク通信
+
+| ルール | 説明 |
+|--------|------|
+| `no-network-without-permission` | fetch や WebSocket 等のネットワーク通信を許可 |
+| `no-unauthorized-domain` | `allowedDomains` に含まれないドメインへの接続を許可 |
+| `no-rtc-connection` | WebRTC ピア接続を許可 |
+| `no-external-import` | 外部 URL からの JavaScript モジュール読み込みを許可 |
+
+##### ストレージ・データ
+
+| ルール | 説明 |
+|--------|------|
+| `no-storage-access` | localStorage / sessionStorage へのアクセスを許可 |
+| `no-cookie-access` | Cookie の読み書きを許可 |
+| `no-indexeddb-access` | IndexedDB へのアクセスを許可 |
+| `no-storage-event` | 他タブのストレージ変更イベントの監視を許可 |
+
+##### DOM 操作
+
+| ルール | 説明 |
+|--------|------|
+| `no-dangerous-dom` | innerHTML やスクリプト要素の挿入を許可 |
+
+##### ブラウザ API
+
+| ルール | 説明 |
+|--------|------|
+| `no-navigator-access` | 位置情報・カメラ・マイク・クリップボード等へのアクセスを許可 |
+
+##### グローバル汚染
+
+| ルール | 説明 |
+|--------|------|
+| `no-sensitive-api-override` | fetch 等のセキュリティ上重要な API の書き換えを許可 |
+| `no-global-override` | window / document 等のグローバルオブジェクトの書き換えを許可 |
+| `no-prototype-pollution` | 組み込みオブジェクトのプロトタイプ変更を許可 |
