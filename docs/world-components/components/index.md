@@ -1125,6 +1125,7 @@ function MyComponent() {
 | `uniqueVisitorCount` | `number` | ユニーク訪問者数 |
 | `favoriteCount` | `number` | お気に入り数 |
 | `owner` | `{ id, displayName, userIconUrl? }` | オーナー情報（任意） |
+| `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | ワールドが必要とする権限（外部接続先・コードセキュリティ緩和ルール） |
 
 ---
 

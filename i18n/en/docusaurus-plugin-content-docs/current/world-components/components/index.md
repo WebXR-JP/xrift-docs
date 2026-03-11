@@ -1094,6 +1094,7 @@ function MyComponent() {
 | `uniqueVisitorCount` | `number` | Unique visitor count |
 | `favoriteCount` | `number` | Favorite count |
 | `owner` | `{ id, displayName, userIconUrl? }` | Owner information (optional) |
+| `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | Permissions required by the world (external connections and code security rule relaxations) |
 
 ---
 
