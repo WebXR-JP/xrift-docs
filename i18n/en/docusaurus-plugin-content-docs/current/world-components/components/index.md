@@ -365,7 +365,10 @@ import xriftConfig from '../xrift.json'
 createRoot(rootElement).render(
   <StrictMode>
     <XRiftProvider baseUrl="/">
-      <DevEnvironment physicsConfig={xriftConfig.physics}>
+      <DevEnvironment
+        physicsConfig={xriftConfig.world?.physics}
+        camera={{ near: xriftConfig.world?.camera?.near, far: xriftConfig.world?.camera?.far }}
+      >
         <World />
       </DevEnvironment>
     </XRiftProvider>
@@ -378,12 +381,21 @@ createRoot(rootElement).render(
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `children` | `ReactNode` | - | World content (Required) |
-| `camera` | `{ position?: [x, y, z]; fov?: number }` | `{ fov: 50 }` | Camera settings |
+| `camera` | `{ position?: [x, y, z]; fov?: number; near?: number; far?: number }` | `{ fov: 50, near: 0.01, far: 1000 }` | Camera settings |
 | `moveSpeed` | `number` | `5.0` | Movement speed |
 | `shadows` | `boolean` | `true` | Enable/disable shadows |
 | `spawnPosition` | `[x, y, z]` | `[0.11, 1.6, 7.59]` | Spawn position |
 | `respawnThreshold` | `number` | `-10` | Y-coordinate threshold for respawn |
 | `physicsConfig` | `PhysicsConfig` | - | Physics settings |
+
+#### CameraConfig
+
+Clipping distances configurable via the `camera` prop. Corresponds to the `world.camera` settings in `xrift.json`.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `near` | `number` | `0.01` | Near clipping distance |
+| `far` | `number` | `1000` | Far clipping distance |
 
 #### PhysicsConfig
 

@@ -365,7 +365,10 @@ import xriftConfig from '../xrift.json'
 createRoot(rootElement).render(
   <StrictMode>
     <XRiftProvider baseUrl="/">
-      <DevEnvironment physicsConfig={xriftConfig.physics}>
+      <DevEnvironment
+        physicsConfig={xriftConfig.world?.physics}
+        camera={{ near: xriftConfig.world?.camera?.near, far: xriftConfig.world?.camera?.far }}
+      >
         <World />
       </DevEnvironment>
     </XRiftProvider>
@@ -378,12 +381,21 @@ createRoot(rootElement).render(
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `children` | `ReactNode` | - | ワールドコンテンツ（必須） |
-| `camera` | `{ position?: [x, y, z]; fov?: number }` | `{ fov: 50 }` | カメラ設定 |
+| `camera` | `{ position?: [x, y, z]; fov?: number; near?: number; far?: number }` | `{ fov: 50, near: 0.01, far: 1000 }` | カメラ設定 |
 | `moveSpeed` | `number` | `5.0` | 移動速度 |
 | `shadows` | `boolean` | `true` | シャドウの有効/無効 |
 | `spawnPosition` | `[x, y, z]` | `[0.11, 1.6, 7.59]` | スポーン位置 |
 | `respawnThreshold` | `number` | `-10` | リスポーンのY座標閾値 |
 | `physicsConfig` | `PhysicsConfig` | - | 物理設定 |
+
+#### CameraConfig
+
+`camera` prop で設定可能なクリッピング距離です。`xrift.json` の `world.camera` 設定と対応しています。
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `near` | `number` | `0.01` | nearクリッピング距離 |
+| `far` | `number` | `1000` | farクリッピング距離 |
 
 #### PhysicsConfig
 
