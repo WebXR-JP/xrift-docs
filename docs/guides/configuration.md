@@ -21,6 +21,10 @@ sidebar_position: 2
       "**/Thumbs.db",
       "**/*.map"
     ],
+    "camera": {
+      "near": 0.1,
+      "far": 1000
+    },
     "permissions": {
       "allowedDomains": ["api.example.com"],
       "allowedCodeRules": ["no-storage-access"]
@@ -40,6 +44,7 @@ sidebar_position: 2
 | `buildCommand` | string | アップロード前に実行するビルドコマンド |
 | `ignore` | string[] | アップロードから除外するファイルの glob パターン |
 | `physics` | object | ワールドの物理設定 |
+| `camera` | object | ワールドのカメラクリッピング設定 |
 | `permissions` | object | ワールドが必要とする権限設定 |
 
 ## 各項目の詳細
@@ -169,6 +174,52 @@ sidebar_position: 2
   "world": {
     "physics": {
       "gravity": 24.79
+    }
+  }
+}
+```
+
+### camera
+
+ワールドのカメラクリッピング距離をカスタマイズできます。
+
+| 設定 | 型 | 説明 |
+|------|-----|------|
+| `near` | number | ニアクリップ距離（カメラに近すぎるオブジェクトを非表示にする距離） |
+| `far` | number | ファークリップ距離（カメラから遠すぎるオブジェクトを非表示にする距離） |
+
+#### 基本設定
+
+```json
+{
+  "world": {
+    "camera": {
+      "near": 0.1,
+      "far": 1000
+    }
+  }
+}
+```
+
+#### 広大なワールド（遠くまで描画）
+
+```json
+{
+  "world": {
+    "camera": {
+      "far": 5000
+    }
+  }
+}
+```
+
+#### 精密なワールド（近距離の描画精度を上げる）
+
+```json
+{
+  "world": {
+    "camera": {
+      "near": 0.01
     }
   }
 }
