@@ -28,7 +28,10 @@ import { Interactable } from '@xrift/world-components';
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `id` | `string` | - | 一意の識別子（必須） |
-| `onInteract` | `() => void` | - | インタラクト時のコールバック |
+| `type` | `'button'` | - | インタラクションタイプ |
+| `onInteract` | `(id: string) => void` | - | インタラクト時のコールバック（IDが渡される） |
+| `interactionText` | `string` | - | ホバー時に表示するテキスト |
+| `enabled` | `boolean` | `true` | インタラクションの有効/無効 |
 | `children` | `ReactNode` | - | インタラクト対象のオブジェクト |
 
 ---
@@ -42,6 +45,17 @@ import { Mirror } from '@xrift/world-components';
 
 <Mirror position={[0, 1, -5]} />
 ```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `position` | `[number, number, number]` | - | 位置 |
+| `rotation` | `[number, number, number]` | - | 回転 |
+| `size` | `[number, number]` | - | サイズ |
+| `color` | `number` | - | 色（数値形式、例: `0xb5b5b5`） |
+| `textureResolution` | `number` | - | テクスチャ解像度 |
+| `lodDistance` | `number` | `10` | LOD切り替え距離（この距離より遠いとき低解像度に切り替え） |
 
 ---
 
@@ -80,7 +94,7 @@ import { VideoPlayer } from '@xrift/world-components';
 | `position` | `[number, number, number]` | `[0, 2, -5]` | スクリーンの位置 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの回転 |
 | `width` | `number` | `4` | スクリーンの幅（高さは16:9で自動計算） |
-| `url` | `string` | - | 動画のURL |
+| `url` | `string` | - | 動画のURL（省略可） |
 | `playing` | `boolean` | `true` | 初期再生状態 |
 | `volume` | `number` | `1` | 初期音量（0〜1） |
 | `sync` | `'global' \| 'local'` | `'global'` | 同期モード |
@@ -125,8 +139,9 @@ import { LiveVideoPlayer } from '@xrift/world-components';
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの回転 |
 | `width` | `number` | `4` | スクリーンの幅（高さは16:9で自動計算） |
 | `url` | `string` | - | ストリームのURL（HLS/DASH対応） |
-| `playing` | `boolean` | `true` | 初期再生状態 |
+| `playing` | `boolean` | `false` | 初期再生状態 |
 | `volume` | `number` | `1` | 初期音量（0〜1） |
+| `sync` | `'global' \| 'local'` | `'global'` | 同期モード |
 
 #### 機能
 
@@ -159,6 +174,7 @@ import { ScreenShareDisplay } from '@xrift/world-components';
 | `position` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの位置 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの回転 |
 | `width` | `number` | `4` | スクリーンの幅（高さは16:9で自動計算） |
+| `targetFps` | `number` | - | テクスチャ更新のターゲットFPS |
 
 :::tip[アスペクト比の維持]
 映像のアスペクト比は自動的に維持されます。16:9以外の映像でも黒帯が入り正しく表示されます。
@@ -455,6 +471,7 @@ function MyWorld() {
 | `instanceId` | `string` | - | 移動先のインスタンスID（必須） |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | ポータルの座標 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | ポータルの回転 |
+| `disabled` | `boolean` | `false` | ポータルを無効にする |
 
 :::tip[インスタンスIDの確認方法]
 インスタンスIDはインスタンスページのURLに含まれる UUID です。例えば `https://app.xrift.net/instance/ceffb128-23c7-4120-b4e6-19bf6c604c47` の場合、`ceffb128-23c7-4120-b4e6-19bf6c604c47` がインスタンスIDです。
@@ -1138,6 +1155,41 @@ function MyComponent() {
 | `favoriteCount` | `number` | お気に入り数 |
 | `owner` | `{ id, displayName, userIconUrl? }` | オーナー情報（任意） |
 | `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | ワールドが必要とする権限（[詳細](/guides/configuration#permissions)） |
+
+---
+
+### useVoiceVolumeOverride
+
+ユーザーごとのボイスチャット音量をオーバーライドするフックです。ステージや壇上にいるユーザーの声を全体に届けるなどのユースケースに対応します。
+
+```tsx
+import { useVoiceVolumeOverride } from '@xrift/world-components';
+
+function StagePodium() {
+  const { setOverride, clearOverride } = useVoiceVolumeOverride();
+
+  // ステージに乗ったユーザーの声を全員に届ける
+  const handleEnter = (userId: string) => {
+    setOverride(userId, 1.0);
+  };
+  const handleLeave = (userId: string) => {
+    clearOverride(userId);
+  };
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `setOverride` | `(userId: string, volume: number) => void` | 指定ユーザーのボリュームをオーバーライド |
+| `clearOverride` | `(userId: string) => void` | オーバーライドを解除 |
+| `clearAll` | `() => void` | すべてのオーバーライドを解除 |
+| `getOverrides` | `() => ReadonlyMap<string, number>` | 現在のオーバーライド一覧を取得 |
+
+:::note[旧名称からの移行]
+v0.34.0 で `useAudioVolume` から `useVoiceVolumeOverride` にリネームされました。旧名称は `@deprecated` として引き続き使用可能ですが、新しい名前への移行を推奨します。
+:::
 
 ---
 

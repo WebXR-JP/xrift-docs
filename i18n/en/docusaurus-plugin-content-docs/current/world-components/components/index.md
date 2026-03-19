@@ -28,8 +28,11 @@ import { Interactable } from '@xrift/world-components';
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `id` | `string` | - | Unique identifier (Required) |
-| `onInteract` | `() => void` | - | Callback on interaction |
-| `children` | `ReactNode` | - | Object to be interacted with |
+| `onInteract` | `(id: string) => void` | - | Callback on interaction (receives the object ID) |
+| `interactionText` | `string` | - | Text displayed on hover |
+| `enabled` | `boolean` | `true` | Enable/disable interaction |
+| `type` | `'button'` | - | Object type |
+| `children` | `ReactNode` | - | Object to be interacted with (Required) |
 
 ---
 
@@ -43,6 +46,17 @@ import { Mirror } from '@xrift/world-components';
 <Mirror position={[0, 1, -5]} />
 ```
 
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `position` | `[number, number, number]` | `[0, 0, 0]` | Mirror position |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Mirror rotation |
+| `size` | `[number, number]` | - | Mirror size [width, height] |
+| `color` | `number` | `0xcccccc` | Reflection color |
+| `textureResolution` | `number` | `512` | Reflection texture resolution (auto-adjusted by size ratio) |
+| `lodDistance` | `number` | `10` | Distance in meters to switch to envMap-based pseudo-mirror |
+
 ---
 
 ### VideoScreen
@@ -52,8 +66,31 @@ Creates a screen that plays synchronized video.
 ```tsx
 import { VideoScreen } from '@xrift/world-components';
 
-<VideoScreen src="/videos/intro.mp4" position={[0, 2, -3]} />
+<VideoScreen
+  id="bg-video"
+  url="https://example.com/video.mp4"
+  scale={[4, 2.25]}
+/>
 ```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | Unique screen ID (Required) |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | Screen position |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Screen rotation |
+| `scale` | `[number, number]` | - | Screen size [width, height] |
+| `url` | `string` | - | Video URL |
+| `playing` | `boolean` | `true` | Playing state |
+| `currentTime` | `number` | - | Playback position in seconds |
+| `sync` | `'global' \| 'local'` | `'global'` | Sync mode |
+| `muted` | `boolean` | `false` | Muted state |
+| `volume` | `number` | `1` | Volume (0-1) |
+
+:::tip[Difference from VideoPlayer]
+`VideoScreen` is a simple screen without UI controls. Use `VideoPlayer` if you need play/pause buttons or a progress bar.
+:::
 
 ---
 
@@ -80,7 +117,7 @@ import { VideoPlayer } from '@xrift/world-components';
 | `position` | `[number, number, number]` | `[0, 2, -5]` | Position of the screen |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the screen |
 | `width` | `number` | `4` | Width of the screen (Height is automatically calculated at 16:9) |
-| `url` | `string` | - | URL of the video |
+| `url` | `string` | - | URL of the video (optional) |
 | `playing` | `boolean` | `true` | Initial playback state |
 | `volume` | `number` | `1` | Initial volume (0-1) |
 | `sync` | `'global' \| 'local'` | `'global'` | Sync mode |
@@ -125,8 +162,9 @@ import { LiveVideoPlayer } from '@xrift/world-components';
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the screen |
 | `width` | `number` | `4` | Width of the screen (Height is automatically calculated at 16:9) |
 | `url` | `string` | - | Stream URL (HLS/DASH supported) |
-| `playing` | `boolean` | `true` | Initial playback state |
+| `playing` | `boolean` | `false` | Initial playback state |
 | `volume` | `number` | `1` | Initial volume (0-1) |
+| `sync` | `'global' \| 'local'` | `'global'` | Sync mode |
 
 #### Features
 
@@ -159,6 +197,7 @@ import { ScreenShareDisplay } from '@xrift/world-components';
 | `position` | `[number, number, number]` | `[0, 0, 0]` | Position of the screen |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the screen |
 | `width` | `number` | `4` | Width of the screen (Height is automatically calculated at 16:9) |
+| `targetFps` | `number` | - | Texture update FPS limit for low-spec devices (unlimited when omitted) |
 
 :::tip[Maintaining Aspect Ratio]
 The aspect ratio of the video is automatically maintained. Video other than 16:9 will be displayed correctly with black bars.
@@ -455,6 +494,7 @@ function MyWorld() {
 | `instanceId` | `string` | - | ID of the destination instance (Required) |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | Position of the portal |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the portal |
+| `disabled` | `boolean` | `false` | Disable portal navigation |
 
 :::tip[How to find the Instance ID]
 The instance ID is a UUID found in the instance page URL. For example, in `https://app.xrift.net/instance/ceffb128-23c7-4120-b4e6-19bf6c604c47`, the instance ID is `ceffb128-23c7-4120-b4e6-19bf6c604c47`.
@@ -462,6 +502,99 @@ The instance ID is a UUID found in the instance page URL. For example, in `https
 
 :::note[Internally Used Hook]
 `Portal` internally uses the `useInstance` hook to fetch instance information and handle navigation.
+:::
+
+---
+
+### Skybox
+
+Creates a gradient sky background.
+
+```tsx
+import { Skybox } from '@xrift/world-components';
+
+<Skybox topColor={0x87ceeb} bottomColor={0xffffff} />
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `topColor` | `number` | `0x87ceeb` | Top color |
+| `bottomColor` | `number` | `0xffffff` | Bottom color |
+| `offset` | `number` | `0` | Gradient start position |
+| `exponent` | `number` | `1` | Gradient range |
+
+---
+
+### Video180Sphere
+
+A component that plays 180-degree VR video projected onto a hemisphere.
+
+```tsx
+import { Video180Sphere } from '@xrift/world-components';
+
+<Video180Sphere
+  url="https://example.com/vr-video-180.mp4"
+  position={[0, 1.5, 0]}
+  radius={5}
+  loop
+/>
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `url` | `string` | - | 180-degree video URL (Required) |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | Position |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation |
+| `scale` | `number \| [number, number, number]` | - | Scale |
+| `playing` | `boolean` | `true` | Playing state |
+| `muted` | `boolean` | - | Muted state (set to true to bypass autoplay restrictions) |
+| `volume` | `number` | `1` | Volume (0-1) |
+| `radius` | `number` | - | Hemisphere radius |
+| `segments` | `number` | - | Geometry resolution (segment count) |
+| `loop` | `boolean` | - | Loop playback |
+| `placeholderColor` | `string` | `'black'` | Placeholder color before video loads |
+| `onEnded` | `() => void` | - | Playback ended callback |
+| `onLoadedMetadata` | `(event: { duration: number }) => void` | - | Metadata loaded callback |
+| `onProgress` | `(event: { currentTime: number }) => void` | - | Progress update callback |
+
+---
+
+### EntryLogBoard
+
+Displays a log of user join/leave events in the instance.
+
+```tsx
+import { EntryLogBoard } from '@xrift/world-components';
+
+<EntryLogBoard
+  position={[3, 1.5, -2]}
+  rotation={[0, -0.5, 0]}
+  maxEntries={10}
+/>
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `stateNamespace` | `string` | - | Instance state key (for multi-board identification) |
+| `maxEntries` | `number` | - | Maximum display entries |
+| `formatTimestamp` | `(date: Date) => string` | - | Timestamp format function |
+| `displayNameFallback` | `string` | - | Fallback when display name is unavailable |
+| `labels` | `Partial<Labels>` | - | Customize labels (join, leave) |
+| `colors` | `Partial<Colors>` | - | Customize colors (join, leave, background, text) |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | Board position |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Board rotation |
+| `scale` | `number` | `1` | Overall scale |
+| `onJoin` | `(entry: LogEntry) => void` | - | Join event callback |
+| `onLeave` | `(entry: LogEntry) => void` | - | Leave event callback |
+
+:::note[Internally Used Hook]
+`EntryLogBoard` internally uses `useInstanceEvent` to receive `user-joined`/`user-left` events.
 :::
 
 ---
@@ -1107,6 +1240,41 @@ function MyComponent() {
 | `favoriteCount` | `number` | Favorite count |
 | `owner` | `{ id, displayName, userIconUrl? }` | Owner information (optional) |
 | `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | Permissions required by the world ([details](/guides/configuration#permissions)) |
+
+---
+
+### useVoiceVolumeOverride
+
+A hook for overriding specific users' voice chat volume. Used for stages or podiums where a speaker's voice should reach everyone.
+
+```tsx
+import { useVoiceVolumeOverride } from '@xrift/world-components';
+
+function StagePodium() {
+  const { setOverride, clearOverride } = useVoiceVolumeOverride();
+
+  // Amplify speaker's voice to all
+  const handleEnter = (userId: string) => {
+    setOverride(userId, 1.0);
+  };
+  const handleLeave = (userId: string) => {
+    clearOverride(userId);
+  };
+}
+```
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `setOverride` | `(userId: string, volume: number) => void` | Set volume override for a user |
+| `clearOverride` | `(userId: string) => void` | Clear volume override for a user |
+| `clearAll` | `() => void` | Clear all overrides |
+| `getOverrides` | `() => ReadonlyMap<string, number>` | Get current overrides |
+
+:::note[Migration from old name]
+Renamed from `useAudioVolume` to `useVoiceVolumeOverride` in v0.34.0. The old name is still available as `@deprecated` but migration to the new name is recommended.
+:::
 
 ---
 
