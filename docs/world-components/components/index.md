@@ -1230,6 +1230,49 @@ function CustomBillboard() {
 
 ---
 
+### useDefaultFont
+
+UIKit（`@pmndrs/uikit`）用の多言語 MSDF フォントをロードするフックです。ロード完了時に uikit のグローバルプロパティとしても登録されるため、`Container` に `fontFamilies` を明示的に渡さなくても `fontFamily="ja"` が使えます。
+
+```tsx
+import { useDefaultFont } from '@xrift/world-components'
+import type { FontLocale } from '@xrift/world-components'
+
+const FONT_LOCALES: FontLocale[] = ['ja']
+
+function MyUIComponent() {
+  const fontFamilies = useDefaultFont(FONT_LOCALES)
+
+  return (
+    <Container fontFamilies={fontFamilies}>
+      <Text fontFamily="ja">こんにちは</Text>
+    </Container>
+  )
+}
+```
+
+#### 引数
+
+| 引数 | Type | Description |
+|------|------|-------------|
+| `locales` | `FontLocale[]` | ロードするフォントのロケール配列 |
+
+#### 戻り値
+
+`FontFamilies | undefined` — ロード完了後に `FontFamilies` を返す。ロード中は `undefined`。
+
+#### FontLocale
+
+```typescript
+type FontLocale = 'ja'
+```
+
+:::tip[グローバル登録]
+モジュール読み込み時にフォントが自動的にフェッチされ、`setGlobalProperties` で uikit にグローバル登録されます。そのため、`Container` に `fontFamilies` を渡さなくても `fontFamily="ja"` が利用可能です。明示的に渡す場合はロード中の `undefined` ハンドリングが不要になります。
+:::
+
+---
+
 ## 定数
 
 ### LAYERS
