@@ -45,18 +45,43 @@ export default defineConfig({
   plugins: [
     federation({
       shared: {
-        react: { singleton: true },
-        'react-dom': { singleton: true },
-        three: { singleton: true },
-        'three/addons/loaders/GLTFLoader.js': { singleton: true },
-        'three/addons/loaders/DRACOLoader.js': { singleton: true },
-        'three/addons/loaders/KTX2Loader.js': { singleton: true },
-        '@react-three/fiber': { singleton: true },
-        '@react-three/rapier': { singleton: true },
-        '@react-three/drei': { singleton: true },
-        '@react-three/uikit': { singleton: true },
-        '@pmndrs/uikit': { singleton: true },
-        '@xrift/world-components': { singleton: true },
+        react: {
+          singleton: true,
+          requiredVersion: '^19.0.0',
+        },
+        'react-dom': {
+          singleton: true,
+          requiredVersion: '^19.0.0',
+        },
+        'react-dom/client': {
+          singleton: true,
+        },
+        'react/jsx-runtime': {
+          singleton: true,
+        },
+        three: {
+          singleton: true,
+          requiredVersion: '^0.176.0',
+        },
+        'three/addons/loaders/DRACOLoader.js': {
+          singleton: true,
+        },
+        '@react-three/fiber': {
+          singleton: true,
+          requiredVersion: '^9.3.0',
+        },
+        '@react-three/rapier': {
+          singleton: true,
+          requiredVersion: '^2.1.0',
+        },
+        '@react-three/drei': {
+          singleton: true,
+          requiredVersion: '^10.7.3',
+        },
+        '@xrift/world-components': {
+          singleton: true,
+          requiredVersion: '^0.1.0',
+        },
       },
     }),
   ],
