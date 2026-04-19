@@ -25,6 +25,7 @@ sidebar_position: 2
       "near": 0.1,
       "far": 1000
     },
+    "outputBufferType": "UnsignedByteType",
     "permissions": {
       "allowedDomains": ["api.example.com"],
       "allowedCodeRules": ["no-storage-access"]
@@ -45,6 +46,7 @@ sidebar_position: 2
 | `ignore` | string[] | アップロードから除外するファイルの glob パターン |
 | `physics` | object | ワールドの物理設定 |
 | `camera` | object | ワールドのカメラクリッピング設定 |
+| `outputBufferType` | string | WebGLRenderer の出力バッファタイプ |
 | `permissions` | object | ワールドが必要とする権限設定 |
 
 ## 各項目の詳細
@@ -221,6 +223,24 @@ sidebar_position: 2
     "camera": {
       "near": 0.01
     }
+  }
+}
+```
+
+### outputBufferType
+
+WebGLRenderer の出力バッファタイプを指定します。ポストプロセッシングや HDR レンダリングの精度に影響します。
+
+| 値 | 説明 |
+|-----|------|
+| `UnsignedByteType` | 8bit 整数（デフォルト。通常のレンダリングに適する） |
+| `HalfFloatType` | 16bit 浮動小数点（HDR やポストプロセッシングに適する） |
+| `FloatType` | 32bit 浮動小数点（最高精度。GPU 負荷が高い） |
+
+```json
+{
+  "world": {
+    "outputBufferType": "HalfFloatType"
   }
 }
 ```
