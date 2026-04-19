@@ -21,6 +21,7 @@ Configure your world settings in `xrift.json` at the project root.
       "**/Thumbs.db",
       "**/*.map"
     ],
+    "outputBufferType": "UnsignedByteType",
     "permissions": {
       "allowedDomains": ["api.example.com"],
       "allowedCodeRules": ["no-storage-access"]
@@ -40,6 +41,8 @@ Configure your world settings in `xrift.json` at the project root.
 | `buildCommand` | string | Build command to execute before upload |
 | `ignore` | string[] | Glob patterns of files to exclude from upload |
 | `physics` | object | World physics settings |
+| `camera` | object | World camera clipping settings |
+| `outputBufferType` | string | WebGLRenderer output buffer type |
 | `permissions` | object | Permissions required by the world |
 
 ## Details of Each Item
@@ -170,6 +173,24 @@ You can customize the physics behavior of the world.
     "physics": {
       "gravity": 24.79
     }
+  }
+}
+```
+
+### outputBufferType
+
+Specifies the output buffer type for WebGLRenderer. This affects the precision of post-processing and HDR rendering.
+
+| Value | Description |
+|-------|-------------|
+| `UnsignedByteType` | 8-bit integer (default, suitable for standard rendering) |
+| `HalfFloatType` | 16-bit float (suitable for HDR and post-processing) |
+| `FloatType` | 32-bit float (highest precision, higher GPU cost) |
+
+```json
+{
+  "world": {
+    "outputBufferType": "HalfFloatType"
   }
 }
 ```
