@@ -129,6 +129,10 @@ const config: Config = {
               label: 'xrift-world-components',
               href: 'https://github.com/WebXR-JP/xrift-world-components',
             },
+            {
+              label: 'xrift-sdk',
+              href: 'https://github.com/WebXR-JP/xrift-sdk',
+            },
           ],
         },
         {
