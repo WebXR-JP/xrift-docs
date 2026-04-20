@@ -22,98 +22,24 @@ npm install @xrift/sdk
 
 ## Basic Usage
 
-### Initializing the Client
+Place an `xrift.json` in your project and call `uploadWorldFromDirectory` to upload.
 
 ```typescript
-import { XriftClient } from '@xrift/sdk';
+import { uploadWorldFromDirectory } from '@xrift/sdk/node';
 
-const client = new XriftClient({
+const result = await uploadWorldFromDirectory('./my-project', {
   token: 'your-api-token',
-});
-```
-
-### Uploading a World
-
-```typescript
-import { readFile } from 'node:fs/promises';
-import { XriftClient, getMimeType } from '@xrift/sdk';
-
-const client = new XriftClient({ token: 'your-api-token' });
-
-// Read the file
-const data = new Uint8Array(await readFile('scene.glb'));
-
-const result = await client.worlds.upload(
-  [
-    {
-      remotePath: 'scene.glb',
-      data,
-      size: data.byteLength,
-      contentType: getMimeType('scene.glb'),
-    },
-  ],
-  {
-    name: 'My World',
-    description: 'A sample world',
-  },
-);
-
-console.log(`World uploaded: ${result.worldId}`);
-```
-
-### Uploading an Item
-
-```typescript
-const result = await client.items.upload(
-  [
-    {
-      remotePath: 'model.glb',
-      data,
-      size: data.byteLength,
-      contentType: getMimeType('model.glb'),
-    },
-  ],
-  {
-    name: 'My Item',
-  },
-);
-
-console.log(`Item uploaded: ${result.itemId}`);
-```
-
-### Browser Usage
-
-```typescript
-// Get data from File API
-const fileInput = document.querySelector<HTMLInputElement>('#file');
-const file = fileInput.files[0];
-const data = new Uint8Array(await file.arrayBuffer());
-
-const result = await client.worlds.upload(
-  [
-    {
-      remotePath: file.name,
-      data,
-      size: data.byteLength,
-      contentType: file.type || getMimeType(file.name),
-    },
-  ],
-  {
-    name: 'Browser Upload World',
-  },
-);
-```
-
-### Tracking Progress
-
-```typescript
-const result = await client.worlds.upload(files, {
-  name: 'My World',
   onProgress: (progress) => {
     console.log(`${progress.completed}/${progress.total}: ${progress.currentFile}`);
   },
 });
+
+console.log(`World uploaded: ${result.worldId} v${result.versionNumber}`);
 ```
+
+This automatically handles reading xrift.json, collecting files from distDir, applying ignore patterns, hash calculation, and uploading.
+
+For more fine-grained control, see the low-level `XriftClient` API in the [API Reference](/sdk/api-reference).
 
 ## Differences from CLI
 

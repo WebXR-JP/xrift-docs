@@ -22,98 +22,24 @@ npm install @xrift/sdk
 
 ## 基本的な使い方
 
-### クライアントの初期化
+プロジェクトに `xrift.json` を配置し、`uploadWorldFromDirectory` を呼ぶだけでアップロードできます。
 
 ```typescript
-import { XriftClient } from '@xrift/sdk';
+import { uploadWorldFromDirectory } from '@xrift/sdk/node';
 
-const client = new XriftClient({
+const result = await uploadWorldFromDirectory('./my-project', {
   token: 'your-api-token',
-});
-```
-
-### ワールドのアップロード
-
-```typescript
-import { readFile } from 'node:fs/promises';
-import { XriftClient, getMimeType } from '@xrift/sdk';
-
-const client = new XriftClient({ token: 'your-api-token' });
-
-// ファイルを読み込み
-const data = new Uint8Array(await readFile('scene.glb'));
-
-const result = await client.worlds.upload(
-  [
-    {
-      remotePath: 'scene.glb',
-      data,
-      size: data.byteLength,
-      contentType: getMimeType('scene.glb'),
-    },
-  ],
-  {
-    name: 'My World',
-    description: 'A sample world',
-  },
-);
-
-console.log(`World uploaded: ${result.worldId}`);
-```
-
-### アイテムのアップロード
-
-```typescript
-const result = await client.items.upload(
-  [
-    {
-      remotePath: 'model.glb',
-      data,
-      size: data.byteLength,
-      contentType: getMimeType('model.glb'),
-    },
-  ],
-  {
-    name: 'My Item',
-  },
-);
-
-console.log(`Item uploaded: ${result.itemId}`);
-```
-
-### ブラウザでの使用
-
-```typescript
-// File API からデータを取得
-const fileInput = document.querySelector<HTMLInputElement>('#file');
-const file = fileInput.files[0];
-const data = new Uint8Array(await file.arrayBuffer());
-
-const result = await client.worlds.upload(
-  [
-    {
-      remotePath: file.name,
-      data,
-      size: data.byteLength,
-      contentType: file.type || getMimeType(file.name),
-    },
-  ],
-  {
-    name: 'Browser Upload World',
-  },
-);
-```
-
-### 進捗の追跡
-
-```typescript
-const result = await client.worlds.upload(files, {
-  name: 'My World',
   onProgress: (progress) => {
     console.log(`${progress.completed}/${progress.total}: ${progress.currentFile}`);
   },
 });
+
+console.log(`World uploaded: ${result.worldId} v${result.versionNumber}`);
 ```
+
+xrift.json の読み込み、distDir 内のファイル収集、ignore パターンの適用、ハッシュ計算、アップロードまですべて自動で行われます。
+
+より細かい制御が必要な場合は、[API リファレンス](/sdk/api-reference) の `XriftClient` を使った低レベル API を参照してください。
 
 ## CLI との違い
 
