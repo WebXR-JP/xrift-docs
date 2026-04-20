@@ -80,45 +80,6 @@ const result = await client.worlds.upload(files, options);
 | `contentHash` | `string` | Content hash |
 | `files` | `UploadFile[]` | Uploaded files |
 
-### `create()`
-
-Creates a new world.
-
-```typescript
-const world = await client.worlds.create();
-console.log(world.id); // World ID
-```
-
-**Returns: `CreateWorldResponse`**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | World ID |
-| `ownerId` | `string` | Owner ID |
-| `createdAt` | `string` | Creation date |
-| `updatedAt` | `string` | Last updated date |
-
-### `getUploadUrls(worldId, request)`
-
-Retrieves signed upload URLs.
-
-```typescript
-const urls = await client.worlds.getUploadUrls(worldId, {
-  name: 'My World',
-  contentHash: 'abc123def456',
-  fileSize: 1024,
-  files: [{ path: 'scene.glb', contentType: 'model/gltf-binary' }],
-});
-```
-
-### `complete(worldId, versionId)`
-
-Notifies upload completion.
-
-```typescript
-await client.worlds.complete(worldId, versionId);
-```
-
 ---
 
 ## ItemsApi
@@ -153,23 +114,6 @@ const result = await client.items.upload(files, options);
 | `versionNumber` | `number` | Version number |
 | `contentHash` | `string` | Content hash |
 | `files` | `UploadFile[]` | Uploaded files |
-
-### `create()`
-
-Creates a new item.
-
-```typescript
-const item = await client.items.create();
-console.log(item.id);
-```
-
-### `getUploadUrls(itemId, request)`
-
-Retrieves signed upload URLs.
-
-### `complete(itemId, versionId)`
-
-Notifies upload completion.
 
 ---
 
@@ -231,6 +175,93 @@ try {
 
 ---
 
+## Config Parsers
+
+Functions to parse `xrift.json` into configuration objects.
+
+### `parseWorldConfig(json)`
+
+Parses a JSON string and returns a world configuration. Throws `XriftSdkError` if the `"world"` key is missing.
+
+```typescript
+import { parseWorldConfig } from '@xrift/sdk';
+
+const json = await readFile('xrift.json', 'utf-8');
+const config = parseWorldConfig(json);
+// config.type === 'world'
+// config.distDir, config.name, config.physics, ...
+```
+
+### `parseItemConfig(json)`
+
+Parses a JSON string and returns an item configuration. Throws `XriftSdkError` if the `"item"` key is missing.
+
+```typescript
+import { parseItemConfig } from '@xrift/sdk';
+
+const json = await readFile('xrift.json', 'utf-8');
+const config = parseItemConfig(json);
+// config.type === 'item'
+// config.distDir, config.name, config.permissions, ...
+```
+
+### `filterFiles(filePaths, ignorePatterns)`
+
+Filters an array of file paths, excluding files that match any of the ignore patterns.
+
+```typescript
+import { filterFiles, DEFAULT_IGNORE_PATTERNS } from '@xrift/sdk';
+
+const filtered = filterFiles(
+  ['scene.glb', '__federation_shared_abc.js', 'index.html'],
+  DEFAULT_IGNORE_PATTERNS,
+);
+// ['scene.glb', 'index.html']
+```
+
+---
+
+## Node.js Helpers
+
+Helper functions available from `@xrift/sdk/node`. They read xrift.json, collect files, and upload in one call.
+
+### `uploadWorldFromDirectory(dirPath, options)`
+
+Reads xrift.json from a directory and uploads a world.
+
+```typescript
+import { uploadWorldFromDirectory } from '@xrift/sdk/node';
+
+const result = await uploadWorldFromDirectory('./my-project', {
+  token: process.env.XRIFT_TOKEN!,
+  onProgress: (p) => console.log(`${p.completed}/${p.total}`),
+});
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `dirPath` | `string` | Yes | Directory path containing xrift.json |
+| `options.token` | `string` | Yes | API token |
+| `options.baseUrl` | `string` | No | API base URL |
+| `options.timeout` | `number` | No | Timeout (ms) |
+| `options.worldId` | `string` | No | Existing world ID |
+| `options.onProgress` | `(progress: UploadProgress) => void` | No | Progress callback |
+
+### `uploadItemFromDirectory(dirPath, options)`
+
+Reads xrift.json from a directory and uploads an item.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `dirPath` | `string` | Yes | Directory path containing xrift.json |
+| `options.token` | `string` | Yes | API token |
+| `options.baseUrl` | `string` | No | API base URL |
+| `options.timeout` | `number` | No | Timeout (ms) |
+| `options.itemId` | `string` | No | Existing item ID |
+| `options.onProgress` | `(progress: UploadProgress) => void` | No | Progress callback |
+
+---
+
 ## Utilities
 
 ### `calculateContentHash(files, configValues?)`
@@ -264,6 +295,14 @@ Supported extensions: `.glb`, `.gltf`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.json`
 
 ## Type Definitions
 
+### Config Types
+
+| Type | Description |
+|------|-------------|
+| `XriftWorldConfig` | World configuration (type, distDir, name, physics, camera, etc.) |
+| `XriftItemConfig` | Item configuration (type, distDir, name, permissions, etc.) |
+| `XriftConfig` | Union type: `XriftWorldConfig \| XriftItemConfig` |
+
 ### Common Types
 
 | Type | Description |
@@ -281,10 +320,6 @@ Supported extensions: `.glb`, `.gltf`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.json`
 | Type | Description |
 |------|-------------|
 | `WorldPermissions` | Permission settings (allowedDomains, allowedCodeRules) |
-| `CreateWorldResponse` | World creation response |
-| `WorldUploadUrlsRequest` | Upload URL request |
-| `WorldUploadUrlsResponse` | Upload URL response |
-| `CompleteWorldUploadResponse` | Upload completion response |
 | `WorldUploadOptions` | Upload options |
 | `WorldUploadResult` | Upload result |
 
@@ -293,9 +328,5 @@ Supported extensions: `.glb`, `.gltf`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.json`
 | Type | Description |
 |------|-------------|
 | `ItemPermissions` | Permission settings (allowedDomains, allowedCodeRules) |
-| `CreateItemResponse` | Item creation response |
-| `ItemUploadUrlsRequest` | Upload URL request |
-| `ItemUploadUrlsResponse` | Upload URL response |
-| `CompleteItemUploadResponse` | Upload completion response |
 | `ItemUploadOptions` | Upload options |
 | `ItemUploadResult` | Upload result |

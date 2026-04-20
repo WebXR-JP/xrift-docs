@@ -80,45 +80,6 @@ const result = await client.worlds.upload(files, options);
 | `contentHash` | `string` | コンテンツハッシュ |
 | `files` | `UploadFile[]` | アップロードしたファイル |
 
-### `create()`
-
-新しいワールドを作成します。
-
-```typescript
-const world = await client.worlds.create();
-console.log(world.id); // ワールド ID
-```
-
-**戻り値: `CreateWorldResponse`**
-
-| フィールド | 型 | 説明 |
-|-----------|-----|------|
-| `id` | `string` | ワールド ID |
-| `ownerId` | `string` | オーナー ID |
-| `createdAt` | `string` | 作成日時 |
-| `updatedAt` | `string` | 更新日時 |
-
-### `getUploadUrls(worldId, request)`
-
-署名付きアップロード URL を取得します。
-
-```typescript
-const urls = await client.worlds.getUploadUrls(worldId, {
-  name: 'My World',
-  contentHash: 'abc123def456',
-  fileSize: 1024,
-  files: [{ path: 'scene.glb', contentType: 'model/gltf-binary' }],
-});
-```
-
-### `complete(worldId, versionId)`
-
-アップロードの完了を通知します。
-
-```typescript
-await client.worlds.complete(worldId, versionId);
-```
-
 ---
 
 ## ItemsApi
@@ -153,23 +114,6 @@ const result = await client.items.upload(files, options);
 | `versionNumber` | `number` | バージョン番号 |
 | `contentHash` | `string` | コンテンツハッシュ |
 | `files` | `UploadFile[]` | アップロードしたファイル |
-
-### `create()`
-
-新しいアイテムを作成します。
-
-```typescript
-const item = await client.items.create();
-console.log(item.id);
-```
-
-### `getUploadUrls(itemId, request)`
-
-署名付きアップロード URL を取得します。
-
-### `complete(itemId, versionId)`
-
-アップロードの完了を通知します。
 
 ---
 
@@ -231,6 +175,93 @@ try {
 
 ---
 
+## Config パーサー
+
+`xrift.json` を読み込んで設定オブジェクトを返す関数です。
+
+### `parseWorldConfig(json)`
+
+JSON 文字列をパースしてワールド設定を返します。`"world"` キーが存在しない場合は `XriftSdkError` をスローします。
+
+```typescript
+import { parseWorldConfig } from '@xrift/sdk';
+
+const json = await readFile('xrift.json', 'utf-8');
+const config = parseWorldConfig(json);
+// config.type === 'world'
+// config.distDir, config.name, config.physics, ...
+```
+
+### `parseItemConfig(json)`
+
+JSON 文字列をパースしてアイテム設定を返します。`"item"` キーが存在しない場合は `XriftSdkError` をスローします。
+
+```typescript
+import { parseItemConfig } from '@xrift/sdk';
+
+const json = await readFile('xrift.json', 'utf-8');
+const config = parseItemConfig(json);
+// config.type === 'item'
+// config.distDir, config.name, config.permissions, ...
+```
+
+### `filterFiles(filePaths, ignorePatterns)`
+
+ファイルパスの配列から、ignore パターンにマッチするファイルを除外します。
+
+```typescript
+import { filterFiles, DEFAULT_IGNORE_PATTERNS } from '@xrift/sdk';
+
+const filtered = filterFiles(
+  ['scene.glb', '__federation_shared_abc.js', 'index.html'],
+  DEFAULT_IGNORE_PATTERNS,
+);
+// ['scene.glb', 'index.html']
+```
+
+---
+
+## Node.js ヘルパー
+
+`@xrift/sdk/node` から利用できる Node.js 専用のヘルパー関数です。xrift.json の読み込み → ファイル収集 → アップロードを一括で実行します。
+
+### `uploadWorldFromDirectory(dirPath, options)`
+
+ディレクトリ内の xrift.json を読み込み、ワールドをアップロードします。
+
+```typescript
+import { uploadWorldFromDirectory } from '@xrift/sdk/node';
+
+const result = await uploadWorldFromDirectory('./my-project', {
+  token: process.env.XRIFT_TOKEN!,
+  onProgress: (p) => console.log(`${p.completed}/${p.total}`),
+});
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| `dirPath` | `string` | はい | xrift.json があるディレクトリパス |
+| `options.token` | `string` | はい | API トークン |
+| `options.baseUrl` | `string` | いいえ | API ベース URL |
+| `options.timeout` | `number` | いいえ | タイムアウト (ms) |
+| `options.worldId` | `string` | いいえ | 既存ワールド ID |
+| `options.onProgress` | `(progress: UploadProgress) => void` | いいえ | 進捗コールバック |
+
+### `uploadItemFromDirectory(dirPath, options)`
+
+ディレクトリ内の xrift.json を読み込み、アイテムをアップロードします。
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| `dirPath` | `string` | はい | xrift.json があるディレクトリパス |
+| `options.token` | `string` | はい | API トークン |
+| `options.baseUrl` | `string` | いいえ | API ベース URL |
+| `options.timeout` | `number` | いいえ | タイムアウト (ms) |
+| `options.itemId` | `string` | いいえ | 既存アイテム ID |
+| `options.onProgress` | `(progress: UploadProgress) => void` | いいえ | 進捗コールバック |
+
+---
+
 ## ユーティリティ
 
 ### `calculateContentHash(files, configValues?)`
@@ -264,6 +295,14 @@ getMimeType('unknown.xyz');  // 'application/octet-stream'
 
 ## 型定義
 
+### Config 型
+
+| 型名 | 説明 |
+|------|------|
+| `XriftWorldConfig` | ワールド設定（type, distDir, name, physics, camera 等） |
+| `XriftItemConfig` | アイテム設定（type, distDir, name, permissions 等） |
+| `XriftConfig` | `XriftWorldConfig \| XriftItemConfig` の union 型 |
+
 ### 共通型
 
 | 型名 | 説明 |
@@ -281,10 +320,6 @@ getMimeType('unknown.xyz');  // 'application/octet-stream'
 | 型名 | 説明 |
 |------|------|
 | `WorldPermissions` | 権限設定（allowedDomains, allowedCodeRules） |
-| `CreateWorldResponse` | ワールド作成レスポンス |
-| `WorldUploadUrlsRequest` | アップロード URL リクエスト |
-| `WorldUploadUrlsResponse` | アップロード URL レスポンス |
-| `CompleteWorldUploadResponse` | アップロード完了レスポンス |
 | `WorldUploadOptions` | アップロードオプション |
 | `WorldUploadResult` | アップロード結果 |
 
@@ -293,9 +328,5 @@ getMimeType('unknown.xyz');  // 'application/octet-stream'
 | 型名 | 説明 |
 |------|------|
 | `ItemPermissions` | 権限設定（allowedDomains, allowedCodeRules） |
-| `CreateItemResponse` | アイテム作成レスポンス |
-| `ItemUploadUrlsRequest` | アップロード URL リクエスト |
-| `ItemUploadUrlsResponse` | アップロード URL レスポンス |
-| `CompleteItemUploadResponse` | アップロード完了レスポンス |
 | `ItemUploadOptions` | アップロードオプション |
 | `ItemUploadResult` | アップロード結果 |
