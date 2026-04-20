@@ -37,6 +37,14 @@ const sidebars: SidebarsConfig = {
         'cli/commands',
       ],
     },
+    {
+      type: 'category',
+      label: 'SDK (@xrift/sdk)',
+      items: [
+        'sdk/overview',
+        'sdk/api-reference',
+      ],
+    },
     'public-api/v1',
   ],
 };

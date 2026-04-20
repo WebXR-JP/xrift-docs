@@ -35,6 +35,13 @@ XRift では、独自の 3D ワールドを作成できます。React Three Fibe
 - [CLI ドキュメント](/cli/overview)
 - [GitHub](https://github.com/WebXR-JP/xrift-cli)
 
+### @xrift/sdk
+
+XRift プラットフォーム向けのユニバーサル SDK。Node.js とブラウザの両環境でワールド・アイテムの API 操作とファイルアップロードを提供します。
+
+- [SDK ドキュメント](/sdk/overview)
+- [GitHub](https://github.com/WebXR-JP/xrift-sdk)
+
 ### xrift-world-components
 
 WebXR ワールドを構築するための React コンポーネントライブラリ。

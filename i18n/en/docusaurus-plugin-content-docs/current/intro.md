@@ -35,6 +35,13 @@ A command-line tool. It handles project creation, uploading to the XRift platfor
 - [CLI Documentation](/cli/overview)
 - [GitHub](https://github.com/WebXR-JP/xrift-cli)
 
+### @xrift/sdk
+
+A universal SDK for the XRift platform. Provides API operations and file uploads for worlds and items in both Node.js and browser environments.
+
+- [SDK Documentation](/sdk/overview)
+- [GitHub](https://github.com/WebXR-JP/xrift-sdk)
+
 ### xrift-world-components
 
 A React component library for building WebXR worlds.
