@@ -80,45 +80,6 @@ const result = await client.worlds.upload(files, options);
 | `contentHash` | `string` | Content hash |
 | `files` | `UploadFile[]` | Uploaded files |
 
-### `create()`
-
-Creates a new world.
-
-```typescript
-const world = await client.worlds.create();
-console.log(world.id); // World ID
-```
-
-**Returns: `CreateWorldResponse`**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | World ID |
-| `ownerId` | `string` | Owner ID |
-| `createdAt` | `string` | Creation date |
-| `updatedAt` | `string` | Last updated date |
-
-### `getUploadUrls(worldId, request)`
-
-Retrieves signed upload URLs.
-
-```typescript
-const urls = await client.worlds.getUploadUrls(worldId, {
-  name: 'My World',
-  contentHash: 'abc123def456',
-  fileSize: 1024,
-  files: [{ path: 'scene.glb', contentType: 'model/gltf-binary' }],
-});
-```
-
-### `complete(worldId, versionId)`
-
-Notifies upload completion.
-
-```typescript
-await client.worlds.complete(worldId, versionId);
-```
-
 ---
 
 ## ItemsApi
@@ -153,23 +114,6 @@ const result = await client.items.upload(files, options);
 | `versionNumber` | `number` | Version number |
 | `contentHash` | `string` | Content hash |
 | `files` | `UploadFile[]` | Uploaded files |
-
-### `create()`
-
-Creates a new item.
-
-```typescript
-const item = await client.items.create();
-console.log(item.id);
-```
-
-### `getUploadUrls(itemId, request)`
-
-Retrieves signed upload URLs.
-
-### `complete(itemId, versionId)`
-
-Notifies upload completion.
 
 ---
 
@@ -281,10 +225,6 @@ Supported extensions: `.glb`, `.gltf`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.json`
 | Type | Description |
 |------|-------------|
 | `WorldPermissions` | Permission settings (allowedDomains, allowedCodeRules) |
-| `CreateWorldResponse` | World creation response |
-| `WorldUploadUrlsRequest` | Upload URL request |
-| `WorldUploadUrlsResponse` | Upload URL response |
-| `CompleteWorldUploadResponse` | Upload completion response |
 | `WorldUploadOptions` | Upload options |
 | `WorldUploadResult` | Upload result |
 
@@ -293,9 +233,5 @@ Supported extensions: `.glb`, `.gltf`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.json`
 | Type | Description |
 |------|-------------|
 | `ItemPermissions` | Permission settings (allowedDomains, allowedCodeRules) |
-| `CreateItemResponse` | Item creation response |
-| `ItemUploadUrlsRequest` | Upload URL request |
-| `ItemUploadUrlsResponse` | Upload URL response |
-| `CompleteItemUploadResponse` | Upload completion response |
 | `ItemUploadOptions` | Upload options |
 | `ItemUploadResult` | Upload result |

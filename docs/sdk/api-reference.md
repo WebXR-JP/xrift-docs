@@ -80,45 +80,6 @@ const result = await client.worlds.upload(files, options);
 | `contentHash` | `string` | コンテンツハッシュ |
 | `files` | `UploadFile[]` | アップロードしたファイル |
 
-### `create()`
-
-新しいワールドを作成します。
-
-```typescript
-const world = await client.worlds.create();
-console.log(world.id); // ワールド ID
-```
-
-**戻り値: `CreateWorldResponse`**
-
-| フィールド | 型 | 説明 |
-|-----------|-----|------|
-| `id` | `string` | ワールド ID |
-| `ownerId` | `string` | オーナー ID |
-| `createdAt` | `string` | 作成日時 |
-| `updatedAt` | `string` | 更新日時 |
-
-### `getUploadUrls(worldId, request)`
-
-署名付きアップロード URL を取得します。
-
-```typescript
-const urls = await client.worlds.getUploadUrls(worldId, {
-  name: 'My World',
-  contentHash: 'abc123def456',
-  fileSize: 1024,
-  files: [{ path: 'scene.glb', contentType: 'model/gltf-binary' }],
-});
-```
-
-### `complete(worldId, versionId)`
-
-アップロードの完了を通知します。
-
-```typescript
-await client.worlds.complete(worldId, versionId);
-```
-
 ---
 
 ## ItemsApi
@@ -153,23 +114,6 @@ const result = await client.items.upload(files, options);
 | `versionNumber` | `number` | バージョン番号 |
 | `contentHash` | `string` | コンテンツハッシュ |
 | `files` | `UploadFile[]` | アップロードしたファイル |
-
-### `create()`
-
-新しいアイテムを作成します。
-
-```typescript
-const item = await client.items.create();
-console.log(item.id);
-```
-
-### `getUploadUrls(itemId, request)`
-
-署名付きアップロード URL を取得します。
-
-### `complete(itemId, versionId)`
-
-アップロードの完了を通知します。
 
 ---
 
@@ -281,10 +225,6 @@ getMimeType('unknown.xyz');  // 'application/octet-stream'
 | 型名 | 説明 |
 |------|------|
 | `WorldPermissions` | 権限設定（allowedDomains, allowedCodeRules） |
-| `CreateWorldResponse` | ワールド作成レスポンス |
-| `WorldUploadUrlsRequest` | アップロード URL リクエスト |
-| `WorldUploadUrlsResponse` | アップロード URL レスポンス |
-| `CompleteWorldUploadResponse` | アップロード完了レスポンス |
 | `WorldUploadOptions` | アップロードオプション |
 | `WorldUploadResult` | アップロード結果 |
 
@@ -293,9 +233,5 @@ getMimeType('unknown.xyz');  // 'application/octet-stream'
 | 型名 | 説明 |
 |------|------|
 | `ItemPermissions` | 権限設定（allowedDomains, allowedCodeRules） |
-| `CreateItemResponse` | アイテム作成レスポンス |
-| `ItemUploadUrlsRequest` | アップロード URL リクエスト |
-| `ItemUploadUrlsResponse` | アップロード URL レスポンス |
-| `CompleteItemUploadResponse` | アップロード完了レスポンス |
 | `ItemUploadOptions` | アップロードオプション |
 | `ItemUploadResult` | アップロード結果 |
