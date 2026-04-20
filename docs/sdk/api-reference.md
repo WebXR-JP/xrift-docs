@@ -175,6 +175,93 @@ try {
 
 ---
 
+## Config パーサー
+
+`xrift.json` を読み込んで設定オブジェクトを返す関数です。
+
+### `parseWorldConfig(json)`
+
+JSON 文字列をパースしてワールド設定を返します。`"world"` キーが存在しない場合は `XriftSdkError` をスローします。
+
+```typescript
+import { parseWorldConfig } from '@xrift/sdk';
+
+const json = await readFile('xrift.json', 'utf-8');
+const config = parseWorldConfig(json);
+// config.type === 'world'
+// config.distDir, config.name, config.physics, ...
+```
+
+### `parseItemConfig(json)`
+
+JSON 文字列をパースしてアイテム設定を返します。`"item"` キーが存在しない場合は `XriftSdkError` をスローします。
+
+```typescript
+import { parseItemConfig } from '@xrift/sdk';
+
+const json = await readFile('xrift.json', 'utf-8');
+const config = parseItemConfig(json);
+// config.type === 'item'
+// config.distDir, config.name, config.permissions, ...
+```
+
+### `filterFiles(filePaths, ignorePatterns)`
+
+ファイルパスの配列から、ignore パターンにマッチするファイルを除外します。
+
+```typescript
+import { filterFiles, DEFAULT_IGNORE_PATTERNS } from '@xrift/sdk';
+
+const filtered = filterFiles(
+  ['scene.glb', '__federation_shared_abc.js', 'index.html'],
+  DEFAULT_IGNORE_PATTERNS,
+);
+// ['scene.glb', 'index.html']
+```
+
+---
+
+## Node.js ヘルパー
+
+`@xrift/sdk/node` から利用できる Node.js 専用のヘルパー関数です。xrift.json の読み込み → ファイル収集 → アップロードを一括で実行します。
+
+### `uploadWorldFromDirectory(dirPath, options)`
+
+ディレクトリ内の xrift.json を読み込み、ワールドをアップロードします。
+
+```typescript
+import { uploadWorldFromDirectory } from '@xrift/sdk/node';
+
+const result = await uploadWorldFromDirectory('./my-project', {
+  token: process.env.XRIFT_TOKEN!,
+  onProgress: (p) => console.log(`${p.completed}/${p.total}`),
+});
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| `dirPath` | `string` | はい | xrift.json があるディレクトリパス |
+| `options.token` | `string` | はい | API トークン |
+| `options.baseUrl` | `string` | いいえ | API ベース URL |
+| `options.timeout` | `number` | いいえ | タイムアウト (ms) |
+| `options.worldId` | `string` | いいえ | 既存ワールド ID |
+| `options.onProgress` | `(progress: UploadProgress) => void` | いいえ | 進捗コールバック |
+
+### `uploadItemFromDirectory(dirPath, options)`
+
+ディレクトリ内の xrift.json を読み込み、アイテムをアップロードします。
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| `dirPath` | `string` | はい | xrift.json があるディレクトリパス |
+| `options.token` | `string` | はい | API トークン |
+| `options.baseUrl` | `string` | いいえ | API ベース URL |
+| `options.timeout` | `number` | いいえ | タイムアウト (ms) |
+| `options.itemId` | `string` | いいえ | 既存アイテム ID |
+| `options.onProgress` | `(progress: UploadProgress) => void` | いいえ | 進捗コールバック |
+
+---
+
 ## ユーティリティ
 
 ### `calculateContentHash(files, configValues?)`
@@ -207,6 +294,14 @@ getMimeType('unknown.xyz');  // 'application/octet-stream'
 ---
 
 ## 型定義
+
+### Config 型
+
+| 型名 | 説明 |
+|------|------|
+| `XriftWorldConfig` | ワールド設定（type, distDir, name, physics, camera 等） |
+| `XriftItemConfig` | アイテム設定（type, distDir, name, permissions 等） |
+| `XriftConfig` | `XriftWorldConfig \| XriftItemConfig` の union 型 |
 
 ### 共通型
 
