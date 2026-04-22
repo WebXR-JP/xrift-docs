@@ -810,6 +810,8 @@ function ParticipantCount() {
 | `remoteUsers` | `User[]` | Array of information about other participants |
 | `getMovement` | `(id: string) => PlayerMovement \| undefined` | Retrieve location information of a specific user |
 | `getLocalMovement` | `() => PlayerMovement` | Retrieve your own location information |
+| `getAvatarHeight?` | `(id: string) => AvatarHeight \| undefined` | Retrieve avatar height information of a specific user |
+| `getLocalAvatarHeight?` | `() => AvatarHeight` | Retrieve your own avatar height information |
 
 #### User Type
 
@@ -837,6 +839,19 @@ interface PlayerMovement {
   vrTracking?: VRTrackingData;
 }
 ```
+
+#### AvatarHeight Type
+
+```typescript
+interface AvatarHeight {
+  height: number;    // Full height of the avatar (meters)
+  eyeHeight: number; // Height from ground to the avatar's eye position (meters)
+}
+```
+
+:::note[Default Values]
+If the platform does not implement `getAvatarHeight` / `getLocalAvatarHeight`, default values of `height: 1.5` and `eyeHeight: 1.35` are returned. Since these are optional properties, use optional chaining (`?.`) when calling them.
+:::
 
 #### Retrieving Position in useFrame
 
@@ -883,17 +898,20 @@ import { useRef } from 'react';
 import { Group } from 'three';
 import { Text } from '@react-three/drei';
 
-function UserHUD({ user, getMovement }) {
+function UserHUD({ user, getMovement, getAvatarHeight }) {
   const groupRef = useRef<Group>(null);
 
   useFrame(() => {
     const movement = getMovement(user.id);
     if (!movement || !groupRef.current) return;
 
-    // Place above the user's head
+    // Get the avatar's height and place HUD above the head
+    const avatarHeight = getAvatarHeight?.(user.id);
+    const headOffset = (avatarHeight?.height ?? 1.5) + 0.2;
+
     groupRef.current.position.set(
       movement.position.x,
-      movement.position.y + 2,
+      movement.position.y + headOffset,
       movement.position.z
     );
   });
@@ -906,12 +924,12 @@ function UserHUD({ user, getMovement }) {
 }
 
 function UserHUDs() {
-  const { remoteUsers, getMovement } = useUsers();
+  const { remoteUsers, getMovement, getAvatarHeight } = useUsers();
 
   return (
     <>
       {remoteUsers.map(user => (
-        <UserHUD key={user.id} user={user} getMovement={getMovement} />
+        <UserHUD key={user.id} user={user} getMovement={getMovement} getAvatarHeight={getAvatarHeight} />
       ))}
     </>
   );

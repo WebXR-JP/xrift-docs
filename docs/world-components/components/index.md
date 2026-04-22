@@ -725,6 +725,8 @@ function ParticipantCount() {
 | `remoteUsers` | `User[]` | 他の参加者のユーザー情報の配列 |
 | `getMovement` | `(id: string) => PlayerMovement \| undefined` | 指定ユーザーの位置情報を取得 |
 | `getLocalMovement` | `() => PlayerMovement` | 自分の位置情報を取得 |
+| `getAvatarHeight?` | `(id: string) => AvatarHeight \| undefined` | 指定ユーザーのアバター高さ情報を取得 |
+| `getLocalAvatarHeight?` | `() => AvatarHeight` | 自分のアバター高さ情報を取得 |
 
 #### User 型
 
@@ -752,6 +754,19 @@ interface PlayerMovement {
   vrTracking?: VRTrackingData;
 }
 ```
+
+#### AvatarHeight 型
+
+```typescript
+interface AvatarHeight {
+  height: number;    // アバターの全身の高さ（メートル）
+  eyeHeight: number; // 地面からアバターの目の位置までの高さ（メートル）
+}
+```
+
+:::note[デフォルト値]
+プラットフォーム側が `getAvatarHeight` / `getLocalAvatarHeight` を実装していない場合、デフォルト値として `height: 1.5`、`eyeHeight: 1.35` が返されます。optional プロパティのため、呼び出し時はオプショナルチェーン（`?.`）を使用してください。
+:::
 
 #### useFrame 内での位置情報取得
 
@@ -798,17 +813,20 @@ import { useRef } from 'react';
 import { Group } from 'three';
 import { Text } from '@react-three/drei';
 
-function UserHUD({ user, getMovement }) {
+function UserHUD({ user, getMovement, getAvatarHeight }) {
   const groupRef = useRef<Group>(null);
 
   useFrame(() => {
     const movement = getMovement(user.id);
     if (!movement || !groupRef.current) return;
 
-    // ユーザーの頭の上に配置
+    // アバターの高さを取得し、頭の上にHUDを配置
+    const avatarHeight = getAvatarHeight?.(user.id);
+    const headOffset = (avatarHeight?.height ?? 1.5) + 0.2;
+
     groupRef.current.position.set(
       movement.position.x,
-      movement.position.y + 2,
+      movement.position.y + headOffset,
       movement.position.z
     );
   });
@@ -821,12 +839,12 @@ function UserHUD({ user, getMovement }) {
 }
 
 function UserHUDs() {
-  const { remoteUsers, getMovement } = useUsers();
+  const { remoteUsers, getMovement, getAvatarHeight } = useUsers();
 
   return (
     <>
       {remoteUsers.map(user => (
-        <UserHUD key={user.id} user={user} getMovement={getMovement} />
+        <UserHUD key={user.id} user={user} getMovement={getMovement} getAvatarHeight={getAvatarHeight} />
       ))}
     </>
   );
