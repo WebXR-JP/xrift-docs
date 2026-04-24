@@ -1,10 +1,10 @@
 ---
-sidebar_position: 4
+sidebar_position: 2
 ---
 
 # Shared パッケージ一覧
 
-ワールドの `vite.config.ts` で Module Federation の `shared` に宣言したパッケージは、ホスト（xrift.net）側の shared から解決されます。このページでは、ホスト側で shared として提供されているパッケージの一覧を掲載しています。
+ワールド・アイテムの `vite.config.ts` で Module Federation の `shared` に宣言したパッケージは、ホスト（xrift.net）側の shared から解決されます。このページでは、ホスト側で shared として提供されているパッケージの一覧を掲載しています。
 
 ## パッケージ一覧
 
@@ -29,16 +29,16 @@ sidebar_position: 4
 
 `three/addons` バレルファイル全体を shared にすると Lottie 由来の `eval` がバンドルに含まれるため、**サブパス単位**で shared にしています。
 
-ワールド側でも `three/addons/loaders/DRACOLoader.js` のようにサブパスで shared を宣言する必要があります。
+ワールド・アイテム側でも `three/addons/loaders/DRACOLoader.js` のようにサブパスで shared を宣言する必要があります。
 
 :::caution
 `three/addons` をそのまま shared に指定しないでください。サブパス単位で指定する必要があります。
 :::
 
-## ワールド側の設定例
+## 設定例
 
 ```js
-// vite.config.ts (ワールド側)
+// vite.config.ts
 import federation from '@originjs/vite-plugin-federation';
 
 export default defineConfig({

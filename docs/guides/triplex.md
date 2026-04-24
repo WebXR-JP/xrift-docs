@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 1
 ---
 
 # Triplex（ビジュアルエディタ）
@@ -14,9 +14,9 @@ sidebar_position: 3
 
 ## XRift プロジェクトでの使い方
 
-XRift のワールドは React Three Fiber で構築されているため、Triplex をそのまま活用できます。
+XRift のワールド・アイテムはどちらも React Three Fiber で構築されているため、Triplex をそのまま活用できます。
 
-1. VS Code でワールドプロジェクトを開く
+1. VS Code で XRift プロジェクト（ワールド / アイテム）を開く
 2. エクスポートされたコンポーネントを含む `.tsx` ファイルを開く
 3. コンポーネント上部に表示される「Open in Triplex」CodeLens をクリック
 4. ビジュアルエディタ上でコンポーネントの位置・回転・スケールを調整

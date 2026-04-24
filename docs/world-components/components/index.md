@@ -1,10 +1,10 @@
 ---
-sidebar_position: 1
+sidebar_position: 3
 ---
 
 # API リファレンス
 
-xrift-world-components で提供されるコンポーネント、フック、定数の一覧です。
+`@xrift/world-components` で提供されるコンポーネント、フック、定数の一覧です。ワールド開発だけでなくアイテム開発からも利用できます（`SpawnPoint` / `DevEnvironment` / `useSpawnPoint` などワールド専用のものは各項目に注記しています）。
 
 ## コンポーネント
 
@@ -190,6 +190,10 @@ import { ScreenShareDisplay } from '@xrift/world-components';
 
 ワールド内でプレイヤーが出現する地点を指定します。
 
+:::caution[ワールド専用]
+`SpawnPoint` はワールドレベルのスポーン位置を設定するコンポーネントです。アイテム内で使用することは想定されていません。
+:::
+
 ```tsx
 import { SpawnPoint } from '@xrift/world-components';
 
@@ -369,8 +373,8 @@ export const MyWorld = () => {
 
 ローカル開発用の環境を提供するコンポーネントです。ワールドテンプレートの `dev.tsx` で使用します。
 
-:::caution[使用場所について]
-このコンポーネントはワールド開発プロジェクトで `npm run dev` を実行した際のローカル確認用です。`World.tsx` などの実際のワールドコンテンツ内では使用しないでください。
+:::caution[ワールド専用]
+`DevEnvironment` はワールド開発プロジェクトで `npm run dev` を実行した際のローカル確認用です。`World.tsx` などの実際のワールドコンテンツ内では使用しないでください。また、アイテム開発では使用しません（アイテムテンプレートは独自の `dev.tsx` を持ちます）。
 :::
 
 ```tsx

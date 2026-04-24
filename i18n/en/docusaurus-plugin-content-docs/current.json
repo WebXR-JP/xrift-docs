@@ -15,6 +15,10 @@
     "message": "Item Development",
     "description": "The label for category 'アイテム開発' in sidebar 'docsSidebar'"
   },
+  "sidebar.docsSidebar.category.共通ガイド": {
+    "message": "Common Guides",
+    "description": "The label for category '共通ガイド' in sidebar 'docsSidebar'"
+  },
   "sidebar.docsSidebar.category.CLI (xrift-cli)": {
     "message": "CLI (xrift-cli)",
     "description": "The label for category 'CLI (xrift-cli)' in sidebar 'docsSidebar'"
