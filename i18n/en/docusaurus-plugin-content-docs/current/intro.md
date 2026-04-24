@@ -18,13 +18,10 @@ With XRift, you can create your own unique 3D worlds. Using a component library 
 
 ### Items
 
-:::note Coming Soon
-Item development features are currently under preparation.
-:::
+Create reusable 3D components that can be placed inside worlds. Uploaded items are available from your inventory in any world.
 
-You can create interactive objects that can be used within worlds.
-
-- [About Item Development](/item/overview)
+- [Create Your First Item](/item/create-first-item)
+- [Item Development Overview](/item/overview)
 
 ## Tools
 
