@@ -1,8 +1,8 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
-# xrift.json 設定（アイテム）
+# xrift.json 設定
 
 プロジェクトルートの `xrift.json` でアイテムの設定を行います。ワールドと同じファイルを使用しますが、`item` キー配下に設定します。
 

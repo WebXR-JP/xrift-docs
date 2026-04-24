@@ -114,7 +114,7 @@ const config: Config = {
             },
             {
               label: 'アイテム開発',
-              to: '/item/overview',
+              to: '/item/create-first-item',
             },
           ],
         },

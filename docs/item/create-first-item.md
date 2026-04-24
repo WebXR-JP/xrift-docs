@@ -1,10 +1,10 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 ---
 
 # 最初のアイテムを作成する
 
-このチュートリアルでは、XRift CLI を使ってアイテムプロジェクトを作成し、カスタマイズしてアップロードする方法を説明します。
+XRift アイテムは、ワールド内に配置して使える再利用可能な 3D コンポーネントです。React Three Fiber で実装し、Module Federation で配布されます。このチュートリアルでは、XRift CLI を使ってアイテムプロジェクトを作成し、カスタマイズしてアップロードする方法を説明します。
 
 ## 前提条件
 
@@ -164,6 +164,6 @@ xrift upload item
 
 ## 次のステップ
 
-- [xrift.json 設定（アイテム）](/item/configuration) で設定項目の詳細を確認
+- [xrift.json 設定](/item/configuration) で設定項目の詳細を確認
 - [CLI コマンド](/cli/commands) で利用可能なコマンドを確認
 - [Shared Dependencies](/guides/shared-dependencies) で共有依存関係の扱いを確認
