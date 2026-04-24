@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 1
 ---
 
 # Triplex (Visual Editor)
@@ -14,9 +14,9 @@ Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/item
 
 ## Using Triplex with XRift Projects
 
-Since XRift worlds are built with React Three Fiber, you can use Triplex directly.
+Both XRift worlds and items are built with React Three Fiber, so you can use Triplex directly.
 
-1. Open the world project in VS Code
+1. Open an XRift project (world or item) in VS Code
 2. Open a `.tsx` file containing an exported component
 3. Click the "Open in Triplex" CodeLens that appears above the component
 4. Adjust position, rotation, and scale of components in the visual editor

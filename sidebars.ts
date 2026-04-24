@@ -17,9 +17,6 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/create-first-world',
         'guides/configuration',
-        'guides/triplex',
-        'guides/shared-dependencies',
-        'world-components/components/index',
       ],
     },
     {
@@ -28,6 +25,15 @@ const sidebars: SidebarsConfig = {
       items: [
         'item/create-first-item',
         'item/configuration',
+      ],
+    },
+    {
+      type: 'category',
+      label: '共通ガイド',
+      items: [
+        'guides/triplex',
+        'guides/shared-dependencies',
+        'world-components/components/index',
       ],
     },
     {

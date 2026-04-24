@@ -1,10 +1,10 @@
 ---
-sidebar_position: 1
+sidebar_position: 3
 ---
 
 # API Reference
 
-A list of components, hooks, and constants provided by xrift-world-components.
+A list of components, hooks, and constants provided by `@xrift/world-components`. These can be used from both world and item development (world-only items such as `SpawnPoint` / `DevEnvironment` / `useSpawnPoint` are called out on each entry).
 
 ## Components
 
@@ -213,6 +213,10 @@ Only one screen can be shared per world. While it is possible to place multiple 
 
 Specifies the point where players spawn in the world.
 
+:::caution[World-only]
+`SpawnPoint` sets the world-level spawn location. It is not intended to be used from within an item.
+:::
+
 ```tsx
 import { SpawnPoint } from '@xrift/world-components';
 
@@ -392,8 +396,8 @@ export const MyWorld = () => {
 
 A component that provides a local development environment. Used in the world template's `dev.tsx`.
 
-:::caution[Usage]
-This component is for local preview when running `npm run dev` in a world development project. Do not use it inside actual world content such as `World.tsx`.
+:::caution[World-only]
+`DevEnvironment` is for local preview when running `npm run dev` in a world development project. Do not use it inside actual world content such as `World.tsx`. It is also not used for item development (the item template uses its own `dev.tsx`).
 :::
 
 ```tsx

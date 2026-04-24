@@ -1,10 +1,10 @@
 ---
-sidebar_position: 4
+sidebar_position: 2
 ---
 
 # Shared Packages
 
-Packages declared in the `shared` section of Module Federation in your world's `vite.config.ts` are resolved from the host (xrift.net) side. This page lists all packages provided as shared by the host.
+Packages declared in the `shared` section of Module Federation in your world or item's `vite.config.ts` are resolved from the host (xrift.net) side. This page lists all packages provided as shared by the host.
 
 ## Package List
 
@@ -29,16 +29,16 @@ Packages declared in the `shared` section of Module Federation in your world's `
 
 Sharing the entire `three/addons` barrel file would include `eval` from Lottie in the bundle, so packages are shared at the **subpath level**.
 
-You also need to declare shared packages using subpaths like `three/addons/loaders/DRACOLoader.js` on the world side.
+You also need to declare shared packages using subpaths like `three/addons/loaders/DRACOLoader.js` on the world or item side.
 
 :::caution
 Do not specify `three/addons` directly as shared. You must specify it at the subpath level.
 :::
 
-## World-side Configuration Example
+## Configuration Example
 
 ```js
-// vite.config.ts (world side)
+// vite.config.ts
 import federation from '@originjs/vite-plugin-federation';
 
 export default defineConfig({
