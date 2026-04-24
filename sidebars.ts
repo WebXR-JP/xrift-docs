@@ -26,7 +26,6 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'アイテム開発',
       items: [
-        'item/overview',
         'item/create-first-item',
         'item/configuration',
       ],

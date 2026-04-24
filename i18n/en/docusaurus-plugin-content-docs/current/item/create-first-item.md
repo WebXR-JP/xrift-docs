@@ -1,10 +1,10 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 ---
 
 # Create Your First Item
 
-In this tutorial, we will explain how to create, customize, and upload an item project using the XRift CLI.
+XRift items are reusable 3D components that can be placed inside worlds. They are implemented with React Three Fiber and distributed via Module Federation. In this tutorial, we will explain how to create, customize, and upload an item project using the XRift CLI.
 
 ## Prerequisites
 
@@ -164,6 +164,6 @@ After uploading, a code review runs automatically (usually completed in a few mi
 
 ## Next Steps
 
-- [xrift.json Configuration (Item)](/item/configuration) for configuration details
+- [xrift.json Configuration](/item/configuration) for configuration details
 - [CLI Commands](/cli/commands) for available commands
 - [Shared Dependencies](/guides/shared-dependencies) for how shared dependencies work
