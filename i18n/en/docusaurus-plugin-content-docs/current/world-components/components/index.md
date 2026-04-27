@@ -1300,6 +1300,100 @@ Renamed from `useAudioVolume` to `useVoiceVolumeOverride` in v0.34.0. The old na
 
 ---
 
+### useFileInput
+
+A hook for displaying a file picker dialog. Allows opening a browser file picker (with drag & drop overlay UI) triggered by clicking a 3D object.
+
+```tsx
+import { useFileInput } from '@xrift/world-components';
+
+function MyComponent() {
+  const { requestFileInput } = useFileInput();
+
+  const handleClick = () => {
+    requestFileInput({
+      id: 'avatar-upload',
+      accept: '.vrm',
+      maxSize: 30 * 1024 * 1024,
+      onSelect: (files) => console.log('Selected:', files),
+    });
+  };
+}
+```
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `requestFileInput` | `(request: FileInputRequest) => void` | Display the file picker dialog |
+
+#### FileInputRequest
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | `string` | Yes | Unique identifier for the input |
+| `accept` | `string` | No | Accepted file types (e.g. `'.vrm'`, `'image/*'`) |
+| `multiple` | `boolean` | No | Allow multiple file selection |
+| `maxSize` | `number` | No | Maximum file size in bytes |
+| `onSelect` | `(files: File[]) => void` | Yes | Callback when files are selected |
+| `onCancel` | `() => void` | No | Callback when cancelled |
+| `onError` | `(error: FileInputError) => void` | No | Callback on error |
+
+#### FileInputError
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `type` | `'file_too_large' \| 'invalid_type'` | Error type |
+| `message` | `string` | Error message |
+
+#### Usage Examples
+
+##### VRM File Upload
+
+```tsx
+import { useFileInput, Interactable } from '@xrift/world-components'
+import { useState } from 'react'
+
+function AvatarUploader() {
+  const { requestFileInput } = useFileInput()
+  const [fileName, setFileName] = useState('')
+
+  const handleClick = () => {
+    requestFileInput({
+      id: 'avatar-upload',
+      accept: '.vrm',
+      maxSize: 30 * 1024 * 1024, // 30MB
+      onSelect: (files) => {
+        setFileName(files[0].name)
+        // Upload file...
+      },
+      onError: (error) => {
+        console.error(error.message)
+      },
+    })
+  }
+
+  return (
+    <Interactable id="upload-button" onInteract={handleClick} interactionText="Change Avatar">
+      <mesh>
+        <boxGeometry args={[1, 0.5, 0.1]} />
+        <meshStandardMaterial color="#7b2d8b" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+:::tip[Drag & Drop Support]
+The file picker overlay also supports drag & drop. Users can either click to browse for files or drag files onto the drop zone.
+:::
+
+:::note[Behavior During VR Sessions]
+When a file input is requested during a VR session, the VR session is automatically ended before the file picker is displayed.
+:::
+
+---
+
 ## Constants
 
 ### LAYERS
