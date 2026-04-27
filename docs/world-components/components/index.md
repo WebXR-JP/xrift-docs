@@ -1295,6 +1295,100 @@ type FontLocale = 'ja'
 
 ---
 
+### useFileInput
+
+ファイル選択ダイアログを表示するフックです。3Dオブジェクトのクリックをトリガーに、ブラウザのファイルピッカー（ドラッグ&ドロップ対応のオーバーレイUI）を開くことができます。
+
+```tsx
+import { useFileInput } from '@xrift/world-components';
+
+function MyComponent() {
+  const { requestFileInput } = useFileInput();
+
+  const handleClick = () => {
+    requestFileInput({
+      id: 'avatar-upload',
+      accept: '.vrm',
+      maxSize: 30 * 1024 * 1024,
+      onSelect: (files) => console.log('選択:', files),
+    });
+  };
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `requestFileInput` | `(request: FileInputRequest) => void` | ファイル選択ダイアログを表示する |
+
+#### FileInputRequest
+
+| Property | Type | 必須 | Description |
+|----------|------|------|-------------|
+| `id` | `string` | Yes | 入力の一意なID |
+| `accept` | `string` | No | 受け入れるファイルタイプ（例: `'.vrm'`, `'image/*'`） |
+| `multiple` | `boolean` | No | 複数ファイル選択を許可するか |
+| `maxSize` | `number` | No | 最大ファイルサイズ（バイト単位） |
+| `onSelect` | `(files: File[]) => void` | Yes | ファイル選択完了時のコールバック |
+| `onCancel` | `() => void` | No | キャンセル時のコールバック |
+| `onError` | `(error: FileInputError) => void` | No | エラー時のコールバック |
+
+#### FileInputError
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `type` | `'file_too_large' \| 'invalid_type'` | エラー種別 |
+| `message` | `string` | エラーメッセージ |
+
+#### 使用例
+
+##### VRMファイルのアップロード
+
+```tsx
+import { useFileInput, Interactable } from '@xrift/world-components'
+import { useState } from 'react'
+
+function AvatarUploader() {
+  const { requestFileInput } = useFileInput()
+  const [fileName, setFileName] = useState('')
+
+  const handleClick = () => {
+    requestFileInput({
+      id: 'avatar-upload',
+      accept: '.vrm',
+      maxSize: 30 * 1024 * 1024, // 30MB
+      onSelect: (files) => {
+        setFileName(files[0].name)
+        // ファイルをアップロードする処理...
+      },
+      onError: (error) => {
+        console.error(error.message)
+      },
+    })
+  }
+
+  return (
+    <Interactable id="upload-button" onInteract={handleClick} interactionText="アバター変更">
+      <mesh>
+        <boxGeometry args={[1, 0.5, 0.1]} />
+        <meshStandardMaterial color="#7b2d8b" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+:::tip[ドラッグ&ドロップ対応]
+ファイル選択オーバーレイはドラッグ&ドロップにも対応しています。ユーザーはクリックでファイルを選択するか、ファイルをドロップゾーンにドラッグして追加できます。
+:::
+
+:::note[VRセッション中の動作]
+VRセッション中にファイル選択がリクエストされた場合、自動的にVRセッションが終了してからファイルピッカーが表示されます。
+:::
+
+---
+
 ## 定数
 
 ### LAYERS
