@@ -1389,6 +1389,102 @@ VRセッション中にファイル選択がリクエストされた場合、自
 
 ---
 
+### useSharedFile
+
+インスタンスの共有ファイルをアップロード・一覧取得するフックです。3D空間内から画像やドキュメントをアップロードし、他のユーザーと共有できます。
+
+```tsx
+import { useSharedFile } from '@xrift/world-components';
+
+function MyComponent() {
+  const { uploadSharedFile, getSharedFiles } = useSharedFile();
+
+  const handleUpload = async (file: File) => {
+    const result = await uploadSharedFile(file, (progress) => {
+      console.log(`${progress}%`);
+    });
+    console.log('URL:', result.publicUrl);
+  };
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `uploadSharedFile` | `(file: File, onProgress?: (progress: number) => void) => Promise<SharedFileInfo>` | ファイルをアップロードする |
+| `getSharedFiles` | `() => Promise<SharedFileInfo[]>` | 共有ファイル一覧を取得する |
+
+#### SharedFileInfo
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | ファイルの一意なID |
+| `fileName` | `string` | ファイル名 |
+| `contentType` | `string` | MIMEタイプ |
+| `fileSize` | `number` | ファイルサイズ（バイト） |
+| `publicUrl` | `string` | 公開URL |
+| `createdAt` | `string` | 作成日時（ISO 8601） |
+
+#### 使用例
+
+##### 画像のアップロードと一覧表示
+
+```tsx
+import { useSharedFile, useFileInput, Interactable } from '@xrift/world-components'
+import { useCallback, useState } from 'react'
+
+function SharedFileUploader() {
+  const { uploadSharedFile, getSharedFiles } = useSharedFile()
+  const { requestFileInput } = useFileInput()
+  const [status, setStatus] = useState('')
+
+  const handleUpload = useCallback(() => {
+    requestFileInput({
+      id: 'shared-file-upload',
+      accept: 'image/*',
+      maxSize: 10 * 1024 * 1024, // 10MB
+      onSelect: async (files) => {
+        const file = files[0]
+        if (!file) return
+        try {
+          const result = await uploadSharedFile(file, (progress) => {
+            setStatus(`アップロード中: ${progress}%`)
+          })
+          setStatus(`完了: ${result.fileName}`)
+        } catch (e) {
+          setStatus(`エラー: ${e instanceof Error ? e.message : String(e)}`)
+        }
+      },
+    })
+  }, [requestFileInput, uploadSharedFile])
+
+  const handleList = useCallback(async () => {
+    const files = await getSharedFiles()
+    setStatus(`${files.length}件のファイル`)
+  }, [getSharedFiles])
+
+  return (
+    <>
+      <Interactable id="upload-btn" onInteract={handleUpload} interactionText="アップロード">
+        <mesh>
+          <boxGeometry args={[1, 0.5, 0.1]} />
+          <meshStandardMaterial color="#d4a017" />
+        </mesh>
+      </Interactable>
+      <Interactable id="list-btn" onInteract={handleList} interactionText="一覧表示">
+        <mesh position={[1.5, 0, 0]}>
+          <boxGeometry args={[1, 0.5, 0.1]} />
+          <meshStandardMaterial color="#c47f17" />
+        </mesh>
+      </Interactable>
+    </>
+  )
+}
+```
+
+---
+
 ## 定数
 
 ### LAYERS
