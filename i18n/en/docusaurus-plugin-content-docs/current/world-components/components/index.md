@@ -1394,6 +1394,102 @@ When a file input is requested during a VR session, the VR session is automatica
 
 ---
 
+### useSharedFile
+
+A hook for uploading and listing shared files within an instance. Allows uploading images and documents from within the 3D space for sharing with other users.
+
+```tsx
+import { useSharedFile } from '@xrift/world-components';
+
+function MyComponent() {
+  const { uploadSharedFile, getSharedFiles } = useSharedFile();
+
+  const handleUpload = async (file: File) => {
+    const result = await uploadSharedFile(file, (progress) => {
+      console.log(`${progress}%`);
+    });
+    console.log('URL:', result.publicUrl);
+  };
+}
+```
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `uploadSharedFile` | `(file: File, onProgress?: (progress: number) => void) => Promise<SharedFileInfo>` | Upload a file |
+| `getSharedFiles` | `() => Promise<SharedFileInfo[]>` | Get the list of shared files |
+
+#### SharedFileInfo
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique file ID |
+| `fileName` | `string` | File name |
+| `contentType` | `string` | MIME type |
+| `fileSize` | `number` | File size in bytes |
+| `publicUrl` | `string` | Public URL |
+| `createdAt` | `string` | Creation date (ISO 8601) |
+
+#### Usage Examples
+
+##### Upload Images and List Files
+
+```tsx
+import { useSharedFile, useFileInput, Interactable } from '@xrift/world-components'
+import { useCallback, useState } from 'react'
+
+function SharedFileUploader() {
+  const { uploadSharedFile, getSharedFiles } = useSharedFile()
+  const { requestFileInput } = useFileInput()
+  const [status, setStatus] = useState('')
+
+  const handleUpload = useCallback(() => {
+    requestFileInput({
+      id: 'shared-file-upload',
+      accept: 'image/*',
+      maxSize: 10 * 1024 * 1024, // 10MB
+      onSelect: async (files) => {
+        const file = files[0]
+        if (!file) return
+        try {
+          const result = await uploadSharedFile(file, (progress) => {
+            setStatus(`Uploading: ${progress}%`)
+          })
+          setStatus(`Done: ${result.fileName}`)
+        } catch (e) {
+          setStatus(`Error: ${e instanceof Error ? e.message : String(e)}`)
+        }
+      },
+    })
+  }, [requestFileInput, uploadSharedFile])
+
+  const handleList = useCallback(async () => {
+    const files = await getSharedFiles()
+    setStatus(`${files.length} files`)
+  }, [getSharedFiles])
+
+  return (
+    <>
+      <Interactable id="upload-btn" onInteract={handleUpload} interactionText="Upload">
+        <mesh>
+          <boxGeometry args={[1, 0.5, 0.1]} />
+          <meshStandardMaterial color="#d4a017" />
+        </mesh>
+      </Interactable>
+      <Interactable id="list-btn" onInteract={handleList} interactionText="List Files">
+        <mesh position={[1.5, 0, 0]}>
+          <boxGeometry args={[1, 0.5, 0.1]} />
+          <meshStandardMaterial color="#c47f17" />
+        </mesh>
+      </Interactable>
+    </>
+  )
+}
+```
+
+---
+
 ## Constants
 
 ### LAYERS
