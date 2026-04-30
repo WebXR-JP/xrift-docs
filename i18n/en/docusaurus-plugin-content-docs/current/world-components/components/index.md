@@ -1490,6 +1490,49 @@ function SharedFileUploader() {
 
 ---
 
+### useItem
+
+A hook that retrieves the unique ID of a placed item. Even when the same item is placed multiple times, each placement returns a different ID.
+
+```tsx
+import { useItem } from '@xrift/world-components';
+
+function MyItem() {
+  const { id } = useItem();
+  // id is unique per placement
+}
+```
+
+#### Returns
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique ID of the placed object (UUID) |
+
+**Note:** `useItem` can only be used within an `ItemProvider`. Calling it outside the provider will throw an error. The platform automatically provides the `ItemProvider`, so item developers do not need to set up the provider themselves.
+
+##### Per-placement state management
+
+```tsx
+import { useItem, useInstanceState } from '@xrift/world-components';
+
+function VotingBox() {
+  const { id } = useItem();
+  const [votes, setVotes] = useInstanceState(`votes-${id}`, 0);
+
+  return (
+    <Interactable id={`vote-${id}`} onInteract={() => setVotes(votes + 1)}>
+      <mesh>
+        <boxGeometry args={[1, 1, 0.2]} />
+        <meshStandardMaterial color="green" />
+      </mesh>
+    </Interactable>
+  );
+}
+```
+
+---
+
 ## Constants
 
 ### LAYERS

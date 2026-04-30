@@ -1485,6 +1485,51 @@ function SharedFileUploader() {
 
 ---
 
+### useItem
+
+配置されたアイテムの固有IDを取得するフックです。同じアイテムが複数配置された場合でも、配置ごとに異なるIDが返されます。
+
+```tsx
+import { useItem } from '@xrift/world-components';
+
+function MyItem() {
+  const { id } = useItem();
+  // id は配置ごとにユニーク
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | 配置オブジェクトの固有ID（UUID） |
+
+:::note
+`useItem` は `ItemProvider` 内でのみ使用可能です。Provider 外で呼び出すと例外がスローされます。プラットフォームが `ItemProvider` を自動的に提供するため、アイテム開発者が Provider を設定する必要はありません。
+:::
+
+##### 配置ごとのステート管理
+
+```tsx
+import { useItem, useInstanceState } from '@xrift/world-components';
+
+function VotingBox() {
+  const { id } = useItem();
+  const [votes, setVotes] = useInstanceState(`votes-${id}`, 0);
+
+  return (
+    <Interactable id={`vote-${id}`} onInteract={() => setVotes(votes + 1)}>
+      <mesh>
+        <boxGeometry args={[1, 1, 0.2]} />
+        <meshStandardMaterial color="green" />
+      </mesh>
+    </Interactable>
+  );
+}
+```
+
+---
+
 ## 定数
 
 ### LAYERS
