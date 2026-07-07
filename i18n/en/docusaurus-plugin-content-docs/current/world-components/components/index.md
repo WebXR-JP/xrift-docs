@@ -42,6 +42,8 @@ A wrapper component that declares an object as "grabbable". Like `Interactable`,
 
 It puts child meshes on `LAYERS.GRABBABLE` (layer 14). The grabbing foundation (raycasting, following, committing) is handled by the platform. During development, you can test it with the system bundled in `DevEnvironment`.
 
+The coordinates of `transform` and `onMove` are in the **local space of the parent** where you place the `Grabbable` (the same as a normal `position` prop). Even when nested under a transformed parent group, they are converted to/from world coordinates internally, so the release position never drifts.
+
 ```tsx
 import { useState } from 'react';
 import { Grabbable, type GrabbableTransform } from '@xrift/world-components';
@@ -73,8 +75,8 @@ function GrabbableBall() {
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `id` | `string` | - | Unique identifier (Required) |
-| `transform` | `GrabbableTransform` | - | Current pose of the object (Required). Applied to the root group, so children are written in local coordinates |
-| `onMove` | `(transform: GrabResultTransform) => void` | - | Receives the new pose when released/committed (Required). Reflect it in state to update `transform` |
+| `transform` | `GrabbableTransform` | - | Current pose of the object (Required). Specified in the parent's local coordinates and applied to the root group (children are written relative to the origin) |
+| `onMove` | `(transform: GrabResultTransform) => void` | - | Receives the new pose when released/committed (Required). Returned in the same parent-local coordinates as `transform`, so reflect it in state to update `transform` |
 | `renderGhost` | `() => ReactNode` | - | Returns the ghost (semi-transparent, no physics) shown while grabbing, in local coordinates. Falls back to `children` if omitted |
 | `enabled` | `boolean` | `true` | Whether it is grabbable (`false` to temporarily disable) |
 | `children` | `ReactNode` | - | The grabbable object (written in local coordinates, Required) |
@@ -83,7 +85,7 @@ function GrabbableBall() {
 
 ```typescript
 interface GrabbableTransform {
-  position: { x: number; y: number; z: number };  // World coordinates
+  position: { x: number; y: number; z: number };  // Parent-local coordinates (same as a normal position prop)
   rotation: { x: number; y: number; z: number };  // Euler angles (radians)
   scale?: number;                                   // Uniform scale (defaults to 1)
 }

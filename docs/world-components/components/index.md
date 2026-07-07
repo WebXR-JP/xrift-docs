@@ -42,6 +42,8 @@ import { Interactable } from '@xrift/world-components';
 
 配下のメッシュを `LAYERS.GRABBABLE`（レイヤー14）に載せ、掴む土台（レイキャスト・追従・確定）はプラットフォーム側が担います。開発時は `DevEnvironment` に同梱のシステムで動作確認できます。
 
+`transform` と `onMove` の座標は、`Grabbable` を置いた**親のローカル空間**（通常の `position` prop と同じ）で扱われます。変形された親グループの下にネストしても内部でワールド座標へ変換されるため、離した位置がズレることはありません。
+
 ```tsx
 import { useState } from 'react';
 import { Grabbable, type GrabbableTransform } from '@xrift/world-components';
@@ -73,8 +75,8 @@ function GrabbableBall() {
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `id` | `string` | - | 一意の識別子（必須） |
-| `transform` | `GrabbableTransform` | - | 対象の現在姿勢（必須）。ルート group に適用されるため、子はローカル座標で書く |
-| `onMove` | `(transform: GrabResultTransform) => void` | - | 離した（確定）ときに新しい姿勢を受け取る（必須）。state に反映して `transform` を更新する |
+| `transform` | `GrabbableTransform` | - | 対象の現在姿勢（必須）。親のローカル座標で指定し、ルート group に適用される（子は原点基準で書く） |
+| `onMove` | `(transform: GrabResultTransform) => void` | - | 離した（確定）ときに新しい姿勢を受け取る（必須）。`transform` と同じ親ローカル座標で返るので、state に反映して `transform` を更新する |
 | `renderGhost` | `() => ReactNode` | - | 掴み中に表示するゴースト（半透明・物理なし）をローカル座標で返す。省略時は `children` を流用 |
 | `enabled` | `boolean` | `true` | 掴めるかどうか（`false` で一時的に無効化） |
 | `children` | `ReactNode` | - | 掴む対象のオブジェクト（ローカル座標で書く・必須） |
@@ -83,7 +85,7 @@ function GrabbableBall() {
 
 ```typescript
 interface GrabbableTransform {
-  position: { x: number; y: number; z: number };  // ワールド座標
+  position: { x: number; y: number; z: number };  // 親のローカル座標（通常の position prop と同じ）
   rotation: { x: number; y: number; z: number };  // オイラー角（ラジアン）
   scale?: number;                                   // 均一スケール（省略時は 1）
 }
