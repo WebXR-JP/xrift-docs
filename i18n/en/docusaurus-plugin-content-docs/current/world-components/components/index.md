@@ -36,6 +36,76 @@ import { Interactable } from '@xrift/world-components';
 
 ---
 
+### Grabbable
+
+A wrapper component that declares an object as "grabbable". Like `Interactable`, it makes the wrapped object explicitly opt in. Players can grab the object, float it in front of their view, and place it anywhere.
+
+It puts child meshes on `LAYERS.GRABBABLE` (layer 14). The grabbing foundation (raycasting, following, committing) is handled by the platform. During development, you can test it with the system bundled in `DevEnvironment`.
+
+The coordinates of `transform` and `onMove` are in the **local space of the parent** where you place the `Grabbable` (the same as a normal `position` prop). Even when nested under a transformed parent group, they are converted to/from world coordinates internally, so the release position never drifts.
+
+```tsx
+import { useState } from 'react';
+import { Grabbable, type GrabbableTransform } from '@xrift/world-components';
+
+function GrabbableBall() {
+  const [transform, setTransform] = useState<GrabbableTransform>({
+    position: { x: 2, y: 0.5, z: -2 },
+    rotation: { x: 0, y: 0, z: 0 },
+  });
+
+  return (
+    <Grabbable
+      id="ball"
+      transform={transform}
+      onMove={(next) => setTransform((prev) => ({ ...prev, ...next }))}
+    >
+      {/* Write children in local coordinates (relative to origin) */}
+      <mesh>
+        <sphereGeometry args={[0.3]} />
+        <meshStandardMaterial color="gold" />
+      </mesh>
+    </Grabbable>
+  );
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | Unique identifier (Required) |
+| `transform` | `GrabbableTransform` | - | Current pose of the object (Required). Specified in the parent's local coordinates and applied to the root group (children are written relative to the origin) |
+| `onMove` | `(transform: GrabResultTransform) => void` | - | Receives the new pose when released/committed (Required). Returned in the same parent-local coordinates as `transform`, so reflect it in state to update `transform` |
+| `renderGhost` | `() => ReactNode` | - | Returns the ghost (semi-transparent, no physics) shown while grabbing, in local coordinates. Falls back to `children` if omitted |
+| `enabled` | `boolean` | `true` | Whether it is grabbable (`false` to temporarily disable) |
+| `children` | `ReactNode` | - | The grabbable object (written in local coordinates, Required) |
+
+#### GrabbableTransform / GrabResultTransform
+
+```typescript
+interface GrabbableTransform {
+  position: { x: number; y: number; z: number };  // Parent-local coordinates (same as a normal position prop)
+  rotation: { x: number; y: number; z: number };  // Euler angles (radians)
+  scale?: number;                                   // Uniform scale (defaults to 1)
+}
+
+interface GrabResultTransform {
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+}
+```
+
+:::caution[When including physics]
+If children include physics (such as `RigidBody`), you must provide a **physics-free** version via `renderGhost`. Otherwise `children` is rendered as the ghost directly, and the collider of the real object and the ghost overlap while grabbing.
+:::
+
+:::note[Controls]
+Grabbing assumes desktop (pointer lock + center crosshair). In `DevEnvironment`, press **G** to grab/place, use the mouse wheel to adjust distance, click to commit, and **Esc** (releasing pointer lock) to cancel.
+:::
+
+---
+
 ### Mirror
 
 Creates a real-time reflective surface.
@@ -452,6 +522,7 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 - **First-Person Player**: Physics-based WASD movement, jumping, and respawning
 - **View Controls**: View manipulation via PointerLockControls
 - **Interaction**: Raycasting to INTERACTABLE layer + click interaction
+- **Grabbing (Grabbable)**: Raycasting to GRABBABLE layer + following the view and committing
 - **Crosshair UI**: Center-screen crosshair (highlights on hit)
 - **Guide UI**: Pointer lock state guidance UI
 - **Controls Help UI**: UI displaying control instructions
@@ -460,10 +531,12 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 
 | Input | Description |
 |-------|-------------|
-| Click | Start pointer lock / Interact |
+| Click | Start pointer lock / Interact / Commit while grabbing |
 | WASD / Arrow Keys | Movement |
 | Space / E | Jump |
-| ESC | Release pointer lock |
+| G | Grab / Place (`Grabbable` targets) |
+| Mouse Wheel | Adjust distance while grabbing |
+| ESC | Release pointer lock (cancels while grabbing) |
 
 :::note[Prerequisites]
 Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDependency).
@@ -1549,12 +1622,13 @@ import { LAYERS } from '@xrift/world-components';
 | `LAYERS.FIRST_PERSON_ONLY` | `9` | First-person view only (for VRMFirstPerson) |
 | `LAYERS.THIRD_PERSON_ONLY` | `10` | Third-person view only (for VRMFirstPerson) |
 | `LAYERS.INTERACTABLE` | `11` | Interactable objects (Raycast targets) |
+| `LAYERS.GRABBABLE` | `14` | Grabbable objects (Raycast targets for `Grabbable`) |
 
 #### Related Types
 
 ```typescript
-type LayerName = 'DEFAULT' | 'FIRST_PERSON_ONLY' | 'THIRD_PERSON_ONLY' | 'INTERACTABLE';
-type LayerNumber = 0 | 9 | 10 | 11;
+type LayerName = 'DEFAULT' | 'FIRST_PERSON_ONLY' | 'THIRD_PERSON_ONLY' | 'INTERACTABLE' | 'GRABBABLE';
+type LayerNumber = 0 | 9 | 10 | 11 | 14;
 ```
 
 #### Use Cases

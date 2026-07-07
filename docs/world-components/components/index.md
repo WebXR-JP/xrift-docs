@@ -36,6 +36,76 @@ import { Interactable } from '@xrift/world-components';
 
 ---
 
+### Grabbable
+
+オブジェクトを「掴める」と宣言するラッパーコンポーネントです。`Interactable` と同じく、囲んだ対象を明示的にオプトインさせます。プレイヤーは掴んだオブジェクトを視点前方に浮かせて運び、任意の位置に置くことができます。
+
+配下のメッシュを `LAYERS.GRABBABLE`（レイヤー14）に載せ、掴む土台（レイキャスト・追従・確定）はプラットフォーム側が担います。開発時は `DevEnvironment` に同梱のシステムで動作確認できます。
+
+`transform` と `onMove` の座標は、`Grabbable` を置いた**親のローカル空間**（通常の `position` prop と同じ）で扱われます。変形された親グループの下にネストしても内部でワールド座標へ変換されるため、離した位置がズレることはありません。
+
+```tsx
+import { useState } from 'react';
+import { Grabbable, type GrabbableTransform } from '@xrift/world-components';
+
+function GrabbableBall() {
+  const [transform, setTransform] = useState<GrabbableTransform>({
+    position: { x: 2, y: 0.5, z: -2 },
+    rotation: { x: 0, y: 0, z: 0 },
+  });
+
+  return (
+    <Grabbable
+      id="ball"
+      transform={transform}
+      onMove={(next) => setTransform((prev) => ({ ...prev, ...next }))}
+    >
+      {/* 子はローカル座標（原点基準）で書く */}
+      <mesh>
+        <sphereGeometry args={[0.3]} />
+        <meshStandardMaterial color="gold" />
+      </mesh>
+    </Grabbable>
+  );
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | 一意の識別子（必須） |
+| `transform` | `GrabbableTransform` | - | 対象の現在姿勢（必須）。親のローカル座標で指定し、ルート group に適用される（子は原点基準で書く） |
+| `onMove` | `(transform: GrabResultTransform) => void` | - | 離した（確定）ときに新しい姿勢を受け取る（必須）。`transform` と同じ親ローカル座標で返るので、state に反映して `transform` を更新する |
+| `renderGhost` | `() => ReactNode` | - | 掴み中に表示するゴースト（半透明・物理なし）をローカル座標で返す。省略時は `children` を流用 |
+| `enabled` | `boolean` | `true` | 掴めるかどうか（`false` で一時的に無効化） |
+| `children` | `ReactNode` | - | 掴む対象のオブジェクト（ローカル座標で書く・必須） |
+
+#### GrabbableTransform / GrabResultTransform
+
+```typescript
+interface GrabbableTransform {
+  position: { x: number; y: number; z: number };  // 親のローカル座標（通常の position prop と同じ）
+  rotation: { x: number; y: number; z: number };  // オイラー角（ラジアン）
+  scale?: number;                                   // 均一スケール（省略時は 1）
+}
+
+interface GrabResultTransform {
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+}
+```
+
+:::caution[物理を含む場合]
+子に物理（`RigidBody` など）を含む場合、`renderGhost` に**物理なし版**を必ず指定してください。省略すると `children` がそのままゴーストとして描画され、掴み中に実体とゴーストのコライダーが重複します。
+:::
+
+:::note[操作方法]
+掴む操作はデスクトップ（ポインターロック＋中央クロスヘア）が前提です。`DevEnvironment` では **G** で掴む/置く、マウスホイールで距離調整、クリックで確定、**Esc**（ポインターロック解除）でキャンセルできます。
+:::
+
+---
+
 ### Mirror
 
 リアルタイム反射面を作成します。
@@ -429,6 +499,7 @@ createRoot(rootElement).render(
 - **ファーストパーソンプレイヤー**: 物理ベースのWASD移動・ジャンプ・リスポーン
 - **視点操作**: PointerLockControls による視点操作
 - **インタラクション**: INTERACTABLE レイヤーへのレイキャスト + クリックインタラクション
+- **掴む（Grabbable）**: GRABBABLE レイヤーへのレイキャスト + 視点前方への追従・確定
 - **クロスヘアUI**: 画面中央のクロスヘア（ヒット時ハイライト）
 - **案内UI**: ポインターロック状態の案内UI
 - **操作説明UI**: 操作方法を表示するUI
@@ -437,10 +508,12 @@ createRoot(rootElement).render(
 
 | 操作 | 説明 |
 |------|------|
-| クリック | ポインターロック開始 / インタラクト |
+| クリック | ポインターロック開始 / インタラクト / 掴み中は確定 |
 | WASD / 矢印キー | 移動 |
 | Space / E | ジャンプ |
-| ESC | ポインターロック解除 |
+| G | 掴む / 置く（`Grabbable` 対象） |
+| マウスホイール | 掴み中の距離調整 |
+| ESC | ポインターロック解除（掴み中はキャンセル） |
 
 :::note[前提条件]
 `@react-three/rapier`（`^2.0.0`）のインストールが必要です（optional peerDependency）。
@@ -1546,12 +1619,13 @@ import { LAYERS } from '@xrift/world-components';
 | `LAYERS.FIRST_PERSON_ONLY` | `9` | 一人称視点のみ表示（VRMFirstPerson用） |
 | `LAYERS.THIRD_PERSON_ONLY` | `10` | 三人称視点のみ表示（VRMFirstPerson用） |
 | `LAYERS.INTERACTABLE` | `11` | インタラクト可能オブジェクト（Raycast対象） |
+| `LAYERS.GRABBABLE` | `14` | 掴めるオブジェクト（`Grabbable` のRaycast対象） |
 
 #### 関連する型
 
 ```typescript
-type LayerName = 'DEFAULT' | 'FIRST_PERSON_ONLY' | 'THIRD_PERSON_ONLY' | 'INTERACTABLE';
-type LayerNumber = 0 | 9 | 10 | 11;
+type LayerName = 'DEFAULT' | 'FIRST_PERSON_ONLY' | 'THIRD_PERSON_ONLY' | 'INTERACTABLE' | 'GRABBABLE';
+type LayerNumber = 0 | 9 | 10 | 11 | 14;
 ```
 
 #### ユースケース
