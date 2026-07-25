@@ -1464,7 +1464,7 @@ VRセッション中にファイル選択がリクエストされた場合、自
 
 ### useSharedFile
 
-インスタンスの共有ファイルをアップロード・一覧取得・ロック（削除保護）・情報更新するフックです。3D空間内から画像やドキュメントをアップロードし、他のユーザーと共有できます。
+インスタンスの共有ファイルをアップロード・一覧取得・ロック（削除保護）・情報更新・削除するフックです。3D空間内から画像やドキュメントをアップロードし、他のユーザーと共有できます。
 
 ```tsx
 import { useSharedFile } from '@xrift/world-components';
@@ -1491,6 +1491,7 @@ function MyComponent() {
 | `getSharedFiles` | `() => Promise<SharedFileInfo[]>` | 共有ファイル一覧を取得する |
 | `setSharedFileLock` | `(fileId: string, locked: boolean) => Promise<SharedFileInfo>` | ロック状態（削除保護）を設定する |
 | `updateSharedFile` | `(fileId: string, updates: UpdateSharedFileParams) => Promise<SharedFileInfo>` | ファイル情報（fileName / description / metadata）を更新する |
+| `deleteSharedFile` | `(fileId: string) => Promise<void>` | ファイルを削除する |
 
 #### SharedFileInfo
 
@@ -1526,7 +1527,7 @@ function MyComponent() {
 | `metadata` | `Record<string, string> \| null` | メタデータ（`null` でクリア） |
 
 :::note
-ロック中（`locked: true`）のファイルは削除できず、`updateSharedFile` による更新も拒否されます。更新したい場合は先に `setSharedFileLock(fileId, false)` でロックを解除してください。
+ロック中（`locked: true`）のファイルは `deleteSharedFile` による削除も `updateSharedFile` による更新も拒否されます。削除・更新したい場合は先に `setSharedFileLock(fileId, false)` でロックを解除してください。
 :::
 
 #### 使用例
@@ -1594,7 +1595,7 @@ function SharedFileUploader() {
 import { useSharedFile } from '@xrift/world-components'
 
 function ExhibitUploader() {
-  const { uploadSharedFile, setSharedFileLock, updateSharedFile } = useSharedFile()
+  const { uploadSharedFile, setSharedFileLock, updateSharedFile, deleteSharedFile } = useSharedFile()
 
   const handleExhibitUpload = async (file: File) => {
     // 説明文・メタデータを付与してアップロード
@@ -1614,6 +1615,12 @@ function ExhibitUploader() {
     await setSharedFileLock(fileId, false)
     await updateSharedFile(fileId, { description: '展示品B' })
     await setSharedFileLock(fileId, true)
+  }
+
+  const handleRemoveExhibit = async (fileId: string) => {
+    // 展示を取り下げてファイル実体も削除（ロック中は先に解除する）
+    await setSharedFileLock(fileId, false)
+    await deleteSharedFile(fileId)
   }
 
   // ...
