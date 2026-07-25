@@ -1469,19 +1469,21 @@ When a file input is requested during a VR session, the VR session is automatica
 
 ### useSharedFile
 
-A hook for uploading and listing shared files within an instance. Allows uploading images and documents from within the 3D space for sharing with other users.
+A hook for uploading, listing, locking (deletion protection), and updating shared files within an instance. Allows uploading images and documents from within the 3D space for sharing with other users.
 
 ```tsx
 import { useSharedFile } from '@xrift/world-components';
 
 function MyComponent() {
-  const { uploadSharedFile, getSharedFiles } = useSharedFile();
+  const { uploadSharedFile, getSharedFiles, setSharedFileLock, updateSharedFile } = useSharedFile();
 
   const handleUpload = async (file: File) => {
     const result = await uploadSharedFile(file, (progress) => {
       console.log(`${progress}%`);
     });
     console.log('URL:', result.publicUrl);
+    // Lock right after upload to prevent accidental deletion
+    await setSharedFileLock(result.id, true);
   };
 }
 ```
@@ -1490,8 +1492,10 @@ function MyComponent() {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `uploadSharedFile` | `(file: File, onProgress?: (progress: number) => void) => Promise<SharedFileInfo>` | Upload a file |
+| `uploadSharedFile` | `(file: File, onProgress?: (progress: number) => void, options?: UploadSharedFileOptions) => Promise<SharedFileInfo>` | Upload a file |
 | `getSharedFiles` | `() => Promise<SharedFileInfo[]>` | Get the list of shared files |
+| `setSharedFileLock` | `(fileId: string, locked: boolean) => Promise<SharedFileInfo>` | Set the lock state (deletion protection) |
+| `updateSharedFile` | `(fileId: string, updates: UpdateSharedFileParams) => Promise<SharedFileInfo>` | Update file info (fileName / description / metadata) |
 
 #### SharedFileInfo
 
@@ -1502,7 +1506,33 @@ function MyComponent() {
 | `contentType` | `string` | MIME type |
 | `fileSize` | `number` | File size in bytes |
 | `publicUrl` | `string` | Public URL |
+| `locked` | `boolean` | Whether the file is locked (deletion protection) |
+| `description` | `string \| null` | Description text |
+| `metadata` | `Record<string, string> \| null` | Structured metadata |
 | `createdAt` | `string` | Creation date (ISO 8601) |
+
+#### UploadSharedFileOptions
+
+Optional information that can be attached at upload time.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `description` | `string` | Description text (up to 500 characters) |
+| `metadata` | `Record<string, string>` | Flat key-value metadata (up to 20 entries, keys 1-64 characters, values up to 500 characters) |
+
+#### UpdateSharedFileParams
+
+Update payload for `updateSharedFile`. Pass `null` for `description` / `metadata` to clear them.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `fileName` | `string` | File name |
+| `description` | `string \| null` | Description text (`null` to clear) |
+| `metadata` | `Record<string, string> \| null` | Metadata (`null` to clear) |
+
+:::note
+A locked file (`locked: true`) cannot be deleted, and updates via `updateSharedFile` are also rejected. To update a locked file, unlock it first with `setSharedFileLock(fileId, false)`.
+:::
 
 #### Usage Examples
 
@@ -1561,6 +1591,40 @@ function SharedFileUploader() {
 }
 ```
 
+##### Upload with Description / Metadata and Lock
+
+For use cases like permanently exhibiting visitor-uploaded files, attach a description and metadata at upload time, then lock the file immediately to prevent accidental deletion.
+
+```tsx
+import { useSharedFile } from '@xrift/world-components'
+
+function ExhibitUploader() {
+  const { uploadSharedFile, setSharedFileLock, updateSharedFile } = useSharedFile()
+
+  const handleExhibitUpload = async (file: File) => {
+    // Upload with description and metadata
+    const result = await uploadSharedFile(file, undefined, {
+      description: 'Exhibit A',
+      metadata: { exhibit: 'pedestal-1' },
+    })
+
+    // Lock right after upload to prevent accidental deletion
+    await setSharedFileLock(result.id, true)
+
+    return result.publicUrl
+  }
+
+  const handleUpdateDescription = async (fileId: string) => {
+    // Locked files cannot be updated: unlock, update, then re-lock
+    await setSharedFileLock(fileId, false)
+    await updateSharedFile(fileId, { description: 'Exhibit B' })
+    await setSharedFileLock(fileId, true)
+  }
+
+  // ...
+}
+```
+
 ---
 
 ### useItem
@@ -1603,6 +1667,141 @@ function VotingBox() {
   );
 }
 ```
+
+---
+
+### useWorldStorage
+
+A hook that provides world-scoped persistent key-value storage (World Storage). Persist rankings, in-world currency, registration data, and more across instances.
+
+```tsx
+import { useWorldStorage } from '@xrift/world-components';
+
+function MyComponent() {
+  const storage = useWorldStorage();
+
+  const saveProgress = async () => {
+    // Shared KV (one shared value per world)
+    await storage.shared.set('event_phase', 'chapter-2');
+    const visits = await storage.shared.increment('total_visits', 1);
+
+    // Per-player KV (you can only write your own values)
+    await storage.player.set('coins', 340);
+    const coins = await storage.player.get('coins');
+  };
+}
+```
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `shared` | `SharedWorldStorage` | Shared KV (one shared value per world). Any authenticated user in the instance can write |
+| `player` | `PlayerWorldStorage` | Per-player KV. Writes are limited to your own values; reads can access other users' values |
+
+#### SharedWorldStorage
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `get` | `(key: string) => Promise<unknown>` | Get a value. Returns `undefined` if it does not exist |
+| `list` | `() => Promise<WorldStorageEntry[]>` | Get all keys and values |
+| `set` | `(key: string, value: unknown) => Promise<void>` | Save a value |
+| `increment` | `(key: string, delta: number) => Promise<number>` | Add to a numeric value and return the result (no lost updates under concurrency) |
+| `delete` | `(key: string) => Promise<void>` | Delete a value (idempotent) |
+
+#### PlayerWorldStorage
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `get` | `(key: string, options?: { userId?: string }) => Promise<unknown>` | Get a value. Pass `userId` to read another user's value |
+| `list` | `(options?: { userId?: string }) => Promise<WorldStorageEntry[]>` | Get all keys and values. Pass `userId` to read another user's values |
+| `set` | `(key: string, value: unknown) => Promise<void>` | Save your own value |
+| `increment` | `(key: string, delta: number) => Promise<number>` | Add to your own numeric value and return the result |
+| `delete` | `(key: string) => Promise<void>` | Delete your own value (idempotent) |
+
+#### Constraints and Guidelines
+
+| Item | Details |
+|------|---------|
+| When to save | Save at game-event milestones. For per-frame sync, use volatile state sync such as `useInstanceState` |
+| Capacity | 10MB total per world / 100KB per entry |
+| Key count | 256 shared keys / 64 keys per user |
+| Key format | `/^[A-Za-z0-9_.\-:]{1,128}$/` |
+| Rate limit | Writes are limited to 30 per minute per user |
+| Reads | Public (readable via API without authentication). **Never store secrets** |
+| Guests | Read-only (writes throw a `WorldStorageError`) |
+| Addition | For currency / scores, use `increment` instead of `set` |
+
+#### WorldStorageError
+
+Failed operations throw a `WorldStorageError`. Use the `code` property to determine the cause.
+
+| Code | Description |
+|------|-------------|
+| `QUOTA_EXCEEDED` | Total world capacity (10MB) exceeded |
+| `LIMIT_EXCEEDED` | Key count limit exceeded (shared: 256 keys / per user: 64 keys) |
+| `ENTRY_TOO_LARGE` | Entry size limit (100KB) exceeded |
+| `TYPE_MISMATCH` | The existing value targeted by `increment` is not a number |
+| `INVALID_KEY` | Invalid key format |
+| `NOT_IN_WORLD` | Writing while not in a world instance |
+| `RATE_LIMITED` | Rate limit exceeded |
+| `UNAUTHORIZED` | Writing while unauthenticated (guest) |
+| `UNKNOWN` | Other errors |
+
+#### Usage Examples
+
+##### Visit Counter
+
+```tsx
+import { useWorldStorage, Interactable } from '@xrift/world-components'
+import { Text } from '@react-three/drei'
+import { useEffect, useState } from 'react'
+
+function VisitCounter() {
+  const storage = useWorldStorage()
+  const [visits, setVisits] = useState<number | null>(null)
+
+  useEffect(() => {
+    // Count up once on entry
+    storage.shared.increment('total_visits', 1).then(setVisits)
+  }, [storage])
+
+  return (
+    <Text position={[0, 2, 0]} fontSize={0.2} color="white">
+      {visits === null ? '...' : `Total visits: ${visits}`}
+    </Text>
+  )
+}
+```
+
+##### Per-Player Coin Management
+
+```tsx
+import { useWorldStorage, WorldStorageError } from '@xrift/world-components'
+
+function useCoins() {
+  const storage = useWorldStorage()
+
+  const addCoins = async (amount: number) => {
+    try {
+      // Use increment so concurrent additions are not lost
+      return await storage.player.increment('coins', amount)
+    } catch (e) {
+      if (e instanceof WorldStorageError && e.code === 'UNAUTHORIZED') {
+        console.log('Guests cannot write')
+        return null
+      }
+      throw e
+    }
+  }
+
+  return { addCoins }
+}
+```
+
+:::note
+World Storage is persistent storage. For values that change every frame, use `useInstanceState` / `useInstanceEvent` for synchronization, and save to World Storage only at game-event milestones (e.g. on clear, on purchase).
+:::
 
 ---
 

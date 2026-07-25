@@ -1464,19 +1464,21 @@ VRセッション中にファイル選択がリクエストされた場合、自
 
 ### useSharedFile
 
-インスタンスの共有ファイルをアップロード・一覧取得するフックです。3D空間内から画像やドキュメントをアップロードし、他のユーザーと共有できます。
+インスタンスの共有ファイルをアップロード・一覧取得・ロック（削除保護）・情報更新するフックです。3D空間内から画像やドキュメントをアップロードし、他のユーザーと共有できます。
 
 ```tsx
 import { useSharedFile } from '@xrift/world-components';
 
 function MyComponent() {
-  const { uploadSharedFile, getSharedFiles } = useSharedFile();
+  const { uploadSharedFile, getSharedFiles, setSharedFileLock, updateSharedFile } = useSharedFile();
 
   const handleUpload = async (file: File) => {
     const result = await uploadSharedFile(file, (progress) => {
       console.log(`${progress}%`);
     });
     console.log('URL:', result.publicUrl);
+    // アップロード直後にロックして誤削除を防ぐ
+    await setSharedFileLock(result.id, true);
   };
 }
 ```
@@ -1485,8 +1487,10 @@ function MyComponent() {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `uploadSharedFile` | `(file: File, onProgress?: (progress: number) => void) => Promise<SharedFileInfo>` | ファイルをアップロードする |
+| `uploadSharedFile` | `(file: File, onProgress?: (progress: number) => void, options?: UploadSharedFileOptions) => Promise<SharedFileInfo>` | ファイルをアップロードする |
 | `getSharedFiles` | `() => Promise<SharedFileInfo[]>` | 共有ファイル一覧を取得する |
+| `setSharedFileLock` | `(fileId: string, locked: boolean) => Promise<SharedFileInfo>` | ロック状態（削除保護）を設定する |
+| `updateSharedFile` | `(fileId: string, updates: UpdateSharedFileParams) => Promise<SharedFileInfo>` | ファイル情報（fileName / description / metadata）を更新する |
 
 #### SharedFileInfo
 
@@ -1497,7 +1501,33 @@ function MyComponent() {
 | `contentType` | `string` | MIMEタイプ |
 | `fileSize` | `number` | ファイルサイズ（バイト） |
 | `publicUrl` | `string` | 公開URL |
+| `locked` | `boolean` | ロック中（削除保護）かどうか |
+| `description` | `string \| null` | 説明文 |
+| `metadata` | `Record<string, string> \| null` | 構造化メタデータ |
 | `createdAt` | `string` | 作成日時（ISO 8601） |
+
+#### UploadSharedFileOptions
+
+アップロード時に任意で付与できる情報です。
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `description` | `string` | 説明文（500文字以内） |
+| `metadata` | `Record<string, string>` | フラットな key-value のメタデータ（20件以内、キー1〜64文字、値500文字以内） |
+
+#### UpdateSharedFileParams
+
+`updateSharedFile` に渡す更新内容です。`description` / `metadata` は `null` を指定するとクリアできます。
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `fileName` | `string` | ファイル名 |
+| `description` | `string \| null` | 説明文（`null` でクリア） |
+| `metadata` | `Record<string, string> \| null` | メタデータ（`null` でクリア） |
+
+:::note
+ロック中（`locked: true`）のファイルは削除できず、`updateSharedFile` による更新も拒否されます。更新したい場合は先に `setSharedFileLock(fileId, false)` でロックを解除してください。
+:::
 
 #### 使用例
 
@@ -1556,6 +1586,40 @@ function SharedFileUploader() {
 }
 ```
 
+##### 説明文・メタデータ付きアップロードとロック
+
+来場者がアップロードしたファイルを永続展示するようなケースでは、アップロード時に説明文・メタデータを付与し、直後にロックすることで誤削除を防げます。
+
+```tsx
+import { useSharedFile } from '@xrift/world-components'
+
+function ExhibitUploader() {
+  const { uploadSharedFile, setSharedFileLock, updateSharedFile } = useSharedFile()
+
+  const handleExhibitUpload = async (file: File) => {
+    // 説明文・メタデータを付与してアップロード
+    const result = await uploadSharedFile(file, undefined, {
+      description: '展示品A',
+      metadata: { exhibit: 'pedestal-1' },
+    })
+
+    // アップロード直後にロックして誤削除を防ぐ
+    await setSharedFileLock(result.id, true)
+
+    return result.publicUrl
+  }
+
+  const handleUpdateDescription = async (fileId: string) => {
+    // ロック中は更新できないため、一度解除してから更新して再ロック
+    await setSharedFileLock(fileId, false)
+    await updateSharedFile(fileId, { description: '展示品B' })
+    await setSharedFileLock(fileId, true)
+  }
+
+  // ...
+}
+```
+
 ---
 
 ### useItem
@@ -1600,6 +1664,141 @@ function VotingBox() {
   );
 }
 ```
+
+---
+
+### useWorldStorage
+
+ワールド単位のKV永続化（World Storage）を提供するフックです。ランキング・ワールド内通貨・登録情報などを、インスタンスをまたいで永続化できます。
+
+```tsx
+import { useWorldStorage } from '@xrift/world-components';
+
+function MyComponent() {
+  const storage = useWorldStorage();
+
+  const saveProgress = async () => {
+    // 共有KV（ワールドに1つの共有値）
+    await storage.shared.set('event_phase', '第2章');
+    const visits = await storage.shared.increment('total_visits', 1);
+
+    // ユーザー別KV（書き込みは自分の値のみ）
+    await storage.player.set('coins', 340);
+    const coins = await storage.player.get('coins');
+  };
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `shared` | `SharedWorldStorage` | 共有KV（ワールドに1つの共有値）。インスタンス参加中の認証ユーザーなら誰でも書ける |
+| `player` | `PlayerWorldStorage` | ユーザー別KV。書き込みは自分の値のみ、読み取りは他人の値も可 |
+
+#### SharedWorldStorage
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `get` | `(key: string) => Promise<unknown>` | 値を取得する。存在しない場合は `undefined` |
+| `list` | `() => Promise<WorldStorageEntry[]>` | すべてのキーと値を取得する |
+| `set` | `(key: string, value: unknown) => Promise<void>` | 値を保存する |
+| `increment` | `(key: string, delta: number) => Promise<number>` | 数値を加算し、加算後の値を返す（同時実行でも加算がロストしない） |
+| `delete` | `(key: string) => Promise<void>` | 値を削除する（冪等） |
+
+#### PlayerWorldStorage
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `get` | `(key: string, options?: { userId?: string }) => Promise<unknown>` | 値を取得する。`userId` を指定すると他のユーザーの値を読める |
+| `list` | `(options?: { userId?: string }) => Promise<WorldStorageEntry[]>` | すべてのキーと値を取得する。`userId` 指定で他のユーザーの値も可 |
+| `set` | `(key: string, value: unknown) => Promise<void>` | 自分の値を保存する |
+| `increment` | `(key: string, delta: number) => Promise<number>` | 自分の値に数値を加算し、加算後の値を返す |
+| `delete` | `(key: string) => Promise<void>` | 自分の値を削除する（冪等） |
+
+#### 制約・指針
+
+| 項目 | 内容 |
+|------|------|
+| 保存タイミング | 「ゲームイベントの節目」で保存する。毎フレームの同期は `useInstanceState` などの揮発性の状態同期を使う |
+| 容量 | ワールドごと合計 10MB / 1エントリ 100KB |
+| キー数 | 共有 256キー / ユーザーあたり 64キー |
+| キー形式 | `/^[A-Za-z0-9_.\-:]{1,128}$/` |
+| レートリミット | 書き込みはユーザーごと 30回/分 |
+| 読み取り | 公開（認証不要で API から読める）。**秘密情報を入れないこと** |
+| ゲスト | 読み取りのみ（書き込みは `WorldStorageError` になる） |
+| 加算 | 通貨・スコアの加算は `set` ではなく `increment` を使う |
+
+#### WorldStorageError
+
+操作が失敗すると `WorldStorageError` が投げられます。`code` プロパティで原因を判別できます。
+
+| Code | Description |
+|------|-------------|
+| `QUOTA_EXCEEDED` | ワールド合計容量（10MB）を超過 |
+| `LIMIT_EXCEEDED` | キー数上限を超過（共有: 256キー / ユーザーあたり: 64キー） |
+| `ENTRY_TOO_LARGE` | 1エントリの上限（100KB）を超過 |
+| `TYPE_MISMATCH` | `increment` 対象の既存値が数値でない |
+| `INVALID_KEY` | キー形式が不正 |
+| `NOT_IN_WORLD` | ワールドのインスタンスに参加していない状態での書き込み |
+| `RATE_LIMITED` | レートリミット超過 |
+| `UNAUTHORIZED` | 未認証（ゲスト）での書き込み |
+| `UNKNOWN` | その他のエラー |
+
+#### 使用例
+
+##### 来場者数カウンター
+
+```tsx
+import { useWorldStorage, Interactable } from '@xrift/world-components'
+import { Text } from '@react-three/drei'
+import { useEffect, useState } from 'react'
+
+function VisitCounter() {
+  const storage = useWorldStorage()
+  const [visits, setVisits] = useState<number | null>(null)
+
+  useEffect(() => {
+    // 入場時に一度だけカウントアップ
+    storage.shared.increment('total_visits', 1).then(setVisits)
+  }, [storage])
+
+  return (
+    <Text position={[0, 2, 0]} fontSize={0.2} color="white">
+      {visits === null ? '...' : `累計来場者数: ${visits}`}
+    </Text>
+  )
+}
+```
+
+##### ユーザー別のコイン管理
+
+```tsx
+import { useWorldStorage, WorldStorageError } from '@xrift/world-components'
+
+function useCoins() {
+  const storage = useWorldStorage()
+
+  const addCoins = async (amount: number) => {
+    try {
+      // 同時実行でも加算がロストしないよう increment を使う
+      return await storage.player.increment('coins', amount)
+    } catch (e) {
+      if (e instanceof WorldStorageError && e.code === 'UNAUTHORIZED') {
+        console.log('ゲストは書き込みできません')
+        return null
+      }
+      throw e
+    }
+  }
+
+  return { addCoins }
+}
+```
+
+:::note
+World Storage は永続化ストレージです。毎フレーム更新されるような値の同期には `useInstanceState` / `useInstanceEvent` を使い、World Storage への保存はゲームイベントの節目（クリア時、購入時など）に行ってください。
+:::
 
 ---
 
