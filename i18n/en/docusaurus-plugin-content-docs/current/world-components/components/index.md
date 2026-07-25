@@ -1469,7 +1469,7 @@ When a file input is requested during a VR session, the VR session is automatica
 
 ### useSharedFile
 
-A hook for uploading, listing, locking (deletion protection), and updating shared files within an instance. Allows uploading images and documents from within the 3D space for sharing with other users.
+A hook for uploading, listing, locking (deletion protection), updating, and deleting shared files within an instance. Allows uploading images and documents from within the 3D space for sharing with other users.
 
 ```tsx
 import { useSharedFile } from '@xrift/world-components';
@@ -1496,6 +1496,7 @@ function MyComponent() {
 | `getSharedFiles` | `() => Promise<SharedFileInfo[]>` | Get the list of shared files |
 | `setSharedFileLock` | `(fileId: string, locked: boolean) => Promise<SharedFileInfo>` | Set the lock state (deletion protection) |
 | `updateSharedFile` | `(fileId: string, updates: UpdateSharedFileParams) => Promise<SharedFileInfo>` | Update file info (fileName / description / metadata) |
+| `deleteSharedFile` | `(fileId: string) => Promise<void>` | Delete a file |
 
 #### SharedFileInfo
 
@@ -1531,7 +1532,7 @@ Update payload for `updateSharedFile`. Pass `null` for `description` / `metadata
 | `metadata` | `Record<string, string> \| null` | Metadata (`null` to clear) |
 
 :::note
-A locked file (`locked: true`) cannot be deleted, and updates via `updateSharedFile` are also rejected. To update a locked file, unlock it first with `setSharedFileLock(fileId, false)`.
+A locked file (`locked: true`) rejects both deletion via `deleteSharedFile` and updates via `updateSharedFile`. To delete or update a locked file, unlock it first with `setSharedFileLock(fileId, false)`.
 :::
 
 #### Usage Examples
@@ -1599,7 +1600,7 @@ For use cases like permanently exhibiting visitor-uploaded files, attach a descr
 import { useSharedFile } from '@xrift/world-components'
 
 function ExhibitUploader() {
-  const { uploadSharedFile, setSharedFileLock, updateSharedFile } = useSharedFile()
+  const { uploadSharedFile, setSharedFileLock, updateSharedFile, deleteSharedFile } = useSharedFile()
 
   const handleExhibitUpload = async (file: File) => {
     // Upload with description and metadata
@@ -1619,6 +1620,12 @@ function ExhibitUploader() {
     await setSharedFileLock(fileId, false)
     await updateSharedFile(fileId, { description: 'Exhibit B' })
     await setSharedFileLock(fileId, true)
+  }
+
+  const handleRemoveExhibit = async (fileId: string) => {
+    // Remove the exhibit and delete the file itself (unlock first)
+    await setSharedFileLock(fileId, false)
+    await deleteSharedFile(fileId)
   }
 
   // ...
