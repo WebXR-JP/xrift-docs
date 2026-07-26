@@ -268,9 +268,16 @@ import { ScreenShareDisplay } from '@xrift/world-components';
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the screen |
 | `width` | `number` | `4` | Width of the screen (Height is automatically calculated at 16:9) |
 | `targetFps` | `number` | - | Texture update FPS limit for low-spec devices (unlimited when omitted) |
+| `placeholderImageUrl` | `string` | - | URL of a placeholder image shown while no screen is being shared |
 
 :::tip[Maintaining Aspect Ratio]
 The aspect ratio of the video is automatically maintained. Video other than 16:9 will be displayed correctly with black bars.
+:::
+
+:::tip[Placeholder Image]
+When `placeholderImageUrl` is specified, the image is displayed on the screen while no screen is being shared. The image is fitted inside the screen (contain), and if loading fails, the display falls back to the background color and guide text.
+
+Since the image is loaded as a WebGL texture, specify an image URL that allows CORS (images uploaded to xrift work as-is).
 :::
 
 :::note[Limitations]

@@ -245,9 +245,16 @@ import { ScreenShareDisplay } from '@xrift/world-components';
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | スクリーンの回転 |
 | `width` | `number` | `4` | スクリーンの幅（高さは16:9で自動計算） |
 | `targetFps` | `number` | - | テクスチャ更新のターゲットFPS |
+| `placeholderImageUrl` | `string` | - | 未共有時に表示するプレースホルダー画像のURL |
 
 :::tip[アスペクト比の維持]
 映像のアスペクト比は自動的に維持されます。16:9以外の映像でも黒帯が入り正しく表示されます。
+:::
+
+:::tip[プレースホルダー画像]
+`placeholderImageUrl` を指定すると、画面共有していない間、指定した画像をスクリーンに表示できます。画像はスクリーン内に収まるように表示され（contain）、読み込みに失敗した場合は背景色とガイドテキストの表示にフォールバックします。
+
+画像はWebGLテクスチャとして読み込むため、CORS を許可している画像URLを指定してください（xrift にアップロードした画像はそのまま使えます）。
 :::
 
 :::note[制限事項]
