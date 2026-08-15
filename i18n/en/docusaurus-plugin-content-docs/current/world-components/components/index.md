@@ -811,6 +811,129 @@ In the development environment, a local EventEmitter is used, so events are only
 
 ---
 
+### useServerClock
+
+Provides a clock (server time) that agrees across every device in the instance. Device `Date.now()` values differ from each other by 0.1 to several seconds, so anything that requires "the same moment" — countdowns, simultaneous effects, video playback alignment, periodic animations that everyone sees in phase — must use this instead.
+
+```tsx
+import { useServerClock } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import type { Mesh } from 'three';
+
+// A floor that moves in the same phase on everyone's screen
+// (zero networking; late joiners match instantly)
+function MovingFloor() {
+  const { now } = useServerClock();
+  const floor = useRef<Mesh>(null);
+
+  useFrame(() => {
+    if (!floor.current) return;
+    // Write position as a function of time. No state, so no sync logic needed
+    floor.current.position.y = 1 + Math.sin(now() / 1000) * 0.5;
+  });
+
+  return (
+    <mesh ref={floor}>
+      <boxGeometry args={[2, 0.2, 2]} />
+      <meshStandardMaterial color="skyblue" />
+    </mesh>
+  );
+}
+```
+
+#### Arguments
+
+| Argument | Type | Description |
+|-----|------|-------------|
+| `options.require` | `'media' \| 'motion'` (optional) | Accuracy requirement for your use case. Used to compute `trustworthy` |
+
+#### Returns
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `now` | `() => number` | Estimated server time (ms). **A function, not a value** — call it from `useFrame` without re-rendering. Falls back to `Date.now()` before the first sync |
+| `uncertainty` | `number` | Upper bound of the estimation error (ms), including aging over time. `Infinity` before the first sync |
+| `synced` | `boolean` | Whether sync is currently established. Becomes `false` while disconnected, but `now()` keeps returning the last estimate |
+| `trustworthy` | `boolean` | Whether the clock meets the accuracy required via `require`. Same as `synced` if omitted |
+| `timeJumpCount` | `number` | Number of timeline jumps. If you accumulate deltas, re-baseline when this changes (see below) |
+| `lastTimeJumpMs` | `number` | Size of the most recent jump (ms); negative means the clock jumped backward |
+
+#### Accuracy presets
+
+| Preset | Required accuracy | Use case |
+|-----------|---------|------|
+| `media` | ±300ms | Video / music playback alignment |
+| `motion` | ±100ms | Periodic animations (moving floors, ferris wheels), simultaneous effects |
+
+Measured accuracy is around ±40ms on both desktop and Quest (Wi-Fi), satisfying both presets.
+
+#### The clock can occasionally "jump"
+
+Normal corrections are applied gradually so the clock never rewinds, but it does jump on sleep/wake and when the initial sync completes. If you write positions as a function of time every frame (stateless), as in the example above, **nothing is needed — it self-heals on the next frame**. Only if you accumulate velocities or deltas, watch `timeJumpCount` and re-baseline:
+
+```tsx
+const { now, timeJumpCount } = useServerClock();
+const seen = useRef(timeJumpCount);
+
+useFrame(() => {
+  if (seen.current !== timeJumpCount) {
+    seen.current = timeJumpCount;
+    resetBaseline(); // the timeline jumped — re-baseline
+  }
+  // ...
+});
+```
+
+#### Using it for video playback alignment
+
+The rule is: **never correct when the correction costs more than the error**. Seeking discards the buffer and refetches segments (= playback stops), so never use it to fix small drift.
+
+```tsx
+const clock = useServerClock({ require: 'media' });
+
+useFrame(() => {
+  if (!clock.trustworthy) return; // not accurate enough — give up syncing (keep playing)
+  const target = ((clock.now() - epoch) / 1000) % duration;
+  const diff = target - video.currentTime;
+  if (Math.abs(diff) < 0.3) {
+    video.playbackRate = 1; // dead band. Forgetting to reset causes endless oscillation
+    return;
+  }
+  if (Math.abs(diff) < 5) {
+    video.playbackRate = 1 + Math.sign(diff) * 0.05; // absorb without stopping the video
+    return;
+  }
+  if (isBuffered(video, target)) video.currentTime = target; // seek only within the buffer
+  // outside the buffer: do nothing (playback continuity beats sync)
+});
+```
+
+:::warning[Not suitable where fairness matters]
+Do not use this for buzzer contests or finish-line judgments. The error from asymmetric network paths cannot be detected client-side and stays nearly constant within a session, so it never averages out over repeated rounds (= the same person wins every time depending on their connection). Adjudicate outcomes on the server side instead.
+:::
+
+:::note[Behavior in development]
+In development the default implementation is used (`synced: false`, `now()` is the local clock), so `trustworthy` is always `false`. To exercise sync logic during development, inject a fake synced implementation into `XRiftProvider` in your dev entry:
+
+```tsx
+<XRiftProvider
+  baseUrl="/"
+  serverClockImplementation={{
+    now: () => Date.now(),
+    uncertainty: 10,
+    synced: true,
+    timeJumpCount: 0,
+    lastTimeJumpMs: 0,
+  }}
+>
+```
+:::
+
+Available in `@xrift/world-components` **0.47.0 and later**.
+
+---
+
 ### useScreenShareContext
 
 A hook to retrieve the state of screen sharing.

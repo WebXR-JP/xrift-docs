@@ -726,6 +726,128 @@ function JoinLeaveNotifier() {
 
 ---
 
+### useServerClock
+
+インスタンス内の全端末で一致する時計（サーバ時刻）を提供します。端末の `Date.now()` は互いに 0.1〜数秒ズレているため、カウントダウン・同時演出・動画の再生位置合わせ・全員で揃う周期アニメーションなど、「同じタイミング」を要する処理には必ずこちらを使います。
+
+```tsx
+import { useServerClock } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import type { Mesh } from 'three';
+
+// 全員の画面で同じ位相で動く床（通信ゼロ。後から入った人も即座に一致する）
+function MovingFloor() {
+  const { now } = useServerClock();
+  const floor = useRef<Mesh>(null);
+
+  useFrame(() => {
+    if (!floor.current) return;
+    // 位置を「時刻の関数」として書く。状態を持たないので同期処理そのものが不要
+    floor.current.position.y = 1 + Math.sin(now() / 1000) * 0.5;
+  });
+
+  return (
+    <mesh ref={floor}>
+      <boxGeometry args={[2, 0.2, 2]} />
+      <meshStandardMaterial color="skyblue" />
+    </mesh>
+  );
+}
+```
+
+#### 引数
+
+| 引数 | Type | Description |
+|-----|------|-------------|
+| `options.require` | `'media' \| 'motion'`（省略可） | 用途に応じた精度要件。`trustworthy` の判定に使われます |
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `now` | `() => number` | サーバ時刻の推定値（ms）。**値ではなく関数**なので `useFrame` の中から再レンダーなしで呼べます。初回同期前は `Date.now()` にフォールバック |
+| `uncertainty` | `number` | 推定誤差の上界（ms）。経過時間による劣化を含みます。未同期なら `Infinity` |
+| `synced` | `boolean` | いま同期が有効か。切断中は `false` になりますが `now()` は直前の推定を返し続けます |
+| `trustworthy` | `boolean` | `require` で指定した精度要件を満たしているか。省略時は `synced` と同じ |
+| `timeJumpCount` | `number` | 時刻が飛んだ回数。差分を積算する作りの場合はこの変化で基準を取り直します（下記） |
+| `lastTimeJumpMs` | `number` | 直近に飛んだ量（ms）。負なら時刻が戻りました |
+
+#### 精度プリセット
+
+| プリセット | 要求精度 | 用途 |
+|-----------|---------|------|
+| `media` | ±300ms | 動画・音楽の再生位置合わせ |
+| `motion` | ±100ms | 周期アニメーション（動く床・観覧車）、同時演出 |
+
+実測ではデスクトップ・Quest（Wi-Fi）とも ±40ms 程度で、どちらのプリセットも満たします。
+
+#### 時刻が「飛ぶ」ことがある
+
+通常の補正は徐々に寄せるため時刻は巻き戻りませんが、スリープ復帰や初回同期の完了時には飛びます。上の例のように**位置を毎フレーム時刻から計算する（stateless な）作りなら、何もしなくても次のフレームで自己回復します**。速度や差分を積算する作りの場合だけ、`timeJumpCount` の変化を見て基準を取り直してください。
+
+```tsx
+const { now, timeJumpCount } = useServerClock();
+const seen = useRef(timeJumpCount);
+
+useFrame(() => {
+  if (seen.current !== timeJumpCount) {
+    seen.current = timeJumpCount;
+    resetBaseline(); // 時刻が飛んだので基準を取り直す
+  }
+  // ...
+});
+```
+
+#### 動画の再生位置合わせに使う場合
+
+原則は「**補正のコストが誤差より大きいなら補正しない**」です。シークはバッファの破棄と再取得（= 再生停止）を伴うため、小さなズレの補正に使ってはいけません。
+
+```tsx
+const clock = useServerClock({ require: 'media' });
+
+useFrame(() => {
+  if (!clock.trustworthy) return; // 精度が出ていないなら同期を諦める（再生継続を優先）
+  const target = ((clock.now() - epoch) / 1000) % duration;
+  const diff = target - video.currentTime;
+  if (Math.abs(diff) < 0.3) {
+    video.playbackRate = 1; // dead band。戻し忘れると振動し続けるので注意
+    return;
+  }
+  if (Math.abs(diff) < 5) {
+    video.playbackRate = 1 + Math.sign(diff) * 0.05; // 映像を止めずに吸収
+    return;
+  }
+  if (isBuffered(video, target)) video.currentTime = target; // バッファ内のときだけシーク
+  // バッファ外なら何もしない（同期より再生継続を優先）
+});
+```
+
+:::warning[公平性が要る用途には使えません]
+早押しやゴール判定には使わないでください。通信経路の行き帰りが非対称なぶんの誤差はクライアント側から検出できず、セッション中ほぼ一定なので繰り返しても平均化されません（= 回線条件で同じ人が毎回勝ちます）。勝敗の判定はサーバー側で裁定する設計にしてください。
+:::
+
+:::note[開発環境での動作]
+開発環境ではデフォルト実装（`synced: false`・`now()` はローカル時計）が使われるため、`trustworthy` は常に `false` です。同期ロジックを開発中に動かすには、dev エントリで `XRiftProvider` に同期済みのフェイク実装を注入してください。
+
+```tsx
+<XRiftProvider
+  baseUrl="/"
+  serverClockImplementation={{
+    now: () => Date.now(),
+    uncertainty: 10,
+    synced: true,
+    timeJumpCount: 0,
+    lastTimeJumpMs: 0,
+  }}
+>
+```
+:::
+
+`@xrift/world-components` **0.47.0 以降**で利用できます。
+
+---
+
 ### useScreenShareContext
 
 画面共有の状態を取得するフックです。
