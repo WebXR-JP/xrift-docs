@@ -1760,14 +1760,15 @@ function ExhibitUploader() {
 
 ### useItem
 
-配置されたアイテムの固有IDを取得するフックです。同じアイテムが複数配置された場合でも、配置ごとに異なるIDが返されます。
+配置されたアイテムの固有IDと設置者の情報を取得するフックです。同じアイテムが複数配置された場合でも、配置ごとに異なるIDが返されます。
 
 ```tsx
 import { useItem } from '@xrift/world-components';
 
 function MyItem() {
-  const { id } = useItem();
+  const { id, placedBy } = useItem();
   // id は配置ごとにユニーク
+  // placedBy はこのアイテムを設置したユーザー（特定できない場合は null）
 }
 ```
 
@@ -1776,10 +1777,72 @@ function MyItem() {
 | Property | Type | Description |
 |----------|------|-------------|
 | `id` | `string` | 配置オブジェクトの固有ID（UUID） |
+| `placedBy` | `ItemPlacer \| null` | 設置者。プレビュー中（配置前）は自分。永続シーン由来などで設置者を特定できない場合は `null` |
+
+#### ItemPlacer
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | 設置者の userId。サーバーが確定した値で、常に入ります |
+| `displayName` | `string \| null` | 表示名。設置者が退室済みなどでプロフィールを解決できない場合は `null` |
+| `avatarUrl` | `string \| null` | アイコン URL。解決できない場合は `null` |
+| `isLocalUser` | `boolean` | 自分（ローカルユーザー）が設置したものか |
 
 :::note
 `useItem` は `ItemProvider` 内でのみ使用可能です。Provider 外で呼び出すと例外がスローされます。プラットフォームが `ItemProvider` を自動的に提供するため、アイテム開発者が Provider を設定する必要はありません。
 :::
+
+:::tip[設置者の判定は id で行う]
+`placedBy.id` はバックエンドが確定した userId なので、クライアント側で偽装できません。「設置者だけが操作できる」ようにしたい場合は `isLocalUser`（自分かどうか）や `id` の比較で判定してください。一方 `displayName` / `avatarUrl` はインスタンス内の参加者情報から都度解決されるため、設置者が退室すると `null` になります。表示用途にとどめ、判定に使わないでください。
+:::
+
+`placedBy` は `@xrift/world-components` **0.49.0 以降**で利用できます。
+
+##### 設置者だけが操作できるアイテム
+
+```tsx
+import { useCallback } from 'react';
+import { Interactable, useItem, useInstanceState } from '@xrift/world-components';
+
+function PlacerOnlyCounter() {
+  const { id, placedBy } = useItem();
+  const [count, setCount] = useInstanceState(`count-${id}`, 0);
+
+  const handleReset = useCallback(() => {
+    // 設置者だけがリセットできる
+    if (!placedBy?.isLocalUser) return;
+    setCount(0);
+  }, [placedBy, setCount]);
+
+  return (
+    <Interactable id={`reset-${id}`} onInteract={handleReset}>
+      <mesh>
+        <boxGeometry args={[0.5, 0.5, 0.5]} />
+        <meshStandardMaterial color={placedBy?.isLocalUser ? 'orange' : 'gray'} />
+      </mesh>
+    </Interactable>
+  );
+}
+```
+
+##### 設置者の名前を表示する
+
+```tsx
+import { Text } from '@react-three/drei';
+import { useItem } from '@xrift/world-components';
+
+function OwnerLabel() {
+  const { placedBy } = useItem();
+  // 退室済みなどで表示名が引けない場合のフォールバックを用意する
+  const label = placedBy?.displayName ?? '（不明なユーザー）';
+
+  return (
+    <Text position={[0, 1.2, 0]} fontSize={0.1} anchorX="center">
+      {`設置者: ${label}`}
+    </Text>
+  );
+}
+```
 
 ##### 配置ごとのステート管理
 

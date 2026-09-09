@@ -1766,14 +1766,15 @@ function ExhibitUploader() {
 
 ### useItem
 
-A hook that retrieves the unique ID of a placed item. Even when the same item is placed multiple times, each placement returns a different ID.
+A hook that retrieves the unique ID of a placed item and information about who placed it. Even when the same item is placed multiple times, each placement returns a different ID.
 
 ```tsx
 import { useItem } from '@xrift/world-components';
 
 function MyItem() {
-  const { id } = useItem();
+  const { id, placedBy } = useItem();
   // id is unique per placement
+  // placedBy is the user who placed this item (null if it cannot be determined)
 }
 ```
 
@@ -1782,8 +1783,70 @@ function MyItem() {
 | Property | Type | Description |
 |----------|------|-------------|
 | `id` | `string` | Unique ID of the placed object (UUID) |
+| `placedBy` | `ItemPlacer \| null` | The user who placed the item. During preview (before placement) this is the local user. `null` when the placer cannot be determined (e.g. the item comes from the persistent scene) |
+
+#### ItemPlacer
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | The placer's userId. Confirmed by the server and always present |
+| `displayName` | `string \| null` | Display name. `null` when the profile cannot be resolved, e.g. because the placer has left the instance |
+| `avatarUrl` | `string \| null` | Avatar image URL. `null` when it cannot be resolved |
+| `isLocalUser` | `boolean` | Whether the item was placed by the local user |
 
 **Note:** `useItem` can only be used within an `ItemProvider`. Calling it outside the provider will throw an error. The platform automatically provides the `ItemProvider`, so item developers do not need to set up the provider themselves.
+
+:::tip[Identify the placer by id]
+`placedBy.id` is a userId confirmed by the backend, so it cannot be spoofed by clients. To restrict an action to the placer, check `isLocalUser` or compare `id`. `displayName` / `avatarUrl` are resolved from the participants currently in the instance, so they become `null` once the placer leaves. Use them for display only, never for authorization.
+:::
+
+`placedBy` is available in `@xrift/world-components` **0.49.0 and later**.
+
+##### Item only the placer can operate
+
+```tsx
+import { useCallback } from 'react';
+import { Interactable, useItem, useInstanceState } from '@xrift/world-components';
+
+function PlacerOnlyCounter() {
+  const { id, placedBy } = useItem();
+  const [count, setCount] = useInstanceState(`count-${id}`, 0);
+
+  const handleReset = useCallback(() => {
+    // Only the placer can reset
+    if (!placedBy?.isLocalUser) return;
+    setCount(0);
+  }, [placedBy, setCount]);
+
+  return (
+    <Interactable id={`reset-${id}`} onInteract={handleReset}>
+      <mesh>
+        <boxGeometry args={[0.5, 0.5, 0.5]} />
+        <meshStandardMaterial color={placedBy?.isLocalUser ? 'orange' : 'gray'} />
+      </mesh>
+    </Interactable>
+  );
+}
+```
+
+##### Showing the placer's name
+
+```tsx
+import { Text } from '@react-three/drei';
+import { useItem } from '@xrift/world-components';
+
+function OwnerLabel() {
+  const { placedBy } = useItem();
+  // Provide a fallback for when the display name cannot be resolved (e.g. the placer has left)
+  const label = placedBy?.displayName ?? '(unknown user)';
+
+  return (
+    <Text position={[0, 1.2, 0]} fontSize={0.1} anchorX="center">
+      {`Placed by: ${label}`}
+    </Text>
+  );
+}
+```
 
 ##### Per-placement state management
 
