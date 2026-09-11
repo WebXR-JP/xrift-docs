@@ -106,6 +106,86 @@ interface GrabResultTransform {
 
 ---
 
+### Seat
+
+オブジェクトを「座れる」と宣言するラッパーコンポーネントです。`Interactable` と同じく、囲んだ対象を明示的にオプトインさせます。プレイヤーが座ると、視点・姿勢・体の向きが座席に追従し、**Space**（VR は A ボタン）で降ります。
+
+`Seat` は group として置きます。**原点が座面（腰を置く点）、前方が -Z** です。子は座面を原点としたローカル座標で書きます。
+
+座面の姿勢は `Seat` を置いた場所の**ワールド行列から毎フレーム求められます**。そのため、動く乗り物・回転台・傾いたグループの下にネストしても、プレイヤーはそのまま追従します。作者は置くだけで、姿勢を自分で渡す必要はありません。
+
+```tsx
+import { Seat } from '@xrift/world-components';
+
+function Stool() {
+  const height = 0.45;
+
+  return (
+    // 座面の高さに Seat を置く
+    <Seat id="stool-1" position={[2, height, -3]} rotation={[0, Math.PI / 2, 0]}>
+      {/* 子は座面が原点。箱は半分ぶん下げて描く */}
+      <mesh position={[0, -height / 2, 0]}>
+        <boxGeometry args={[0.5, height, 0.5]} />
+        <meshStandardMaterial color="saddlebrown" />
+      </mesh>
+    </Seat>
+  );
+}
+```
+
+#### Props
+
+`position` / `rotation` など group のプロパティをそのまま指定できます（`scale` を除く。下記参照）。
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | 一意の識別子（必須） |
+| `exitOffset` | `SeatExitOffset` | `{ forward: 0.6, right: 0, up: 0 }` | 降車位置。座席から見た向き・ワールドのメートル |
+| `interactionText` | `string` | `'座る'` | 狙ったときに表示するテキスト |
+| `enabled` | `boolean` | `true` | 座れるかどうか（`false` で一時的に無効化。他の人が座っている間は自動で無効） |
+| `children` | `ReactNode` | - | 座る対象のオブジェクト（座面を原点としたローカル座標で書く・必須） |
+
+#### SeatExitOffset
+
+```typescript
+interface SeatExitOffset {
+  forward?: number;  // 前方（-Z 側）へ。既定 0.6
+  right?: number;    // 右へ。既定 0
+  up?: number;       // ワールド上方向へ。既定 0
+}
+```
+
+`forward` / `right` は座席の**水平方向の向き（yaw）だけ**で回ります。`up` はワールドの上方向です。傾いた乗り物から降りるときに「座席から見た上」へ出すと、宙返り中に地面へめり込むためです。
+
+テーブル付きの椅子など、前方に降りられない座席で使います。
+
+```tsx
+{/* 右側から降りる */}
+<Seat id="booth-seat" exitOffset={{ forward: 0, right: 0.7 }}>
+  {/* ... */}
+</Seat>
+```
+
+:::note[座面の高さと子の位置]
+`Seat` の原点は座面です。床に置いた箱を座席にする場合、`Seat` 自体を座面の高さに置き、子の箱をそこから下げて描きます。原点を床に合わせると、プレイヤーが床にめり込んで座ります。
+:::
+
+:::caution[scale は指定できません]
+座面は位置と向きだけで決まり、着席時の腰・目線の高さはプレイヤーのアバターの実寸から決まるため、座席を拡大しても意味がありません。見た目を大きくしたい場合は `children` 側を拡大してください。
+
+親グループを拡大している場合、座面の位置と向きは正しく求まりますが、`exitOffset` の距離は拡大されません（常にワールドのメートル）。
+:::
+
+:::note[占有]
+同じ座席に他のプレイヤーが座っている間は自動的に `enabled={false}` 相当になり、「座る」のプロンプトが出ません。ほぼ同時に座った場合は両者が座れることがあります（見た目が重なるだけで、状態は壊れません）。
+:::
+
+:::note[開発環境では座れません]
+着席にはアバター・カメラ・物理が必要なため、座る処理はプラットフォーム側が提供します。`DevEnvironment` では座席の登録だけが行われ、クリックしても何も起きません。実際の動作は XRift 上で確認してください。
+:::
+
+---
+
 ### Mirror
 
 リアルタイム反射面を作成します。
