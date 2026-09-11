@@ -106,6 +106,86 @@ Grabbing assumes desktop (pointer lock + center crosshair). In `DevEnvironment`,
 
 ---
 
+### Seat
+
+A wrapper component that declares an object as "sittable". Like `Interactable`, it makes the wrapped object explicitly opt in. When a player sits, their view, pose, and body orientation follow the seat; they stand up with **Space** (the A button in VR).
+
+Place `Seat` as a group. **Its origin is the seating surface (where the hips go) and its forward direction is -Z.** Write children in local coordinates relative to that surface.
+
+The surface transform is derived from the **world matrix of wherever you placed the `Seat`, every frame**. Because of that, nesting it under a moving vehicle, a turntable, or a tilted group just works — the player follows along. You place it; you never pass the transform yourself.
+
+```tsx
+import { Seat } from '@xrift/world-components';
+
+function Stool() {
+  const height = 0.45;
+
+  return (
+    // Place the Seat at the height of the seating surface
+    <Seat id="stool-1" position={[2, height, -3]} rotation={[0, Math.PI / 2, 0]}>
+      {/* Children are relative to the surface, so drop the box by half its height */}
+      <mesh position={[0, -height / 2, 0]}>
+        <boxGeometry args={[0.5, height, 0.5]} />
+        <meshStandardMaterial color="saddlebrown" />
+      </mesh>
+    </Seat>
+  );
+}
+```
+
+#### Props
+
+Group properties such as `position` and `rotation` can be passed directly (except `scale` — see below).
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | Unique identifier (required) |
+| `exitOffset` | `SeatExitOffset` | `{ forward: 0.6, right: 0, up: 0 }` | Where the player is placed on standing up. Relative to the seat's facing, in world meters |
+| `interactionText` | `string` | `'座る'` | Text shown when the player aims at the seat |
+| `enabled` | `boolean` | `true` | Whether the seat can be used (`false` disables it temporarily; it is disabled automatically while someone else is seated) |
+| `children` | `ReactNode` | - | The object to sit on, in coordinates relative to the seating surface (required) |
+
+#### SeatExitOffset
+
+```typescript
+interface SeatExitOffset {
+  forward?: number;  // Toward the front (-Z). Default 0.6
+  right?: number;    // To the right. Default 0
+  up?: number;       // Along world up. Default 0
+}
+```
+
+`forward` and `right` are rotated by the seat's **horizontal facing (yaw) only**. `up` is world up: placing the player along the seat's own up axis would bury them in the ground when they leave a vehicle that is upside down mid-loop.
+
+Use it for seats you cannot leave forwards, such as a chair at a table.
+
+```tsx
+{/* Exit to the right */}
+<Seat id="booth-seat" exitOffset={{ forward: 0, right: 0.7 }}>
+  {/* ... */}
+</Seat>
+```
+
+:::note[Surface height and child placement]
+The origin of `Seat` is the seating surface. To turn a box resting on the floor into a seat, place the `Seat` itself at the surface height and draw the child box below it. Aligning the origin with the floor makes players sit sunk into it.
+:::
+
+:::caution[scale is not accepted]
+The surface is defined by position and orientation alone, and the seated hip and eye heights come from the player's own avatar, so scaling a seat means nothing. To change how it looks, scale the `children` instead.
+
+If an ancestor group is scaled, the surface position and orientation are still correct, but `exitOffset` distances are not scaled (they are always world meters).
+:::
+
+:::note[Occupancy]
+While another player is seated, the seat behaves as `enabled={false}` and shows no prompt. If two players sit at almost the same moment, both may succeed — they simply overlap visually; no state is corrupted.
+:::
+
+:::note[You cannot sit in the dev environment]
+Sitting requires an avatar, a camera, and physics, so the platform provides that part. In `DevEnvironment` the seat is only registered; clicking it does nothing. Verify the real behaviour on XRift.
+:::
+
+---
+
 ### Mirror
 
 Creates a real-time reflective surface.
