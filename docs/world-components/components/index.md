@@ -145,7 +145,8 @@ function Stool() {
 | `enabled` | `boolean` | `true` | 座れるかどうか（`false` で一時的に無効化。他の人が座っている間は自動で無効） |
 | `onEnter` | `(occupant: SeatOccupant) => void` | - | 誰かが座ったときに呼ばれる（自分・他人の両方） |
 | `onLeave` | `(occupant: SeatOccupant) => void` | - | 誰かが降りたときに呼ばれる（自分・他人の両方） |
-| `onControlInput` | `(input: SeatControlInput, delta: number) => void` | - | 操縦入力。渡すとその座席が**運転席**になる（下記） |
+| `driver` | `boolean` | `false` | 囲んでいる `Vehicle` の**運転席**にする（0.52.0〜） |
+| `onControlInput` | `(input: SeatControlInput, delta: number) => void` | - | 操縦入力。**乗り物ではない**座席（砲台・回転椅子など）で使う |
 | `children` | `ReactNode` | - | 座る対象のオブジェクト（座面を原点としたローカル座標で書く・必須） |
 
 #### SeatOccupant
@@ -159,54 +160,21 @@ interface SeatOccupant {
 
 表示名やアイコンは持ちません。必要なら `useUsers()` から `id` で引いてください（退席後は取れなくなります）。
 
-#### 乗り物にする（onControlInput）
+#### 操縦入力を受け取る（onControlInput）
 
-`onControlInput` を渡すと、その座席は運転席になります。**自分がその席に座っている間だけ**、毎フレーム操縦入力が届きます。
+**乗り物を作るなら `Vehicle` を使ってください**（後述）。`onControlInput` は、砲台・回転椅子・クレーンのように「操縦入力は欲しいが、動かす乗り物は持たない」座席のためのものです。**自分がその席に座っている間だけ**、毎フレーム届きます。
 
 ```tsx
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Seat } from '@xrift/world-components';
-
-const TURN_RATE = 1.5;  // rad/s
-const MAX_SPEED = 4;    // m/s
-
-function Cart() {
-  const yaw = useRef(0);
-  const pos = useRef({ x: 0, z: 0 });
-  const groupRef = useRef(null);
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    groupRef.current.position.set(pos.current.x, 0, pos.current.z);
-    groupRef.current.rotation.y = yaw.current;
-  });
-
-  return (
-    <group ref={groupRef}>
-      <Seat
-        id="cart-driver"
-        position={[0, 0.5, 0]}
-        onControlInput={(input, delta) => {
-          // A/D = 旋回（yaw が増える向きが左）
-          yaw.current -= input.right * TURN_RATE * delta;
-          // W/S = 前後。進む向きは今の yaw から求める
-          const step = input.forward * MAX_SPEED * delta;
-          pos.current.x -= Math.sin(yaw.current) * step;
-          pos.current.z -= Math.cos(yaw.current) * step;
-        }}
-        onLeave={() => { /* 運転者が降りた。停止処理など */ }}
-      >
-        <mesh position={[0, -0.25, 0]}>
-          <boxGeometry args={[0.5, 0.5, 0.5]} />
-          <meshStandardMaterial color="crimson" />
-        </mesh>
-      </Seat>
-
-      <mesh>{/* 車体 */}</mesh>
-    </group>
-  );
-}
+<Seat
+  id="turret-1"
+  position={[0, 0.5, 0]}
+  onControlInput={(input, delta) => {
+    // 砲身だけ回す
+    barrelYaw.current -= input.right * TURN_RATE * delta;
+  }}
+>
+  {/* ... */}
+</Seat>
 ```
 
 #### SeatControlInput
@@ -229,9 +197,9 @@ interface SeatControlInput {
 :::
 
 :::caution[動かすのは運転者のクライアントだけ]
-`onControlInput` が呼ばれるのは運転者の画面だけです。他の参加者の画面では、乗り物の位置は**運転者の位置から再現**されます。全員で物理を回して一致させる作りにはなっていません。
+`onControlInput`（`Vehicle` なら `onDrive`）が呼ばれるのは運転者の画面だけです。全員で物理を回して一致させる作りにはなっていません。
 
-そのため、乗り物の状態は `useInstanceState` などで同期せず、**運転者のローカル状態として持つのが正しい**です。
+そのため、状態は `useInstanceState` などで同期せず、**運転者のローカル状態として持つのが正しい**です。`Vehicle` を使っていれば姿勢は自動で同期されるので、二重管理になります。
 :::
 
 #### SeatExitOffset
@@ -271,6 +239,92 @@ interface SeatExitOffset {
 
 :::note[開発環境では座れません]
 着席にはアバター・カメラ・物理が必要なため、座る処理はプラットフォーム側が提供します。`DevEnvironment` では座席の登録だけが行われ、クリックしても何も起きません。実際の動作は XRift 上で確認してください。
+:::
+
+---
+
+### Vehicle
+
+乗り物です。中に `Seat` を置き、ひとつに `driver` を付けると運転できるようになります。
+
+**姿勢を所有するのは `Vehicle` です。** 作者は `onDrive` で「どう動かしたいか」だけを書けばよく、同期は意識しなくて構いません。
+
+- 運転者のクライアント: `onDrive` の結果で動き、その姿勢が同期に流れる
+- それ以外のクライアント: `onDrive` は呼ばれず、届いた姿勢が当たる
+
+車体ごと動くので、**空いている同乗席も正しい位置**に来ます。流れる姿勢も1台につき1本です。
+
+```tsx
+import { Seat, Vehicle } from '@xrift/world-components';
+
+const SPEED = 3;       // m/s
+const TURN_RATE = 1.8; // rad/s
+
+function Cart() {
+  return (
+    <Vehicle
+      id="cart-1"
+      position={[0, 0, -5]}
+      onDrive={(input, delta, vehicle) => {
+        // 車体の前方へ進む。傾いていれば坂に沿う
+        vehicle.translateZ(-input.forward * SPEED * delta);
+        // 今の向きから相対に回る
+        vehicle.rotateY(-input.right * TURN_RATE * delta);
+      }}
+    >
+      {/* 車体（乗り物のローカル座標で書く） */}
+      <mesh position={[0, 0.25, 0]}>
+        <boxGeometry args={[1.2, 0.3, 2]} />
+        <meshStandardMaterial color="tomato" />
+      </mesh>
+
+      {/* 運転席 */}
+      <Seat id="cart-1-driver" driver position={[0, 0.45, -0.35]} exitOffset={{ forward: 0, right: -1.2 }}>
+        <mesh><boxGeometry args={[0.5, 0.1, 0.5]} /><meshStandardMaterial color="steelblue" /></mesh>
+      </Seat>
+
+      {/* 同乗席。運転はできないが車体と一緒に動く */}
+      <Seat id="cart-1-back" position={[0, 0.45, 0.55]} exitOffset={{ forward: 0, right: 1.2 }}>
+        <mesh><boxGeometry args={[0.5, 0.1, 0.5]} /><meshStandardMaterial color="seagreen" /></mesh>
+      </Seat>
+    </Vehicle>
+  );
+}
+```
+
+| Prop | 型 | 既定値 | 説明 |
+|------|-----|--------|------|
+| `id` | `string` | - | 乗り物の一意な ID（必須） |
+| `onDrive` | `(input: SeatControlInput, delta: number, vehicle: THREE.Group) => void` | - | 乗り物を動かす。**自分が運転席に座っている間だけ**毎フレーム呼ばれる |
+
+`position` や `rotation` などの group のプロパティもそのまま渡せます。
+
+#### vehicle（onDrive の第3引数）
+
+three.js の `Group` そのものです。書き換えるとそのまま乗り物が動きます。
+
+- `vehicle.rotateY(rad)` — 旋回
+- `vehicle.translateZ(-distance)` — **車体の前方**へ前進（傾いていれば坂に沿う）
+- `vehicle.quaternion` — 直接いじれば坂・バンク・宙返りも表現できる
+
+:::tip[坂道は translateZ に任せる]
+`position.x` / `position.z` に「向きから求めた成分」を足す書き方だと傾きが捨てられ、坂で浮いたり埋まったりします。`translateZ` は車体の前方軸に沿って動くので、坂への追従が何もしなくても付いてきます。
+:::
+
+:::caution[props で動かさないこと]
+`position` / `rotation` は**初期位置・初期の向き**です。走り出したあとの姿勢は `Vehicle` が持ちます（運転者のクライアントでは `onDrive`、それ以外では届いた姿勢）。変化する値を `position` に渡すと、そのどちらかと喧嘩します。
+:::
+
+:::note[driver は Vehicle の中だけ]
+`Vehicle` の外の `Seat` に `driver` を付けても運転席にはならず、普通の椅子として扱われます（開発時は console に警告が出ます）。
+:::
+
+:::note[停めた場所は覚えられます]
+運転者が降りたあとの位置はインスタンスに残るので、後から入室した人にも「停まっている場所」が見えます。初期位置に戻って見えることはありません。
+:::
+
+:::note[0.52.0 以降]
+`Vehicle` と `Seat` の `driver` は `@xrift/world-components` 0.52.0 以降で使えます。
 :::
 
 ---

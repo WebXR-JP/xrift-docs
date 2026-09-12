@@ -145,7 +145,8 @@ Group properties such as `position` and `rotation` can be passed directly (excep
 | `enabled` | `boolean` | `true` | Whether the seat can be used (`false` disables it temporarily; it is disabled automatically while someone else is seated) |
 | `onEnter` | `(occupant: SeatOccupant) => void` | - | Called when someone sits down (yourself or anyone else) |
 | `onLeave` | `(occupant: SeatOccupant) => void` | - | Called when someone stands up (yourself or anyone else) |
-| `onControlInput` | `(input: SeatControlInput, delta: number) => void` | - | Steering input. Passing it makes the seat a **driver seat** (see below) |
+| `driver` | `boolean` | `false` | Makes this the **driver seat** of the surrounding `Vehicle` (0.52.0+) |
+| `onControlInput` | `(input: SeatControlInput, delta: number) => void` | - | Steering input, for seats that are **not** vehicles (turrets, swivel chairs) |
 | `children` | `ReactNode` | - | The object to sit on, in coordinates relative to the seating surface (required) |
 
 #### SeatOccupant
@@ -159,54 +160,21 @@ interface SeatOccupant {
 
 No display name or icon. Look them up from `useUsers()` by `id` if you need them (they become unavailable once the player leaves).
 
-#### Making a vehicle (onControlInput)
+#### Receiving steering input (onControlInput)
 
-Passing `onControlInput` turns the seat into a driver seat. Steering input arrives every frame, **only while you are the one sitting in it**.
+**To make a vehicle, use `Vehicle`** (below). `onControlInput` is for seats that are not vehicles — a turret, a swivel chair, a crane — where you want the steering input but own no vehicle transform. It arrives every frame, **only while you are the one sitting in it**.
 
 ```tsx
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Seat } from '@xrift/world-components';
-
-const TURN_RATE = 1.5;  // rad/s
-const MAX_SPEED = 4;    // m/s
-
-function Cart() {
-  const yaw = useRef(0);
-  const pos = useRef({ x: 0, z: 0 });
-  const groupRef = useRef(null);
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    groupRef.current.position.set(pos.current.x, 0, pos.current.z);
-    groupRef.current.rotation.y = yaw.current;
-  });
-
-  return (
-    <group ref={groupRef}>
-      <Seat
-        id="cart-driver"
-        position={[0, 0.5, 0]}
-        onControlInput={(input, delta) => {
-          // A/D steers (increasing yaw turns left)
-          yaw.current -= input.right * TURN_RATE * delta;
-          // W/S drives; the heading comes from the current yaw
-          const step = input.forward * MAX_SPEED * delta;
-          pos.current.x -= Math.sin(yaw.current) * step;
-          pos.current.z -= Math.cos(yaw.current) * step;
-        }}
-        onLeave={() => { /* the driver got off — bring it to a stop */ }}
-      >
-        <mesh position={[0, -0.25, 0]}>
-          <boxGeometry args={[0.5, 0.5, 0.5]} />
-          <meshStandardMaterial color="crimson" />
-        </mesh>
-      </Seat>
-
-      <mesh>{/* the cart body */}</mesh>
-    </group>
-  );
-}
+<Seat
+  id="turret-1"
+  position={[0, 0.5, 0]}
+  onControlInput={(input, delta) => {
+    // turn just the barrel
+    barrelYaw.current -= input.right * TURN_RATE * delta;
+  }}
+>
+  {/* ... */}
+</Seat>
 ```
 
 #### SeatControlInput
@@ -221,17 +189,17 @@ interface SeatControlInput {
 What you receive is **which way the player wants to move**, not how far. Whether `right` means steering or strafing is for your vehicle to decide.
 
 :::tip[Why not raw key events]
-You can build a vehicle with `window.addEventListener('keydown')`, but `onControlInput` gives you three things it cannot.
+You can read raw keys with `window.addEventListener('keydown')`, but `onControlInput` gives you three things they cannot.
 
 - **It arrives the same way in VR and on mobile** (thumbsticks, virtual joystick)
-- **It is limited to the driver.** With raw keys, someone who is not aboard can press W and move the vehicle on their own screen, drifting out of sync with everyone else
+- **It is limited to the person seated.** With raw keys, someone who is not aboard can press W and move things on their own screen, drifting out of sync with everyone else
 - It does not fight with player movement (WASD does not walk you around while seated)
 :::
 
 :::caution[Only the driver's client simulates]
-`onControlInput` fires on the driver's screen alone. On everyone else's screen the vehicle's position is **reproduced from the driver's position**. XRift does not run physics on every client and reconcile them.
+`onControlInput` (or `onDrive` on a `Vehicle`) fires on the driver's screen alone. XRift does not run physics on every client and reconcile them.
 
-Because of that, vehicle state should be held as **local state on the driver's client** — do not sync it with `useInstanceState`.
+Because of that, state should be held as **local state on the driver's client** — do not sync it with `useInstanceState`. With `Vehicle` the pose is synced for you, so doing both means managing it twice.
 :::
 
 #### SeatExitOffset
@@ -271,6 +239,92 @@ While another player is seated, the seat behaves as `enabled={false}` and shows 
 
 :::note[You cannot sit in the dev environment]
 Sitting requires an avatar, a camera, and physics, so the platform provides that part. In `DevEnvironment` the seat is only registered; clicking it does nothing. Verify the real behaviour on XRift.
+:::
+
+---
+
+### Vehicle
+
+A rideable vehicle. Put `Seat`s inside it and mark one with `driver` to make it drivable.
+
+**`Vehicle` owns the transform.** You write only *how you want it to move*, in `onDrive`; the syncing is handled for you.
+
+- On the driver's client: it moves by what `onDrive` writes, and that pose is what gets synced
+- On everyone else's client: `onDrive` is not called; the arriving pose is applied instead
+
+The whole body moves, so **empty passenger seats end up in the right place too**, and exactly one pose is synced per vehicle.
+
+```tsx
+import { Seat, Vehicle } from '@xrift/world-components';
+
+const SPEED = 3;       // m/s
+const TURN_RATE = 1.8; // rad/s
+
+function Cart() {
+  return (
+    <Vehicle
+      id="cart-1"
+      position={[0, 0, -5]}
+      onDrive={(input, delta, vehicle) => {
+        // drive along the body's forward axis, so a slope is followed automatically
+        vehicle.translateZ(-input.forward * SPEED * delta);
+        // turn relative to where it is already facing
+        vehicle.rotateY(-input.right * TURN_RATE * delta);
+      }}
+    >
+      {/* the body, in the vehicle's local coordinates */}
+      <mesh position={[0, 0.25, 0]}>
+        <boxGeometry args={[1.2, 0.3, 2]} />
+        <meshStandardMaterial color="tomato" />
+      </mesh>
+
+      {/* the driver seat */}
+      <Seat id="cart-1-driver" driver position={[0, 0.45, -0.35]} exitOffset={{ forward: 0, right: -1.2 }}>
+        <mesh><boxGeometry args={[0.5, 0.1, 0.5]} /><meshStandardMaterial color="steelblue" /></mesh>
+      </Seat>
+
+      {/* a passenger seat - cannot drive, but moves with the body */}
+      <Seat id="cart-1-back" position={[0, 0.45, 0.55]} exitOffset={{ forward: 0, right: 1.2 }}>
+        <mesh><boxGeometry args={[0.5, 0.1, 0.5]} /><meshStandardMaterial color="seagreen" /></mesh>
+      </Seat>
+    </Vehicle>
+  );
+}
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | - | Unique identifier for the vehicle (required) |
+| `onDrive` | `(input: SeatControlInput, delta: number, vehicle: THREE.Group) => void` | - | Moves the vehicle. Called every frame **only while you are in the driver seat** |
+
+Group properties such as `position` and `rotation` can be passed directly.
+
+#### vehicle (the third argument to onDrive)
+
+The three.js `Group` itself. Writing to it moves the vehicle:
+
+- `vehicle.rotateY(rad)` — turn
+- `vehicle.translateZ(-distance)` — drive toward **the body's own forward**, so slopes work for free
+- `vehicle.quaternion` — set it directly for slopes, banking, even loops
+
+:::tip[Let translateZ handle slopes]
+Adding to `position.x` / `position.z` by a heading angle throws the tilt away, so the vehicle floats above or sinks into a slope. `translateZ` moves along the body's forward axis, so following a slope comes for free.
+:::
+
+:::caution[Do not drive it from props]
+`position` and `rotation` set where it **starts**. After that the transform belongs to `Vehicle` (`onDrive` on the driver's client, the arriving pose on everyone else's). Passing a changing value to `position` fights whichever one is in charge.
+:::
+
+:::note[driver only means something inside a Vehicle]
+On a `Seat` outside one, `driver` is ignored and the seat behaves as an ordinary chair (with a console warning during development).
+:::
+
+:::note[Where it was parked is remembered]
+The position after the driver gets off is kept for the instance, so someone who joins later sees the vehicle where it was left rather than back at its starting position.
+:::
+
+:::note[0.52.0 and later]
+`Vehicle` and `Seat`'s `driver` require `@xrift/world-components` 0.52.0 or later.
 :::
 
 ---
