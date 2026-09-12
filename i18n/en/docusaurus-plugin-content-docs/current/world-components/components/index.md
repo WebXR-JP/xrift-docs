@@ -143,7 +143,96 @@ Group properties such as `position` and `rotation` can be passed directly (excep
 | `exitOffset` | `SeatExitOffset` | `{ forward: 0.6, right: 0, up: 0 }` | Where the player is placed on standing up. Relative to the seat's facing, in world meters |
 | `interactionText` | `string` | `'座る'` | Text shown when the player aims at the seat |
 | `enabled` | `boolean` | `true` | Whether the seat can be used (`false` disables it temporarily; it is disabled automatically while someone else is seated) |
+| `onEnter` | `(occupant: SeatOccupant) => void` | - | Called when someone sits down (yourself or anyone else) |
+| `onLeave` | `(occupant: SeatOccupant) => void` | - | Called when someone stands up (yourself or anyone else) |
+| `onControlInput` | `(input: SeatControlInput, delta: number) => void` | - | Steering input. Passing it makes the seat a **driver seat** (see below) |
 | `children` | `ReactNode` | - | The object to sit on, in coordinates relative to the seating surface (required) |
+
+#### SeatOccupant
+
+```typescript
+interface SeatOccupant {
+  id: string;           // the player's userId
+  isLocalUser: boolean; // whether it is you
+}
+```
+
+No display name or icon. Look them up from `useUsers()` by `id` if you need them (they become unavailable once the player leaves).
+
+#### Making a vehicle (onControlInput)
+
+Passing `onControlInput` turns the seat into a driver seat. Steering input arrives every frame, **only while you are the one sitting in it**.
+
+```tsx
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { Seat } from '@xrift/world-components';
+
+const TURN_RATE = 1.5;  // rad/s
+const MAX_SPEED = 4;    // m/s
+
+function Cart() {
+  const yaw = useRef(0);
+  const pos = useRef({ x: 0, z: 0 });
+  const groupRef = useRef(null);
+
+  useFrame(() => {
+    if (!groupRef.current) return;
+    groupRef.current.position.set(pos.current.x, 0, pos.current.z);
+    groupRef.current.rotation.y = yaw.current;
+  });
+
+  return (
+    <group ref={groupRef}>
+      <Seat
+        id="cart-driver"
+        position={[0, 0.5, 0]}
+        onControlInput={(input, delta) => {
+          // A/D steers (increasing yaw turns left)
+          yaw.current -= input.right * TURN_RATE * delta;
+          // W/S drives; the heading comes from the current yaw
+          const step = input.forward * MAX_SPEED * delta;
+          pos.current.x -= Math.sin(yaw.current) * step;
+          pos.current.z -= Math.cos(yaw.current) * step;
+        }}
+        onLeave={() => { /* the driver got off — bring it to a stop */ }}
+      >
+        <mesh position={[0, -0.25, 0]}>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="crimson" />
+        </mesh>
+      </Seat>
+
+      <mesh>{/* the cart body */}</mesh>
+    </group>
+  );
+}
+```
+
+#### SeatControlInput
+
+```typescript
+interface SeatControlInput {
+  forward: number;  // Forward is +1, backward -1 (W / S on a keyboard)
+  right: number;    // Right is +1, left -1 (D / A on a keyboard)
+}
+```
+
+What you receive is **which way the player wants to move**, not how far. Whether `right` means steering or strafing is for your vehicle to decide.
+
+:::tip[Why not raw key events]
+You can build a vehicle with `window.addEventListener('keydown')`, but `onControlInput` gives you three things it cannot.
+
+- **It arrives the same way in VR and on mobile** (thumbsticks, virtual joystick)
+- **It is limited to the driver.** With raw keys, someone who is not aboard can press W and move the vehicle on their own screen, drifting out of sync with everyone else
+- It does not fight with player movement (WASD does not walk you around while seated)
+:::
+
+:::caution[Only the driver's client simulates]
+`onControlInput` fires on the driver's screen alone. On everyone else's screen the vehicle's position is **reproduced from the driver's position**. XRift does not run physics on every client and reconcile them.
+
+Because of that, vehicle state should be held as **local state on the driver's client** — do not sync it with `useInstanceState`.
+:::
 
 #### SeatExitOffset
 

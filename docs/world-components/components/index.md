@@ -143,7 +143,96 @@ function Stool() {
 | `exitOffset` | `SeatExitOffset` | `{ forward: 0.6, right: 0, up: 0 }` | 降車位置。座席から見た向き・ワールドのメートル |
 | `interactionText` | `string` | `'座る'` | 狙ったときに表示するテキスト |
 | `enabled` | `boolean` | `true` | 座れるかどうか（`false` で一時的に無効化。他の人が座っている間は自動で無効） |
+| `onEnter` | `(occupant: SeatOccupant) => void` | - | 誰かが座ったときに呼ばれる（自分・他人の両方） |
+| `onLeave` | `(occupant: SeatOccupant) => void` | - | 誰かが降りたときに呼ばれる（自分・他人の両方） |
+| `onControlInput` | `(input: SeatControlInput, delta: number) => void` | - | 操縦入力。渡すとその座席が**運転席**になる（下記） |
 | `children` | `ReactNode` | - | 座る対象のオブジェクト（座面を原点としたローカル座標で書く・必須） |
+
+#### SeatOccupant
+
+```typescript
+interface SeatOccupant {
+  id: string;          // プレイヤーの userId
+  isLocalUser: boolean; // 自分かどうか
+}
+```
+
+表示名やアイコンは持ちません。必要なら `useUsers()` から `id` で引いてください（退席後は取れなくなります）。
+
+#### 乗り物にする（onControlInput）
+
+`onControlInput` を渡すと、その座席は運転席になります。**自分がその席に座っている間だけ**、毎フレーム操縦入力が届きます。
+
+```tsx
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { Seat } from '@xrift/world-components';
+
+const TURN_RATE = 1.5;  // rad/s
+const MAX_SPEED = 4;    // m/s
+
+function Cart() {
+  const yaw = useRef(0);
+  const pos = useRef({ x: 0, z: 0 });
+  const groupRef = useRef(null);
+
+  useFrame(() => {
+    if (!groupRef.current) return;
+    groupRef.current.position.set(pos.current.x, 0, pos.current.z);
+    groupRef.current.rotation.y = yaw.current;
+  });
+
+  return (
+    <group ref={groupRef}>
+      <Seat
+        id="cart-driver"
+        position={[0, 0.5, 0]}
+        onControlInput={(input, delta) => {
+          // A/D = 旋回（yaw が増える向きが左）
+          yaw.current -= input.right * TURN_RATE * delta;
+          // W/S = 前後。進む向きは今の yaw から求める
+          const step = input.forward * MAX_SPEED * delta;
+          pos.current.x -= Math.sin(yaw.current) * step;
+          pos.current.z -= Math.cos(yaw.current) * step;
+        }}
+        onLeave={() => { /* 運転者が降りた。停止処理など */ }}
+      >
+        <mesh position={[0, -0.25, 0]}>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="crimson" />
+        </mesh>
+      </Seat>
+
+      <mesh>{/* 車体 */}</mesh>
+    </group>
+  );
+}
+```
+
+#### SeatControlInput
+
+```typescript
+interface SeatControlInput {
+  forward: number;  // 前後。前が +1、後ろが -1（キーボードなら W / S）
+  right: number;    // 左右。右が +1、左が -1（キーボードなら D / A）
+}
+```
+
+渡されるのは「どれだけ動くか」ではなく**「どの向きに動かしたいか」**です。`right` を旋回（ハンドル）と解釈するか横滑りと解釈するかは、乗り物側が決めます。
+
+:::tip[生のキーイベントとの違い]
+`window.addEventListener('keydown')` で乗り物を作ることもできますが、`onControlInput` には3つの利点があります。
+
+- **VR・モバイルでも同じ形で届く**（サムスティック・仮想ジョイスティック）
+- **運転者だけに限定される**。生のキーだと、乗っていない人が W を押しても自分の画面で乗り物が動いてしまい、他の人と位置がずれます
+- プレイヤーの移動と喧嘩しない（着席中は WASD が歩行に使われません）
+:::
+
+:::caution[動かすのは運転者のクライアントだけ]
+`onControlInput` が呼ばれるのは運転者の画面だけです。他の参加者の画面では、乗り物の位置は**運転者の位置から再現**されます。全員で物理を回して一致させる作りにはなっていません。
+
+そのため、乗り物の状態は `useInstanceState` などで同期せず、**運転者のローカル状態として持つのが正しい**です。
+:::
 
 #### SeatExitOffset
 
