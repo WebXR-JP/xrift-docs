@@ -237,8 +237,8 @@ If an ancestor group is scaled, the surface position and orientation are still c
 While another player is seated, the seat behaves as `enabled={false}` and shows no prompt. If two players sit at almost the same moment, both may succeed — they simply overlap visually; no state is corrupted.
 :::
 
-:::note[You cannot sit in the dev environment]
-Sitting requires an avatar, a camera, and physics, so the platform provides that part. In `DevEnvironment` the seat is only registered; clicking it does nothing. Verify the real behaviour on XRift.
+:::note[You can sit in the dev environment (0.53.0+)]
+`DevEnvironment` bundles a single-player seat system, so you can sit down and try it with `npm run dev` as-is. Aim at a seat and click to sit, press **Space** to stand up. Sitting in a `Vehicle` driver's seat lets you drive it with WASD. Verify multi-user appearance and sync on XRift.
 :::
 
 ---
@@ -753,6 +753,7 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 - **View Controls**: View manipulation via PointerLockControls
 - **Interaction**: Raycasting to INTERACTABLE layer + click interaction
 - **Grabbing (Grabbable)**: Raycasting to GRABBABLE layer + following the view and committing
+- **Sitting & Driving (Seat / Vehicle)**: Single-player seat system. Aim at a seat and click to sit; WASD becomes drive input while seated, Space to stand up
 - **Crosshair UI**: Center-screen crosshair (highlights on hit)
 - **Guide UI**: Pointer lock state guidance UI
 - **Controls Help UI**: UI displaying control instructions
@@ -761,9 +762,9 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 
 | Input | Description |
 |-------|-------------|
-| Click | Start pointer lock / Interact / Commit while grabbing |
-| WASD / Arrow Keys | Movement |
-| Space / E | Jump |
+| Click | Start pointer lock / Interact / Commit while grabbing / Sit on seats |
+| WASD / Arrow Keys | Movement (driving while seated) |
+| Space / E | Jump (stand up while seated) |
 | G | Grab / Place (`Grabbable` targets) |
 | Mouse Wheel | Adjust distance while grabbing |
 | ESC | Release pointer lock (cancels while grabbing) |
