@@ -349,6 +349,7 @@ import { Mirror } from '@xrift/world-components';
 | `color` | `number` | - | 色（数値形式、例: `0xb5b5b5`） |
 | `textureResolution` | `number` | - | テクスチャ解像度 |
 | `lodDistance` | `number` | `10` | LOD切り替え距離（この距離より遠いとき低解像度に切り替え） |
+| `reflectionInterval` | `number` | `2` | 反射テクスチャの更新間隔（Nフレームに1回更新。描画コストが約1/Nになる） |
 
 ---
 

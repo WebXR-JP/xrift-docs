@@ -349,6 +349,7 @@ import { Mirror } from '@xrift/world-components';
 | `color` | `number` | `0xcccccc` | Reflection color |
 | `textureResolution` | `number` | `512` | Reflection texture resolution (auto-adjusted by size ratio) |
 | `lodDistance` | `number` | `10` | Distance in meters to switch to envMap-based pseudo-mirror |
+| `reflectionInterval` | `number` | `2` | Reflection texture update interval (updates once every N frames, ~1/N render cost) |
 
 ---
 
@@ -891,7 +892,7 @@ import { EntryLogBoard } from '@xrift/world-components';
 |------|------|---------|-------------|
 | `stateNamespace` | `string` | - | Instance state key (for multi-board identification) |
 | `maxEntries` | `number` | - | Maximum display entries |
-| `formatTimestamp` | `(date: Date) => string` | - | Timestamp format function |
+| `formatTimestamp` | `(timestampMs: number) => string` | - | Timestamp format function (receives epoch ms) |
 | `displayNameFallback` | `string` | - | Fallback when display name is unavailable |
 | `labels` | `Partial<Labels>` | - | Customize labels (join, leave) |
 | `colors` | `Partial<Colors>` | - | Customize colors (join, leave, background, text) |
@@ -902,7 +903,9 @@ import { EntryLogBoard } from '@xrift/world-components';
 | `onLeave` | `(entry: LogEntry) => void` | - | Leave event callback |
 
 :::note[Internally Used Hook]
-`EntryLogBoard` internally uses `useInstanceEvent` to receive `user-joined`/`user-left` events.
+`EntryLogBoard` writes your own join entry locally, syncs logs via `useInstanceState`
+with server-clock (`useServerClock`) timestamps, and uses `useInstanceEvent` to receive
+`user-left` events.
 :::
 
 ---
