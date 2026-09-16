@@ -823,6 +823,44 @@ function NamePlate() {
 
 ---
 
+### EntryLogBoard
+
+インスタンスへの入退室ログを3D空間のボードに表示します。
+
+```tsx
+import { EntryLogBoard } from '@xrift/world-components';
+
+<EntryLogBoard
+  position={[3, 1.5, -2]}
+  rotation={[0, -0.5, 0]}
+  maxEntries={10}
+/>
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `stateNamespace` | `string` | - | インスタンス状態のキー（複数ボード設置時の識別用） |
+| `maxEntries` | `number` | - | 最大表示件数 |
+| `formatTimestamp` | `(timestampMs: number) => string` | - | タイムスタンプのフォーマット関数（epoch ミリ秒を受け取る） |
+| `displayNameFallback` | `string` | - | 表示名が取得できない場合のフォールバック |
+| `labels` | `Partial<Labels>` | - | ラベル文言のカスタマイズ（join、leave） |
+| `colors` | `Partial<Colors>` | - | 色設定のカスタマイズ（join、leave、background、text） |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | ボードの位置 |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | ボードの回転 |
+| `scale` | `number` | `1` | 全体スケール |
+| `onJoin` | `(entry: LogEntry) => void` | - | 入室時のコールバック |
+| `onLeave` | `(entry: LogEntry) => void` | - | 退室時のコールバック |
+
+:::note[内部で使用するフック]
+`EntryLogBoard` は自分の入室ログを自身で書き込み、ログを `useInstanceState` で同期します。
+時刻は共有時計（`useServerClock`）の epoch ミリ秒で保持し、`user-left` イベントの受信に
+`useInstanceEvent` を使用しています。
+:::
+
+---
+
 ## フック
 
 ### useInstanceState
