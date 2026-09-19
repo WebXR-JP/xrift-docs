@@ -38,6 +38,13 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'AI エージェント連携',
+      items: [
+        'webmcp/world-editing',
+      ],
+    },
+    {
+      type: 'category',
       label: 'CLI (xrift-cli)',
       items: [
         'cli/overview',
