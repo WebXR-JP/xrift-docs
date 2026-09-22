@@ -64,12 +64,17 @@ Spawn points are also left to humans, since they change where everyone enters.
 ## Tips for asking
 
 **Say what the reference point is.** "At the world origin" uses absolute coordinates;
-"where I'm looking right now" uses the surface under your crosshair. The latter is usually
-easier to describe.
+"where I'm looking right now" uses the surface under your crosshair; "at my feet" or
+"in front of me" uses where you are standing. The last two save you from naming coordinates.
 
 ```
 Build a 2m square stage on the floor in front of me
+Put a wall 3m directly in front of me
 ```
+
+If you are looking at the sky or off into the distance there is no surface to use, and where
+you stand becomes the reference instead. The agent picks between them, so you do not need to
+phrase it carefully.
 
 **Use meters.** One unit is one meter in XRift. Real dimensions like "a 3m wall" or
 "a sphere with a 50cm radius" pass straight through.
