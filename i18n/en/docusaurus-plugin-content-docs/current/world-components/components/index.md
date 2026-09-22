@@ -349,7 +349,6 @@ import { Mirror } from '@xrift/world-components';
 | `color` | `number` | `0xcccccc` | Reflection color |
 | `textureResolution` | `number` | `512` | Reflection texture resolution (auto-adjusted by size ratio) |
 | `lodDistance` | `number` | `10` | Distance in meters to switch to envMap-based pseudo-mirror |
-| `reflectionInterval` | `number` | `2` | Reflection texture update interval (updates once every N frames, ~1/N render cost) |
 
 ---
 
