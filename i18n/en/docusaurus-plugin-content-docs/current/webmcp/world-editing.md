@@ -115,7 +115,7 @@ The AI never takes over what you are doing.
   your selection stays put even when the AI places objects
 - **It does not switch modes** — edit mode stays however you left it
 - **It backs off while you are working** — requests are refused while you are placing an
-  object, in the middle of a move (M), or answering a delete confirmation dialog
+  object or in the middle of a move (M)
 - **It leaves other people's work alone** — objects someone else has selected are excluded
   from changes and deletions, and reported back as "N object(s) being edited by someone else
   were left alone"
