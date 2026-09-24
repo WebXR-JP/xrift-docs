@@ -51,15 +51,25 @@ what you want and the agent picks the right ones.
 | `list-placeable-types` | Look up placeable types and their dimension ranges |
 | `get-scene` | Look up what is currently placed in the world |
 | `get-viewer-context` | Look up where you are looking and how many objects can still be added |
+| `list-world-images` | Look up the images uploaded to this world |
 | `place-objects` | Place objects in bulk (up to 50 per call) |
 | `update-objects` | Change position, rotation, scale, dimensions, color, material |
 | `remove-objects` | Remove objects (groups are removed with their contents) |
 | `group-objects` | Combine several objects into one group |
 | `undo-last-agent-edit` | Undo what the AI just did |
 
-Five types can be placed: **box, floor, wall, sphere, and cylinder**. Image panels and screen
-share displays are excluded, because we do not want an AI inventing URLs or stream sources.
-Spawn points are also left to humans, since they change where everyone enters.
+Everything in edit mode's Add menu can be placed.
+
+| Type | What to keep in mind |
+|---|---|
+| Box, floor, wall, sphere, cylinder | Dimensions, color, and material can be set |
+| Image panel | **Only images already uploaded to this world** can be used. URLs from other sites cannot, so upload the image first from Asset Management in edit mode |
+| Screen share display | Just place it. What it shows is decided by whoever shares their screen on the spot |
+| Sit area | The spot you land on when you stand up can be set too |
+| Spawn point | Only one per world. If one exists, it is moved instead of adding another. People enter standing on it, so ask for it to be placed on solid ground |
+
+Portals and items have their own screens for choosing a destination or an inventory item, so
+place those by hand.
 
 ## Tips for asking
 
