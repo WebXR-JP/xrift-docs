@@ -707,6 +707,7 @@ createRoot(rootElement).render(
 | `spawnPosition` | `[x, y, z]` | `[0.11, 1.6, 7.59]` | スポーン位置 |
 | `respawnThreshold` | `number` | `-10` | リスポーンのY座標閾値 |
 | `physicsConfig` | `PhysicsConfig` | - | 物理設定 |
+| `items` | `Record<string, ComponentType>` | - | `<Item itemId>` に差し込むローカルのアイテム（itemId → コンポーネント）。指定の無い ID は `xriftDev()` の中継経由で本番のバンドルを読む |
 
 #### CameraConfig
 
@@ -787,6 +788,74 @@ function MyWorld() {
 
 :::note[内部で使用するフック]
 `Portal` は内部で `useInstance` フックを使用してインスタンス情報の取得と遷移を行っています。
+:::
+
+---
+
+### Item
+
+ユーザー作成アイテムをワールドに最初から置くコンポーネントです。アイテムの本体はプラットフォームが読み込みます（本番は xrift-frontend、ローカル開発は `DevEnvironment`）。
+
+```tsx
+import { Item } from '@xrift/world-components'
+
+function MyWorld() {
+  return (
+    <>
+      <Item itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
+      <Item
+        itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c"
+        position={[-2, 0, -3]}
+        rotation={[0, Math.PI / 2, 0]}
+        scale={1.5}
+      />
+    </>
+  )
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `itemId` | `string` | - | 置くアイテムの ID（必須） |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | 座標 |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | 回転（ラジアン） |
+| `scale` | `number` | `1` | 倍率 |
+
+:::warning[xrift.json に宣言が必要]
+置くアイテムの ID は `xrift.json` の [`world.items`](../../guides/configuration.md#items) にも書いてください。宣言の無い ID は本番では読まれず、仮の箱（`Item: not declared in xrift.json`）が出ます。宣言できるのは自分が作ったアイテムか、ライブラリに入れたアイテムだけです。
+:::
+
+:::tip[アイテム ID の確認方法]
+アイテム ID はマイアイテムやマーケットの URL に含まれる UUID です。例えば `https://app.xrift.net/marketplace/2a69ded4-d913-4359-8c1f-eac83a982b0c` の場合、`2a69ded4-...` がアイテム ID です。
+:::
+
+#### ローカル開発での動作
+
+`npm run dev` では `DevEnvironment` が本番と同じバンドルを読みます。そのために `vite.config.ts` に `@xrift/sdk/vite` の `xriftDev()` を追加し、`xrift login` 済みにしてください（CLI のトークンを開発サーバーが付けて API に問い合わせます。トークンはブラウザには出ません）。
+
+```ts
+// vite.config.ts
+import { xriftDev } from '@xrift/sdk/vite'
+
+export default defineConfig({
+  plugins: [react(), xriftDev(), federation({ /* ... */ })],
+})
+```
+
+アイテムとワールドを同時に作っているときや、まだアップロードしていないときは、`DevEnvironment` の `items` にローカルのコンポーネントを差し込めます。
+
+```tsx
+import { Item as MyLamp } from '../../my-lamp/src/Item'
+
+<DevEnvironment items={{ '2a69ded4-d913-4359-8c1f-eac83a982b0c': MyLamp }}>
+  <World />
+</DevEnvironment>
+```
+
+:::note[アイテムから見た設置者]
+`<Item>` で置いたアイテムの `useItem().placedBy` は `null` です（ワールドの一部で、置いた人がいないため）。
 :::
 
 ---
