@@ -825,8 +825,9 @@ import { Item } from '@xrift/world-components'
 function MyWorld() {
   return (
     <>
-      <Item itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
+      <Item id="lamp-left" itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
       <Item
+        id="lamp-right"
         itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c"
         position={[-2, 0, -3]}
         rotation={[0, Math.PI / 2, 0]}
@@ -841,11 +842,11 @@ function MyWorld() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
+| `id` | `string` | - | Name of this placement (Required). Unique within the world. Exposed to the item as `useItem().id` and used as a key for shared state, so keep it stable when moving the item |
 | `itemId` | `string` | - | ID of the item to place (Required) |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | Position |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation (radians) |
 | `scale` | `number` | `1` | Scale |
-| `id` | `string` | auto | Placement id (`useItem().id`). Defaults to a value derived from the itemId and transform, identical on every client. Specify only when stacking the same item at the same place |
 
 :::warning[Declaration in xrift.json required]
 Also list the item ID in [`world.items`](../../guides/configuration.md#items) of `xrift.json`. IDs that are not declared are not loaded in production, and a placeholder box (`Item: not declared in xrift.json`) is shown instead. You can only declare items you created or added to your library.

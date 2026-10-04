@@ -802,8 +802,9 @@ import { Item } from '@xrift/world-components'
 function MyWorld() {
   return (
     <>
-      <Item itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
+      <Item id="lamp-left" itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
       <Item
+        id="lamp-right"
         itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c"
         position={[-2, 0, -3]}
         rotation={[0, Math.PI / 2, 0]}
@@ -818,11 +819,11 @@ function MyWorld() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
+| `id` | `string` | - | この配置の名前（必須）。ワールド内で一意にする。アイテム側に `useItem().id` として渡り、共有状態のキーに使われるので、位置を動かしても変えないこと |
 | `itemId` | `string` | - | 置くアイテムの ID（必須） |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | 座標 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | 回転（ラジアン） |
 | `scale` | `number` | `1` | 倍率 |
-| `id` | `string` | 自動 | この配置の id（`useItem().id`）。省略時は itemId と置き方から決まり全員で同じ値になる。同じアイテムを同じ場所に重ねるときだけ明示する |
 
 :::warning[xrift.json に宣言が必要]
 置くアイテムの ID は `xrift.json` の [`world.items`](../../guides/configuration.md#items) にも書いてください。宣言の無い ID は本番では読まれず、仮の箱（`Item: not declared in xrift.json`）が出ます。宣言できるのは自分が作ったアイテムか、ライブラリに入れたアイテムだけです。
