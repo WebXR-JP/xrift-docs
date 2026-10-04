@@ -845,6 +845,7 @@ function MyWorld() {
 | `position` | `[number, number, number]` | `[0, 0, 0]` | Position |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation (radians) |
 | `scale` | `number` | `1` | Scale |
+| `id` | `string` | auto | Placement id (`useItem().id`). Defaults to a value derived from the itemId and transform, identical on every client. Specify only when stacking the same item at the same place |
 
 :::warning[Declaration in xrift.json required]
 Also list the item ID in [`world.items`](../../guides/configuration.md#items) of `xrift.json`. IDs that are not declared are not loaded in production, and a placeholder box (`Item: not declared in xrift.json`) is shown instead. You can only declare items you created or added to your library.

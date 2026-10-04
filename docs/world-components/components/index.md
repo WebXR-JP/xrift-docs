@@ -822,6 +822,7 @@ function MyWorld() {
 | `position` | `[number, number, number]` | `[0, 0, 0]` | 座標 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | 回転（ラジアン） |
 | `scale` | `number` | `1` | 倍率 |
+| `id` | `string` | 自動 | この配置の id（`useItem().id`）。省略時は itemId と置き方から決まり全員で同じ値になる。同じアイテムを同じ場所に重ねるときだけ明示する |
 
 :::warning[xrift.json に宣言が必要]
 置くアイテムの ID は `xrift.json` の [`world.items`](../../guides/configuration.md#items) にも書いてください。宣言の無い ID は本番では読まれず、仮の箱（`Item: not declared in xrift.json`）が出ます。宣言できるのは自分が作ったアイテムか、ライブラリに入れたアイテムだけです。
