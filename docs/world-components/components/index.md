@@ -802,9 +802,9 @@ import { Item } from '@xrift/world-components'
 function MyWorld() {
   return (
     <>
-      <Item id="lamp-left" itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
+      <Item placementId="lamp-left" itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
       <Item
-        id="lamp-right"
+        placementId="lamp-right"
         itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c"
         position={[-2, 0, -3]}
         rotation={[0, Math.PI / 2, 0]}
@@ -819,7 +819,7 @@ function MyWorld() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `id` | `string` | - | この配置の名前（必須）。ワールド内で一意にする。アイテム側に `useItem().id` として渡り、共有状態のキーに使われるので、位置を動かしても変えないこと |
+| `placementId` | `string` | - | この配置の id（必須）。ワールド内で一意にする。`itemId` が「何を置くか」、`placementId` が「どの配置か」。アイテム側に `useItem().id` として渡り、共有状態のキーに使われるので、位置を動かしても変えないこと |
 | `itemId` | `string` | - | 置くアイテムの ID（必須） |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | 座標 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | 回転（ラジアン） |
