@@ -6,6 +6,10 @@ sidebar_position: 2
 
 ワールド・アイテムの `vite.config.ts` で Module Federation の `shared` に宣言したパッケージは、ホスト（xrift.net）側の shared から解決されます。このページでは、ホスト側で shared として提供されているパッケージの一覧を掲載しています。
 
+:::info 正本について
+ホストが貸し出すパッケージ名と、照合に使う版キーの正本は `@xrift/world-components` が export する `FEDERATION_SHARED_VERSIONS` です。本番（xrift.net）の共有スコープも、ローカル開発（`DevEnvironment`）の共有スコープも、この表から版キーを引きます。版キーは実際にインストールされているバージョンとは別の「札」で、原則変わりません。
+:::
+
 ## パッケージ一覧
 
 | パッケージ | バージョン要件 | 説明 |

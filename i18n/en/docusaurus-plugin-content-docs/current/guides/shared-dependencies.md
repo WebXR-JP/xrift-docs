@@ -6,6 +6,10 @@ sidebar_position: 2
 
 Packages declared in the `shared` section of Module Federation in your world or item's `vite.config.ts` are resolved from the host (xrift.net) side. This page lists all packages provided as shared by the host.
 
+:::info Source of truth
+The canonical list of package names and the version keys used for matching is `FEDERATION_SHARED_VERSIONS`, exported by `@xrift/world-components`. Both the production share scope (xrift.net) and the local development share scope (`DevEnvironment`) read their version keys from this table. The keys are labels, independent of the actually installed versions, and are not expected to change.
+:::
+
 ## Package List
 
 | Package | Version Requirement | Description |
