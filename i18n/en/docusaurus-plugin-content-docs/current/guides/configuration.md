@@ -214,6 +214,8 @@ Declares the IDs of items placed in the world from the start (`<Item itemId>`). 
 - You can only declare **items you created or added to your library** (acquire them on the marketplace). Declaring anything else fails the upload
 - Up to 50 items
 - When the author publishes a new version, the items placed in the world update automatically
+- `xrift upload` scans the built bundle for `<Item itemId>` and compares it with this list; if an ID is missing, the upload stops before anything is sent. Use `xrift upload --skip-item-scan` only when an ID that is not used by `<Item>` was picked up by mistake
+- During local development (`xriftDev()`), undeclared IDs show the same "not declared" placeholder as production. Add the ID and reload the page
 
 See [`Item` in world-components](../world-components/components/index.md#item) for how to place them.
 

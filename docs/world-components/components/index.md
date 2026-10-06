@@ -827,6 +827,8 @@ function MyWorld() {
 
 :::warning[xrift.json に宣言が必要]
 置くアイテムの ID は `xrift.json` の [`world.items`](../../guides/configuration.md#items) にも書いてください。宣言の無い ID は本番では読まれず、仮の箱（`Item: not declared in xrift.json`）が出ます。宣言できるのは自分が作ったアイテムか、ライブラリに入れたアイテムだけです。
+
+宣言し忘れは 2 か所で止まります。ローカル開発（`xriftDev()`）では宣言の無い ID は本番と同じ仮の箱になり、`xrift upload` ではビルド成果物の `<Item itemId>` と宣言を突き合わせ、足りない ID があればアップロード前にエラーで止まります。
 :::
 
 :::tip[アイテム ID の確認方法]
@@ -846,7 +848,9 @@ export default defineConfig({
 })
 ```
 
-アイテムとワールドを同時に作っているときや、まだアップロードしていないときは、`DevEnvironment` の `items` にローカルのコンポーネントを差し込めます。
+ローカル開発でも、`xrift.json` の `world.items` に無い ID は本番と同じ「宣言されていない」の仮の箱になります。`xrift.json` に追記してページをリロードすれば読まれます（開発サーバーの再起動は不要）。
+
+アイテムとワールドを同時に作っているときや、まだアップロードしていないときは、`DevEnvironment` の `items` にローカルのコンポーネントを差し込めます。この ID も `world.items` に宣言が必要です（宣言が無ければ同じ仮の箱になります）。
 
 ```tsx
 import { Item as MyLamp } from '../../my-lamp/src/Item'

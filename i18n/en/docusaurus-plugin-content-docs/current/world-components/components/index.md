@@ -850,6 +850,8 @@ function MyWorld() {
 
 :::warning[Declaration in xrift.json required]
 Also list the item ID in [`world.items`](../../guides/configuration.md#items) of `xrift.json`. IDs that are not declared are not loaded in production, and a placeholder box (`Item: not declared in xrift.json`) is shown instead. You can only declare items you created or added to your library.
+
+A missing declaration is caught in two places. During local development (`xriftDev()`), an undeclared ID shows the same placeholder box as production. On `xrift upload`, the built bundle is scanned for `<Item itemId>` and compared with the declaration; if any ID is missing, the upload stops with an error before anything is sent.
 :::
 
 :::tip[How to find the Item ID]
@@ -869,7 +871,9 @@ export default defineConfig({
 })
 ```
 
-When developing an item and a world together, or before uploading the item, pass local components via the `items` prop of `DevEnvironment`.
+During local development, an ID that is not listed in `world.items` of `xrift.json` shows the same "not declared" placeholder box as production. Add it to `xrift.json` and reload the page; no dev-server restart is needed.
+
+When developing an item and a world together, or before uploading the item, pass local components via the `items` prop of `DevEnvironment`. These IDs must be declared in `world.items` as well (otherwise the same placeholder box is shown).
 
 ```tsx
 import { Item as MyLamp } from '../../my-lamp/src/Item'
