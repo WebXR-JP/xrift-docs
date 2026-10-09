@@ -43,6 +43,7 @@ Configure your world settings in `xrift.json` at the project root.
 | `physics` | object | World physics settings |
 | `camera` | object | World camera clipping settings |
 | `outputBufferType` | string | WebGLRenderer output buffer type |
+| `items` | string[] | IDs of items placed in the world from the start (`<Item itemId>`) |
 | `permissions` | object | Permissions required by the world |
 
 ## Details of Each Item
@@ -194,6 +195,29 @@ Specifies the output buffer type for WebGLRenderer. This affects the precision o
   }
 }
 ```
+
+### items
+
+Declares the IDs of items placed in the world from the start (`<Item itemId>`). Only the IDs listed here are loaded in production (the preload on entry and the resolution of bundle URLs for visitors both use this list).
+
+```json
+{
+  "world": {
+    "items": [
+      "2a69ded4-d913-4359-8c1f-eac83a982b0c",
+      "a454d074-7f1c-416a-b181-19a63b79f432"
+    ]
+  }
+}
+```
+
+- You can only declare **items you created or added to your library** (acquire them on the marketplace). Declaring anything else fails the upload
+- Up to 50 items
+- When the author publishes a new version, the items placed in the world update automatically
+- `xrift upload` scans the built bundle for `<Item itemId>` and compares it with this list; if an ID is missing, the upload stops before anything is sent. Use `xrift upload --skip-item-scan` only when an ID that is not used by `<Item>` was picked up by mistake
+- During local development (`xriftDev()`), undeclared IDs show the same "not declared" placeholder as production. Add the ID and reload the page
+
+See [`Item` in world-components](../world-components/components/index.md#item) for how to place them.
 
 ### permissions
 

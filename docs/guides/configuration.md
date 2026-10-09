@@ -47,6 +47,7 @@ sidebar_position: 2
 | `physics` | object | ワールドの物理設定 |
 | `camera` | object | ワールドのカメラクリッピング設定 |
 | `outputBufferType` | string | WebGLRenderer の出力バッファタイプ |
+| `items` | string[] | ワールドに最初から置くアイテム（`<Item itemId>`）の id の一覧 |
 | `permissions` | object | ワールドが必要とする権限設定 |
 
 ## 各項目の詳細
@@ -244,6 +245,29 @@ WebGLRenderer の出力バッファタイプを指定します。ポストプロ
   }
 }
 ```
+
+### items
+
+ワールドに最初から置くアイテム（`<Item itemId>`）の id を宣言します。ここに書いた id だけが本番で読まれます（入室時の先読みと、訪問者側での配信 URL の解決がこの一覧から行われます）。
+
+```json
+{
+  "world": {
+    "items": [
+      "2a69ded4-d913-4359-8c1f-eac83a982b0c",
+      "a454d074-7f1c-416a-b181-19a63b79f432"
+    ]
+  }
+}
+```
+
+- 宣言できるのは **自分が作ったアイテムか、ライブラリに入れたアイテム** だけです（マーケットで入手してください）。それ以外を書くとアップロードが失敗します
+- 50 個までです
+- 作者が新しい版を出すと、ワールドに置いたアイテムも自動で新しくなります
+- `xrift upload` はビルド成果物の `<Item itemId>` を拾って宣言と突き合わせ、宣言に無い id があればアップロード前に止めます。`<Item>` で使っていない id が拾われた誤検知のときだけ `xrift upload --skip-item-scan` で飛ばせます
+- ローカル開発（`xriftDev()`）でも宣言に無い id は本番と同じ「宣言されていない」の仮の箱になります。追記してリロードすれば効きます
+
+アイテムの置き方は [world-components の `Item`](../world-components/components/index.md#item) を参照してください。
 
 ### permissions
 

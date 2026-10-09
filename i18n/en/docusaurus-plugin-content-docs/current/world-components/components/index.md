@@ -730,6 +730,7 @@ createRoot(rootElement).render(
 | `spawnPosition` | `[x, y, z]` | `[0.11, 1.6, 7.59]` | Spawn position |
 | `respawnThreshold` | `number` | `-10` | Y-coordinate threshold for respawn |
 | `physicsConfig` | `PhysicsConfig` | - | Physics settings |
+| `items` | `Record<string, ComponentType>` | - | Local item components to inject into `<Item itemId>` (itemId → component). Undeclared IDs load the production bundle via the `xriftDev()` proxy |
 
 #### CameraConfig
 
@@ -810,6 +811,80 @@ The instance ID is a UUID found in the instance page URL. For example, in `https
 
 :::note[Internally Used Hook]
 `Portal` internally uses the `useInstance` hook to fetch instance information and handle navigation.
+:::
+
+---
+
+### Item
+
+Places a user-created item in the world from the start. The item body is loaded by the platform (xrift-frontend in production, `DevEnvironment` during local development).
+
+```tsx
+import { Item } from '@xrift/world-components'
+
+function MyWorld() {
+  return (
+    <>
+      <Item placementId="lamp-left" itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c" position={[2, 0, -3]} />
+      <Item
+        placementId="lamp-right"
+        itemId="2a69ded4-d913-4359-8c1f-eac83a982b0c"
+        position={[-2, 0, -3]}
+        rotation={[0, Math.PI / 2, 0]}
+        scale={1.5}
+      />
+    </>
+  )
+}
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `placementId` | `string` | - | ID of this placement (Required). Unique within the world. `itemId` says *what* to place, `placementId` says *which placement*. Exposed to the item as `useItem().id` and used as a key for shared state, so keep it stable when moving the item |
+| `itemId` | `string` | - | ID of the item to place (Required) |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | Position |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation (radians) |
+| `scale` | `number` | `1` | Scale |
+
+:::warning[Declaration in xrift.json required]
+Also list the item ID in [`world.items`](../../guides/configuration.md#items) of `xrift.json`. IDs that are not declared are not loaded in production, and a placeholder box (`Item: not declared in xrift.json`) is shown instead. You can only declare items you created or added to your library.
+
+A missing declaration is caught in two places. During local development (`xriftDev()`), an undeclared ID shows the same placeholder box as production. On `xrift upload`, the built bundle is scanned for `<Item itemId>` and compared with the declaration; if any ID is missing, the upload stops with an error before anything is sent.
+:::
+
+:::tip[How to find the Item ID]
+The item ID is the UUID in the My Items or marketplace URL. For example, in `https://app.xrift.net/marketplace/2a69ded4-d913-4359-8c1f-eac83a982b0c`, the item ID is `2a69ded4-...`.
+:::
+
+#### Behavior during local development
+
+With `npm run dev`, `DevEnvironment` loads the same bundle as production. Add `xriftDev()` from `@xrift/sdk/vite` to `vite.config.ts` and make sure you have run `xrift login` (the dev server attaches the CLI token when querying the API; the token never reaches the browser).
+
+```ts
+// vite.config.ts
+import { xriftDev } from '@xrift/sdk/vite'
+
+export default defineConfig({
+  plugins: [react(), xriftDev(), federation({ /* ... */ })],
+})
+```
+
+During local development, an ID that is not listed in `world.items` of `xrift.json` shows the same "not declared" placeholder box as production. Add it to `xrift.json` and reload the page; no dev-server restart is needed.
+
+When developing an item and a world together, or before uploading the item, pass local components via the `items` prop of `DevEnvironment`. These IDs must be declared in `world.items` as well (otherwise the same placeholder box is shown).
+
+```tsx
+import { Item as MyLamp } from '../../my-lamp/src/Item'
+
+<DevEnvironment items={{ '2a69ded4-d913-4359-8c1f-eac83a982b0c': MyLamp }}>
+  <World />
+</DevEnvironment>
+```
+
+:::note[Placer as seen from the item]
+`useItem().placedBy` is `null` for items placed with `<Item>` (they are part of the world and nobody placed them).
 :::
 
 ---
