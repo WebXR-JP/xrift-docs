@@ -33,6 +33,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/triplex',
         'guides/shared-dependencies',
+        'guides/ai-agent-skills',
         'world-components/components/index',
       ],
     },
