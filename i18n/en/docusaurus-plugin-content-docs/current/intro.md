@@ -45,6 +45,13 @@ A React component library for building WebXR worlds.
 - [Component List](/world-components/components/)
 - [GitHub](https://github.com/WebXR-JP/xrift-world-components)
 
+### xrift-skills
+
+Agent Skills for building XRift worlds with AI coding agents such as Claude Code and Cursor. Load the API reference and code templates into your agent.
+
+- [Building Worlds with AI Agents](/guides/ai-agents)
+- [GitHub](https://github.com/WebXR-JP/xrift-skills)
+
 ## Quick Start
 
 ```bash

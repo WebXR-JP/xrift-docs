@@ -45,6 +45,13 @@ WebXR ワールドを構築するための React コンポーネントライブ�
 - [コンポーネント一覧](/world-components/components/)
 - [GitHub](https://github.com/WebXR-JP/xrift-world-components)
 
+### xrift-skills
+
+Claude Code や Cursor などの AI コーディングエージェントで XRift ワールドを制作するための Agent Skills。API リファレンスやコードテンプレートをエージェントに読み込ませることができます。
+
+- [AI エージェントでワールドを作る](/guides/ai-agents)
+- [GitHub](https://github.com/WebXR-JP/xrift-skills)
+
 ## クイックスタート
 
 ```bash

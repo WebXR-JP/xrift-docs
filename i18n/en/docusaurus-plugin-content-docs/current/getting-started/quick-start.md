@@ -42,3 +42,4 @@ Open `http://localhost:5173` in your browser to see the sample world.
 - Learn how to customize in [Create Your First World](/guides/create-first-world)
 - Learn how to use components in [World Components](/world-components/components/)
 - Check available commands in [CLI Command Reference](/cli/commands)
+- Learn how to work with AI coding agents in [Building Worlds with AI Agents](/guides/ai-agents)
