@@ -866,6 +866,63 @@ import { Item as MyLamp } from '../../my-lamp/src/Item'
 
 ---
 
+### Skybox
+
+グラデーションの空の背景を作成します。
+
+```tsx
+import { Skybox } from '@xrift/world-components';
+
+<Skybox topColor={0x87ceeb} bottomColor={0xffffff} />
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `topColor` | `number` | `0x87ceeb` | 上側の色 |
+| `bottomColor` | `number` | `0xffffff` | 下側の色 |
+| `offset` | `number` | `0` | グラデーションの開始位置 |
+| `exponent` | `number` | `1` | グラデーションのかかり具合 |
+
+---
+
+### Video180Sphere
+
+180度の VR 動画を半球に投影して再生するコンポーネントです。
+
+```tsx
+import { Video180Sphere } from '@xrift/world-components';
+
+<Video180Sphere
+  url="https://example.com/vr-video-180.mp4"
+  position={[0, 1.5, 0]}
+  radius={5}
+  loop
+/>
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `url` | `string` | - | 180度動画の URL（必須） |
+| `position` | `[number, number, number]` | `[0, 0, 0]` | 位置 |
+| `rotation` | `[number, number, number]` | `[0, 0, 0]` | 回転 |
+| `scale` | `number \| [number, number, number]` | - | スケール |
+| `playing` | `boolean` | `true` | 再生状態 |
+| `muted` | `boolean` | - | ミュート状態（自動再生の制限を回避するには true にする） |
+| `volume` | `number` | `1` | 音量（0〜1） |
+| `radius` | `number` | - | 半球の半径 |
+| `segments` | `number` | - | ジオメトリの分割数 |
+| `loop` | `boolean` | - | ループ再生 |
+| `placeholderColor` | `string` | `'black'` | 動画の読み込み前に表示する色 |
+| `onEnded` | `() => void` | - | 再生終了時のコールバック |
+| `onLoadedMetadata` | `(event: { duration: number }) => void` | - | メタデータ読み込み時のコールバック |
+| `onProgress` | `(event: { currentTime: number }) => void` | - | 再生位置の更新時のコールバック |
+
+---
+
 ### BillboardY
 
 子要素をカメラに対してY軸回転のみで追従させるコンポーネントです。drei の `<Billboard>` は全軸で回転しますが、`BillboardY` はY軸のみ回転するため「上方向」が維持されます。炎、パーティクル、ネームプレート、看板などに最適です。
