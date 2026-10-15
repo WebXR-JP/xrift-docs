@@ -40,8 +40,8 @@ A HUD built with your own DOM (HTML elements) has these problems:
 Place UI such as scores, instructions, and menus as objects in 3D space.
 
 - Use `Text` from `@react-three/drei` for text, and `@react-three/uikit` for panels and menus (both are shared with the host)
-- Load fonts with `useDefaultFont` from `@xrift/world-components` to display Japanese text
-- Wrap UI in `BillboardY` from `@xrift/world-components` to keep it facing the player
+- Load fonts with [`useDefaultFont`](/world-components/components/#usedefaultfont) to display Japanese text
+- Wrap UI in [`BillboardY`](/world-components/components/#billboardy) to keep it facing the player
 - Wrap it in `Interactable` to make it a button
 
 ## Checklist before publishing

@@ -946,6 +946,37 @@ import { Video180Sphere } from '@xrift/world-components';
 
 ---
 
+### BillboardY
+
+A component that makes its children follow the camera by rotating around the Y axis only. drei's `<Billboard>` rotates on all axes, while `BillboardY` rotates only on the Y axis, so "up" is preserved. Ideal for flames, particles, name plates, signboards, and similar objects.
+
+It is also displayed in the correct orientation inside a Mirror (Reflector).
+
+```tsx
+import { BillboardY } from '@xrift/world-components'
+
+function NamePlate() {
+  return (
+    <BillboardY position={[0, 2, 0]}>
+      <mesh>
+        <planeGeometry args={[2, 0.5]} />
+        <meshStandardMaterial color="#333" />
+      </mesh>
+    </BillboardY>
+  )
+}
+```
+
+#### Props
+
+Accepts the same props as `<group>` (`position`, `rotation`, `scale`, etc.).
+
+:::tip[Use as a hook]
+The `useBillboardY` hook applies the Y-axis billboard to any Object3D. See [useBillboardY](#usebillboardy) for details.
+:::
+
+---
+
 ### EntryLogBoard
 
 Displays a log of user join/leave events in the instance.
@@ -1800,6 +1831,86 @@ function StagePodium() {
 
 :::note[Migration from old name]
 Renamed from `useAudioVolume` to `useVoiceVolumeOverride` in v0.34.0. The old name is still available as `@deprecated` but migration to the new name is recommended.
+:::
+
+---
+
+### useBillboardY
+
+A hook that rotates the target Object3D toward the camera around the Y axis only, every frame. It is used inside the `BillboardY` component, and you can use it directly when you want to apply it to any Object3D.
+
+It uses the `onBeforeRender` of a sentinel Mesh internally, so the correct rotation is also applied for the virtualCamera of a Mirror (Reflector).
+
+```tsx
+import { useBillboardY } from '@xrift/world-components'
+import type { Group } from 'three'
+
+function CustomBillboard() {
+  const ref = useBillboardY<Group>()
+
+  return (
+    <group ref={ref}>
+      <mesh>
+        <planeGeometry args={[1, 1.5]} />
+        <meshBasicMaterial map={fireTexture} />
+      </mesh>
+    </group>
+  )
+}
+```
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `ref` | `RefObject<T>` | A ref to attach to the target Object3D |
+
+#### Related
+
+- `BillboardY` component: this hook wrapped in a `<group>`
+- `getBillboardYRotation(cameraWorldPos, targetWorldPos)`: a pure function that calculates the rotation angle (for manual calculation, e.g. with InstancedMesh)
+
+---
+
+### useDefaultFont
+
+A hook that loads multilingual MSDF fonts for UIKit (`@pmndrs/uikit`). When loading completes, the fonts are also registered as uikit global properties, so `fontFamily="ja"` works without passing `fontFamilies` to `Container` explicitly.
+
+```tsx
+import { useDefaultFont } from '@xrift/world-components'
+import type { FontLocale } from '@xrift/world-components'
+
+const FONT_LOCALES: FontLocale[] = ['ja']
+
+function MyUIComponent() {
+  const fontFamilies = useDefaultFont(FONT_LOCALES)
+
+  return (
+    <Container fontFamilies={fontFamilies}>
+      <Text fontFamily="ja">こんにちは</Text>
+    </Container>
+  )
+}
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `locales` | `FontLocale[]` | Array of font locales to load |
+
+#### Return Value
+
+`FontFamilies | undefined`: returns `FontFamilies` after loading completes, and `undefined` while loading.
+
+#### FontLocale
+
+```typescript
+type FontLocale = 'ja'
+```
+
+:::tip[Global registration]
+The fonts are fetched automatically when the module loads and registered globally in uikit with `setGlobalProperties`. So `fontFamily="ja"` works without passing `fontFamilies` to `Container`. If you pass them explicitly, you don't need to handle `undefined` while loading.
 :::
 
 ---
