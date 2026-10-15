@@ -196,5 +196,6 @@ xrift upload world
 
 ## 次のステップ
 
+- [対応端末（PC・モバイル・VR）](/guides/multi-device) で、どの端末でも遊べるワールドの作り方を確認
 - [World Components](/world-components/components/) でコンポーネントの詳細を確認
 - [CLI コマンド](/cli/commands) で利用可能なコマンドを確認
