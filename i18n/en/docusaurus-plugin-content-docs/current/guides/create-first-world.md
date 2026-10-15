@@ -196,5 +196,6 @@ xrift upload world
 
 ## Next Steps
 
+- Learn how to build a world that works on every device in [Supported Devices (PC, Mobile, VR)](/guides/multi-device)
 - Check component details in [World Components](/world-components/components/)
 - Check available commands in [CLI Commands](/cli/commands)
