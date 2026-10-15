@@ -42,3 +42,4 @@ npm run dev
 - [最初のワールドを作成する](/guides/create-first-world) でカスタマイズ方法を学ぶ
 - [World Components](/world-components/components/) でコンポーネントの使い方を学ぶ
 - [CLI コマンドリファレンス](/cli/commands) で利用可能なコマンドを確認
+- [AI エージェントでワールドを作る](/guides/ai-agents) で AI コーディングエージェントの活用方法を学ぶ
