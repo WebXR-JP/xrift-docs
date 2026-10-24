@@ -1534,6 +1534,71 @@ function DistanceLine({ targetUser, getMovement, getLocalMovement }) {
 
 ---
 
+### useViewpoint
+
+自分のカメラが一人称か三人称かを返すフックです。PC・スマホではプレイヤーがマウスホイール（スマホは2本指のピンチ）で一人称と三人称を切り替えられます。頭に付ける演出（ゴーグルの枠・被り物など）を三人称では消す、三人称のときだけ自分の頭上に目印を出す、といった出し分けに使います。
+
+```tsx
+import { useViewpoint } from '@xrift/world-components';
+
+// 一人称のときだけゴーグルの枠を出し、三人称では頭上に矢印を出す
+function MyHeadEffect() {
+  const { isThirdPerson } = useViewpoint();
+  return isThirdPerson ? <ArrowAboveMe /> : <GogglesFrame />;
+}
+```
+
+毎フレームの処理では、再レンダーを待たずに最新の値が取れる `getViewpoint()` を使います。
+
+```tsx
+import { useViewpoint } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import { BackSide, type Mesh } from 'three';
+
+// 目の周りを薄く色付けする（三人称では自分のアバターまで覆ってしまうので消す）
+function VisorTint() {
+  const { getViewpoint } = useViewpoint();
+  const tint = useRef<Mesh>(null);
+
+  useFrame(({ camera }) => {
+    if (!tint.current) return;
+    tint.current.position.copy(camera.position);
+    tint.current.visible = getViewpoint() === 'first-person';
+  });
+
+  return (
+    <mesh ref={tint}>
+      <sphereGeometry args={[0.3, 16, 16]} />
+      <meshBasicMaterial color="orange" transparent opacity={0.15} side={BackSide} depthWrite={false} />
+    </mesh>
+  );
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `viewpoint` | `'first-person' \| 'third-person'` | いまの視点。切り替わると再レンダーされます |
+| `isThirdPerson` | `boolean` | 三人称か（`viewpoint === 'third-person'`） |
+| `getViewpoint` | `() => 'first-person' \| 'third-person'` | いまの視点を返す関数。**値ではなく関数**なので `useFrame` の中から再レンダーなしで呼べ、切り替えたそのフレームから正しい値を返します |
+
+#### 一人称を返す場面
+
+次の場合は、プレイヤーが三人称を選んでいても `'first-person'` を返します。
+
+- **VR**: VR は常に一人称です
+- **カメラモード（撮影）のプレビュー中**: 撮影用の別カメラに一時的に切り替わっているだけなので、プレイヤーの視点としては一人称のままです。撮る瞬間だけワールドの演出が切り替わって、写したいものが消えるのを防ぎます
+
+`DevEnvironment` は三人称を持たないので、ローカル開発では常に `'first-person'` です。
+
+:::caution[対応バージョン]
+`@xrift/world-components` 0.58.0 以降で使えます。
+:::
+
+---
+
 ### useTeleport
 
 自分自身のアバターを指定した座標に瞬間移動させるフックです。ポータル、エレベーター、ワープゾーンなどのユースケースに対応します。
