@@ -1558,6 +1558,71 @@ The `remoteUsers` array is updated only when users join or leave. Changes in use
 
 ---
 
+### useViewpoint
+
+Returns whether your own camera is in first person or third person. On PC and mobile, players switch between first and third person with the mouse wheel (two-finger pinch on mobile). Use it to vary what you show — for example, hiding a head-mounted effect (goggle frame, headgear) in third person, or showing a marker above your own head only in third person.
+
+```tsx
+import { useViewpoint } from '@xrift/world-components';
+
+// Show a goggle frame only in first person, and an arrow above your head in third person
+function MyHeadEffect() {
+  const { isThirdPerson } = useViewpoint();
+  return isThirdPerson ? <ArrowAboveMe /> : <GogglesFrame />;
+}
+```
+
+For per-frame logic, use `getViewpoint()`, which returns the latest value without waiting for a re-render.
+
+```tsx
+import { useViewpoint } from '@xrift/world-components';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import { BackSide, type Mesh } from 'three';
+
+// Tint the area around your eyes (hidden in third person, where it would cover your own avatar)
+function VisorTint() {
+  const { getViewpoint } = useViewpoint();
+  const tint = useRef<Mesh>(null);
+
+  useFrame(({ camera }) => {
+    if (!tint.current) return;
+    tint.current.position.copy(camera.position);
+    tint.current.visible = getViewpoint() === 'first-person';
+  });
+
+  return (
+    <mesh ref={tint}>
+      <sphereGeometry args={[0.3, 16, 16]} />
+      <meshBasicMaterial color="orange" transparent opacity={0.15} side={BackSide} depthWrite={false} />
+    </mesh>
+  );
+}
+```
+
+#### Returns
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `viewpoint` | `'first-person' \| 'third-person'` | The current viewpoint. Triggers a re-render when it changes |
+| `isThirdPerson` | `boolean` | Whether the viewpoint is third person (`viewpoint === 'third-person'`) |
+| `getViewpoint` | `() => 'first-person' \| 'third-person'` | Returns the current viewpoint. **A function, not a value** — call it from `useFrame` without re-rendering; it is correct from the very frame the viewpoint switches |
+
+#### When it returns first person
+
+It returns `'first-person'` in the following cases, even if the player has chosen third person:
+
+- **VR**: VR is always first person
+- **While previewing in camera mode (photo capture)**: the view temporarily switches to a separate capture camera, but the player's viewpoint is still first person. This keeps your world's effects from switching at the moment of capture and disappearing from the photo
+
+`DevEnvironment` has no third-person view, so it is always `'first-person'` during local development.
+
+:::caution[Supported versions]
+Available in `@xrift/world-components` 0.58.0 and later.
+:::
+
+---
+
 ### useTeleport
 
 A hook for teleporting your own avatar to a specified position. Supports use cases such as portals, elevators, and warp zones.
