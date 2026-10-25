@@ -310,7 +310,7 @@ getMimeType('unknown.xyz');  // 'application/octet-stream'
 | `FileData` | `ArrayBuffer \| Uint8Array` — ファイルのバイナリデータ |
 | `UploadFile` | アップロードファイル（remotePath, size, contentType, data） |
 | `UploadProgress` | 進捗情報（completed, total, currentFile） |
-| `PhysicsConfig` | 物理設定（gravity, allowInfiniteJump） |
+| `PhysicsConfig` | 物理設定（gravity, allowInfiniteJump, allowFly, respawnThreshold） |
 | `CameraConfig` | カメラ設定（near, far） |
 | `OutputBufferType` | `'UnsignedByteType' \| 'HalfFloatType' \| 'FloatType'` |
 | `SignedUrlResponse` | 署名付き URL レスポンス |

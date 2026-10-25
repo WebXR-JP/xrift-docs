@@ -310,7 +310,7 @@ Supported extensions: `.glb`, `.gltf`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.json`
 | `FileData` | `ArrayBuffer \| Uint8Array` — Binary file data |
 | `UploadFile` | Upload file (remotePath, size, contentType, data) |
 | `UploadProgress` | Progress info (completed, total, currentFile) |
-| `PhysicsConfig` | Physics settings (gravity, allowInfiniteJump) |
+| `PhysicsConfig` | Physics settings (gravity, allowInfiniteJump, allowFly, respawnThreshold) |
 | `CameraConfig` | Camera settings (near, far) |
 | `OutputBufferType` | `'UnsignedByteType' \| 'HalfFloatType' \| 'FloatType'` |
 | `SignedUrlResponse` | Signed URL response |

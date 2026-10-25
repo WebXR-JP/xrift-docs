@@ -724,6 +724,7 @@ createRoot(rootElement).render(
 |------|------|---------|-------------|
 | `gravity` | `number` | `9.81` | 重力加速度 |
 | `allowInfiniteJump` | `boolean` | `true` | 無限ジャンプの許可 |
+| `respawnThreshold` | `number` | `-10` | この高さを下回るとリスポーン（`DevEnvironment` の `respawnThreshold` prop を指定するとそちらが優先） |
 
 #### 提供する機能
 
