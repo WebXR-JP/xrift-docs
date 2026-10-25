@@ -128,6 +128,8 @@ You can customize the physics behavior of the world.
 |------|-----|---------|------|
 | `gravity` | number | 9.81 | Strength of gravity (Positive value, Earth=9.81, Moon=1.62) |
 | `allowInfiniteJump` | boolean | true | Whether to allow infinite jumping |
+| `allowFly` | boolean | true | Whether to allow fly mode |
+| `respawnThreshold` | number | -10 | Players who fall below this height (Y) are sent back to the spawn point |
 
 #### Basic Settings
 
@@ -153,6 +155,38 @@ You can customize the physics behavior of the world.
   }
 }
 ```
+
+#### Disable Fly Mode
+
+Use this for athletic courses, mazes, and other worlds where flying over obstacles would break the experience.
+
+```json
+{
+  "world": {
+    "physics": {
+      "allowFly": false
+    }
+  }
+}
+```
+
+#### Change the Respawn Height
+
+If your floor sits below -10, or your world has players falling a long way on purpose, lower the respawn height.
+
+```json
+{
+  "world": {
+    "physics": {
+      "respawnThreshold": -100
+    }
+  }
+}
+```
+
+:::warning
+Keep `respawnThreshold` below your spawn point. If it is higher, players fall below it again as soon as they respawn and get stuck respawning over and over.
+:::
 
 #### Low Gravity World (Moon Gravity)
 

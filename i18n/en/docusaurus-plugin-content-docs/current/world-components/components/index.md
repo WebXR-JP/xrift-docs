@@ -747,6 +747,7 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 |------|------|---------|-------------|
 | `gravity` | `number` | `9.81` | Gravitational acceleration |
 | `allowInfiniteJump` | `boolean` | `true` | Allow infinite jumping |
+| `respawnThreshold` | `number` | `-10` | Respawn below this height (the `respawnThreshold` prop on `DevEnvironment` takes precedence) |
 
 #### Features
 
