@@ -23,7 +23,7 @@ Item settings are stored in `xrift.json` at the project root, under the `item` k
     ],
     "permissions": {
       "allowedDomains": ["api.example.com"],
-      "allowedCodeRules": ["no-storage-access"]
+      "allowedCodeRules": ["no-network-without-permission"]
     }
   }
 }
@@ -135,7 +135,7 @@ Declares the permissions the item requires. Declared permissions are considered 
   "item": {
     "permissions": {
       "allowedDomains": ["api.example.com", "cdn.example.com"],
-      "allowedCodeRules": ["no-storage-access", "no-network-without-permission"]
+      "allowedCodeRules": ["no-navigator-access", "no-network-without-permission"]
     }
   }
 }
@@ -147,57 +147,53 @@ Specifies external domains the item's code communicates with. `@xrift/code-secur
 
 #### allowedCodeRules
 
-Declares relaxations of code security rules defined by `@xrift/code-security`. By default, unsafe operations (eval, external communication, storage access, etc.) are blocked. Declare relaxations here when they are required by your item's functionality.
+Declares which rules of the `@xrift/code-security` code check should be relaxed because the item needs them. Only the rules listed under "Relaxable rules" can be relaxed.
 
-##### Dynamic Code Execution
+##### Relaxable rules
 
-| Rule | Description |
-|--------|------|
-| `no-eval` | Allow running code via `eval()` |
-| `no-new-function` | Allow dynamic code generation via the `Function` constructor |
-| `no-string-timeout` | Allow string arguments to `setTimeout`/`setInterval` |
-| `no-javascript-blob` | Allow dynamic script generation via JavaScript Blobs |
+| Rule | What it relaxes |
+|------|-------------|
+| `no-new-function` | Dynamic code generation with the `Function` constructor |
+| `no-string-timeout` | String arguments to `setTimeout` / `setInterval` |
+| `no-javascript-blob` | Dynamic script generation with JavaScript Blobs |
+| `no-obfuscation` | Obfuscated code patterns |
+| `no-network-without-permission` | fetch, WebSocket, etc. whose destination cannot be read from the code (requests with a string destination are checked against `allowedDomains`) |
+| `no-rtc-connection` | WebRTC (`RTCPeerConnection`) connections ([see below](#using-webrtc)) |
+| `no-dangerous-dom` | innerHTML and script element injection |
+| `no-navigator-access` | Access to geolocation, camera, microphone, clipboard, etc. |
+| `no-global-override` | Overriding global objects (window, document, etc.) |
 
-##### Obfuscation
+##### Rules that cannot be relaxed
 
-| Rule | Description |
-|--------|------|
-| `no-obfuscation` | Allow obfuscated code patterns |
+The following rules are not relaxed even if listed in `allowedCodeRules`. Any violation makes the upload fail.
 
-##### Network Communication
+| Rule | What it forbids |
+|------|-------------|
+| `no-eval` | Executing strings as code with `eval()` |
+| `no-external-import` | Importing JavaScript modules from external URLs |
+| `no-storage-access` | Access to localStorage / sessionStorage |
+| `no-cookie-access` | Reading and writing cookies |
+| `no-indexeddb-access` | Access to IndexedDB |
+| `no-storage-event` | Listening to storage events from other tabs |
+| `no-sensitive-api-override` | Overriding security-critical APIs such as fetch |
+| `no-prototype-pollution` | Modifying built-in object prototypes |
 
-| Rule | Description |
-|--------|------|
-| `no-network-without-permission` | Allow network communication such as fetch and WebSocket |
-| `no-unauthorized-domain` | Allow connections to domains not in `allowedDomains` |
-| `no-rtc-connection` | Allow WebRTC peer connections |
-| `no-external-import` | Allow loading JavaScript modules from external URLs |
+Requests to destinations not in `allowedDomains` (`no-unauthorized-domain`) cannot be allowed by relaxing a rule either. Add the destination to `allowedDomains`.
 
-##### Storage / Data
+##### Using WebRTC
 
-| Rule | Description |
-|--------|------|
-| `no-storage-access` | Allow access to localStorage / sessionStorage |
-| `no-cookie-access` | Allow reading/writing cookies |
-| `no-indexeddb-access` | Allow access to IndexedDB |
-| `no-storage-event` | Allow observing storage change events from other tabs |
+Using `RTCPeerConnection` requires declaring `no-rtc-connection`. WebRTC reveals your IP address to the peer, so users are asked to consent to a "WebRTC connection" in the confirmation dialog before the item runs in an instance.
 
-##### DOM Manipulation
+```json
+{
+  "item": {
+    "permissions": {
+      "allowedDomains": ["stun.l.google.com"],
+      "allowedCodeRules": ["no-rtc-connection"]
+    }
+  }
+}
+```
 
-| Rule | Description |
-|--------|------|
-| `no-dangerous-dom` | Allow `innerHTML` and inserting script elements |
-
-##### Browser APIs
-
-| Rule | Description |
-|--------|------|
-| `no-navigator-access` | Allow access to geolocation, camera, microphone, clipboard, etc. |
-
-##### Global Pollution
-
-| Rule | Description |
-|--------|------|
-| `no-sensitive-api-override` | Allow overriding security-sensitive APIs like fetch |
-| `no-global-override` | Allow overriding global objects such as window / document |
-| `no-prototype-pollution` | Allow modifying prototypes of built-in objects |
+- The hosts of the STUN / TURN servers in `iceServers` are checked against `allowedDomains`. The same applies to STUN / TURN servers a library uses by default, so list those hosts too
+- If you pass `iceServers` from a variable or an API response, the destinations cannot be verified, so you also need to declare `no-network-without-permission`
