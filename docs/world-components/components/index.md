@@ -1034,15 +1034,15 @@ function Counter() {
 import { useInstanceEvent } from '@xrift/world-components';
 
 // プラットフォームイベントの受信（受信のみ、emit 不可）
-useInstanceEvent('user-joined', (data) => {
-  console.log('User joined:', data)
+useInstanceEvent('user-joined', ({ userId }) => {
+  console.log('User joined:', userId)
 })
 
 // カスタムイベントの送受信
-const emitReaction = useInstanceEvent('reaction', (data) => {
-  console.log('Reaction received:', data)
+const emitReaction = useInstanceEvent<{ emoji: string }>('reaction', ({ payload, senderId }) => {
+  console.log(`${senderId} reacted:`, payload.emoji)
 })
-emitReaction({ emoji: '👍', userId: 'user-1' })
+emitReaction({ emoji: '👍' })
 ```
 
 #### 引数
@@ -1050,19 +1050,34 @@ emitReaction({ emoji: '👍', userId: 'user-1' })
 | 引数 | Type | Description |
 |-----|------|-------------|
 | `eventName` | `string` | イベント名 |
-| `callback` | `(data: T) => void` | イベント受信時のコールバック |
+| `callback` | `(event: InstanceEvent<T>) => void` | イベント受信時のコールバック（プラットフォームイベントは下の表の型） |
 
 #### 戻り値
 
-`(data: T) => void` - イベント送信関数。プラットフォーム予約イベント（`user-joined`, `user-left`）の場合は no-op になります。
+`(data: T) => void` - イベント送信関数。送った値は、受け取る側で `payload` に入ります。プラットフォーム予約イベント（`user-joined`, `user-left`）の場合は no-op になります。
 
-#### イベントの種類
+#### 受け取るデータ
 
-| 種類 | イベント名 | 送信 | 受信 | 説明 |
-|------|-----------|:----:|:----:|------|
-| プラットフォーム | `user-joined` | - | ✅ | ユーザーがインスタンスに入室 |
-| プラットフォーム | `user-left` | - | ✅ | ユーザーがインスタンスから退室 |
-| カスタム | 任意の文字列 | ✅ | ✅ | ワールド独自のイベント |
+カスタムイベントは、送った値を `payload` に入れた `InstanceEvent<T>` で届きます。
+
+| プロパティ | Type | 説明 |
+|-----------|------|------|
+| `payload` | `T` | 送り手が送った値 |
+| `senderId` | `string` | 送った人の userId。サーバーが付けるので偽れない |
+| `timestamp` | `number` | 送った時刻（[`useServerClock`](#useserverclock) と同じインスタンス共有時計の ms） |
+
+プラットフォームイベントは、次のデータがそのまま届きます。
+
+| イベント名 | 届くデータ | 説明 |
+|-----------|-----------|------|
+| `user-joined` | `{ userId: string, isGuest: boolean }` | ユーザーがインスタンスに入室 |
+| `user-left` | `{ userId: string }` | ユーザーがインスタンスから退室 |
+
+#### 届く相手
+
+- カスタムイベントは、**送った本人には届きません**。インスタンス内のほかの参加者にだけ届きます。自分の画面にも反映するときは、送るときに自分でも処理してください（下のリアクションの例）
+- 入室処理が終わる前に送ったイベントは、終わってから届けられます。入室直後に送っても消えません
+- 後から入室した人には、それより前のイベントは届きません。後から来た人にも見せたい状態は [`useInstanceState`](#useinstancestate) を使ってください
 
 #### ユースケース
 
@@ -1072,15 +1087,21 @@ emitReaction({ emoji: '👍', userId: 'user-1' })
 import { useInstanceEvent } from '@xrift/world-components';
 import { useCallback, useState } from 'react';
 
-function ReactionSystem() {
-  const [reactions, setReactions] = useState<{ emoji: string }[]>([]);
+type Reaction = { emoji: string };
 
-  const emitReaction = useInstanceEvent('reaction', (data: { emoji: string }) => {
-    setReactions(prev => [...prev, data]);
+function ReactionSystem() {
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+
+  // ほかの参加者のリアクション
+  const emitReaction = useInstanceEvent<Reaction>('reaction', ({ payload }) => {
+    setReactions(prev => [...prev, payload]);
   });
 
   const sendReaction = useCallback((emoji: string) => {
-    emitReaction({ emoji });
+    const reaction = { emoji };
+    emitReaction(reaction);
+    // 自分には届かないので、自分の分はここで足す
+    setReactions(prev => [...prev, reaction]);
   }, [emitReaction]);
 
   return (
@@ -1098,12 +1119,12 @@ function ReactionSystem() {
 import { useInstanceEvent } from '@xrift/world-components';
 
 function JoinLeaveNotifier() {
-  useInstanceEvent('user-joined', (data) => {
-    console.log('User joined:', data);
+  useInstanceEvent('user-joined', ({ userId, isGuest }) => {
+    console.log('User joined:', userId, isGuest);
   });
 
-  useInstanceEvent('user-left', (data) => {
-    console.log('User left:', data);
+  useInstanceEvent('user-left', ({ userId }) => {
+    console.log('User left:', userId);
   });
 
   return null;
@@ -1116,7 +1137,7 @@ function JoinLeaveNotifier() {
 :::
 
 :::note[開発環境での動作]
-開発環境ではローカル EventEmitter が使用されるため、同一ブラウザ内でのみイベントが送受信されます。本番環境ではプラットフォームが WebSocket 実装を注入し、インスタンス内の全ユーザー間でイベントが共有されます。
+開発環境（`DevEnvironment`）にはほかの参加者が居ないので、送ったカスタムイベントはどこにも届きません（本番と同じく、送った本人にも届きません）。受け取る側の動きは、本番で 2 つのタブから同じインスタンスに入って確かめてください。
 :::
 
 ---
