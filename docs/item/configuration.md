@@ -23,7 +23,7 @@ sidebar_position: 2
     ],
     "permissions": {
       "allowedDomains": ["api.example.com"],
-      "allowedCodeRules": ["no-storage-access"]
+      "allowedCodeRules": ["no-network-without-permission"]
     }
   }
 }
@@ -135,7 +135,7 @@ sidebar_position: 2
   "item": {
     "permissions": {
       "allowedDomains": ["api.example.com", "cdn.example.com"],
-      "allowedCodeRules": ["no-storage-access", "no-network-without-permission"]
+      "allowedCodeRules": ["no-navigator-access", "no-network-without-permission"]
     }
   }
 }
@@ -147,57 +147,53 @@ sidebar_position: 2
 
 #### allowedCodeRules
 
-`@xrift/code-security` で定義されているコードセキュリティルールの緩和を宣言します。デフォルトでは安全でない操作（eval、外部通信、ストレージアクセスなど）はブロックされますが、アイテムの機能上必要な場合にここで緩和を宣言します。
+`@xrift/code-security` のコード検査で止められるルールのうち、アイテムの機能に必要なものを宣言して緩和します。緩和できるのは次の「緩和できるルール」だけです。
 
-##### 動的コード実行
+##### 緩和できるルール
 
-| ルール | 説明 |
+| ルール | 緩和される内容 |
 |--------|------|
-| `no-eval` | `eval()` による文字列のコード実行を許可 |
-| `no-new-function` | `Function` コンストラクタによるコード動的生成を許可 |
-| `no-string-timeout` | `setTimeout`/`setInterval` への文字列引数を許可 |
-| `no-javascript-blob` | JavaScript Blob を使ったスクリプト動的生成を許可 |
+| `no-new-function` | `Function` コンストラクタによるコードの動的生成 |
+| `no-string-timeout` | `setTimeout` / `setInterval` への文字列引数 |
+| `no-javascript-blob` | JavaScript の Blob を使ったスクリプトの動的生成 |
+| `no-obfuscation` | 難読化されたコードパターン |
+| `no-network-without-permission` | 接続先をコードから読み取れない fetch や WebSocket 等の通信（接続先が文字列で書かれている通信は `allowedDomains` で照合されます） |
+| `no-rtc-connection` | WebRTC（`RTCPeerConnection`）による接続（[下記](#webrtc-を使う)） |
+| `no-dangerous-dom` | innerHTML やスクリプト要素の挿入 |
+| `no-navigator-access` | 位置情報・カメラ・マイク・クリップボード等へのアクセス |
+| `no-global-override` | window / document 等のグローバルオブジェクトの書き換え |
 
-##### 難読化
+##### 緩和できないルール
 
-| ルール | 説明 |
+次のルールは `allowedCodeRules` に書いても緩和されず、違反があるとアップロードが通りません。
+
+| ルール | 禁止される内容 |
 |--------|------|
-| `no-obfuscation` | 難読化されたコードパターンを許可 |
+| `no-eval` | `eval()` による文字列のコード実行 |
+| `no-external-import` | 外部 URL からの JavaScript モジュール読み込み |
+| `no-storage-access` | localStorage / sessionStorage へのアクセス |
+| `no-cookie-access` | Cookie の読み書き |
+| `no-indexeddb-access` | IndexedDB へのアクセス |
+| `no-storage-event` | 他タブのストレージ変更イベントの監視 |
+| `no-sensitive-api-override` | fetch 等のセキュリティ上重要な API の書き換え |
+| `no-prototype-pollution` | 組み込みオブジェクトのプロトタイプ変更 |
 
-##### ネットワーク通信
+`allowedDomains` に無い接続先への通信（`no-unauthorized-domain`）も、ルールの緩和では許可できません。接続先を `allowedDomains` に足してください。
 
-| ルール | 説明 |
-|--------|------|
-| `no-network-without-permission` | fetch や WebSocket 等のネットワーク通信を許可 |
-| `no-unauthorized-domain` | `allowedDomains` に含まれないドメインへの接続を許可 |
-| `no-rtc-connection` | WebRTC ピア接続を許可 |
-| `no-external-import` | 外部 URL からの JavaScript モジュール読み込みを許可 |
+##### WebRTC を使う
 
-##### ストレージ・データ
+`RTCPeerConnection` を使うには `no-rtc-connection` の宣言が要ります。WebRTC では接続相手に IP アドレスが伝わるため、インスタンスでアイテムを動かす前の確認ダイアログで「WebRTC 接続」として同意を取ります。
 
-| ルール | 説明 |
-|--------|------|
-| `no-storage-access` | localStorage / sessionStorage へのアクセスを許可 |
-| `no-cookie-access` | Cookie の読み書きを許可 |
-| `no-indexeddb-access` | IndexedDB へのアクセスを許可 |
-| `no-storage-event` | 他タブのストレージ変更イベントの監視を許可 |
+```json
+{
+  "item": {
+    "permissions": {
+      "allowedDomains": ["stun.l.google.com"],
+      "allowedCodeRules": ["no-rtc-connection"]
+    }
+  }
+}
+```
 
-##### DOM 操作
-
-| ルール | 説明 |
-|--------|------|
-| `no-dangerous-dom` | innerHTML やスクリプト要素の挿入を許可 |
-
-##### ブラウザ API
-
-| ルール | 説明 |
-|--------|------|
-| `no-navigator-access` | 位置情報・カメラ・マイク・クリップボード等へのアクセスを許可 |
-
-##### グローバル汚染
-
-| ルール | 説明 |
-|--------|------|
-| `no-sensitive-api-override` | fetch 等のセキュリティ上重要な API の書き換えを許可 |
-| `no-global-override` | window / document 等のグローバルオブジェクトの書き換えを許可 |
-| `no-prototype-pollution` | 組み込みオブジェクトのプロトタイプ変更を許可 |
+- `iceServers` に書いた STUN / TURN サーバーのホストは `allowedDomains` と照合されます。ライブラリが既定で使う STUN / TURN サーバーも同じなので、そのホストも書いてください
+- `iceServers` を変数や API の応答から渡すと接続先を確かめられないため、`no-network-without-permission` の宣言も要ります
