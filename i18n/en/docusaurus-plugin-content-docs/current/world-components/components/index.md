@@ -1057,15 +1057,15 @@ A hook for sending and receiving instance events. You can receive platform event
 import { useInstanceEvent } from '@xrift/world-components';
 
 // Receive platform events (receive only, cannot emit)
-useInstanceEvent('user-joined', (data) => {
-  console.log('User joined:', data)
+useInstanceEvent('user-joined', ({ userId }) => {
+  console.log('User joined:', userId)
 })
 
 // Send and receive custom events
-const emitReaction = useInstanceEvent('reaction', (data) => {
-  console.log('Reaction received:', data)
+const emitReaction = useInstanceEvent<{ emoji: string }>('reaction', ({ payload, senderId }) => {
+  console.log(`${senderId} reacted:`, payload.emoji)
 })
-emitReaction({ emoji: '👍', userId: 'user-1' })
+emitReaction({ emoji: '👍' })
 ```
 
 #### Arguments
@@ -1073,19 +1073,34 @@ emitReaction({ emoji: '👍', userId: 'user-1' })
 | Argument | Type | Description |
 |-----|------|-------------|
 | `eventName` | `string` | Event name |
-| `callback` | `(data: T) => void` | Callback when event is received |
+| `callback` | `(event: InstanceEvent<T>) => void` | Callback when an event is received (platform events use the types in the table below) |
 
 #### Return Value
 
-`(data: T) => void` - Event emit function. Returns a no-op for platform reserved events (`user-joined`, `user-left`).
+`(data: T) => void` - Function to send an event. The value you send arrives in `payload` on the receiving side. It is a no-op for platform reserved events (`user-joined`, `user-left`).
 
-#### Event Types
+#### Received Data
 
-| Type | Event Name | Send | Receive | Description |
-|------|-----------|:----:|:-------:|-------------|
-| Platform | `user-joined` | - | ✅ | User joined the instance |
-| Platform | `user-left` | - | ✅ | User left the instance |
-| Custom | Any string | ✅ | ✅ | World-specific events |
+Custom events arrive as `InstanceEvent<T>`, with the sent value in `payload`.
+
+| Property | Type | Description |
+|-----------|------|------|
+| `payload` | `T` | The value the sender sent |
+| `senderId` | `string` | The sender's userId. Set by the server, so it cannot be spoofed |
+| `timestamp` | `number` | When it was sent (ms on the instance shared clock, same as [`useServerClock`](#useserverclock)) |
+
+Platform events deliver the following data as is.
+
+| Event name | Data | Description |
+|-----------|-----------|------|
+| `user-joined` | `{ userId: string, isGuest: boolean }` | A user entered the instance |
+| `user-left` | `{ userId: string }` | A user left the instance |
+
+#### Who Receives Events
+
+- Custom events are **not delivered to the sender**. Only the other participants in the instance receive them. To reflect an event on your own screen too, handle it yourself when sending (see the reaction example below)
+- Events sent before entering the instance has finished are delivered once it finishes. Sending right after entering does not lose them
+- Users who enter later do not receive earlier events. For state that late joiners should see, use [`useInstanceState`](#useinstancestate)
 
 #### Use Cases
 
@@ -1095,15 +1110,21 @@ emitReaction({ emoji: '👍', userId: 'user-1' })
 import { useInstanceEvent } from '@xrift/world-components';
 import { useCallback, useState } from 'react';
 
-function ReactionSystem() {
-  const [reactions, setReactions] = useState<{ emoji: string }[]>([]);
+type Reaction = { emoji: string };
 
-  const emitReaction = useInstanceEvent('reaction', (data: { emoji: string }) => {
-    setReactions(prev => [...prev, data]);
+function ReactionSystem() {
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+
+  // Reactions from other participants
+  const emitReaction = useInstanceEvent<Reaction>('reaction', ({ payload }) => {
+    setReactions(prev => [...prev, payload]);
   });
 
   const sendReaction = useCallback((emoji: string) => {
-    emitReaction({ emoji });
+    const reaction = { emoji };
+    emitReaction(reaction);
+    // Your own event is not delivered back to you, so add it here
+    setReactions(prev => [...prev, reaction]);
   }, [emitReaction]);
 
   return (
@@ -1121,12 +1142,12 @@ function ReactionSystem() {
 import { useInstanceEvent } from '@xrift/world-components';
 
 function JoinLeaveNotifier() {
-  useInstanceEvent('user-joined', (data) => {
-    console.log('User joined:', data);
+  useInstanceEvent('user-joined', ({ userId, isGuest }) => {
+    console.log('User joined:', userId, isGuest);
   });
 
-  useInstanceEvent('user-left', (data) => {
-    console.log('User left:', data);
+  useInstanceEvent('user-left', ({ userId }) => {
+    console.log('User left:', userId);
   });
 
   return null;
@@ -1139,7 +1160,7 @@ function JoinLeaveNotifier() {
 :::
 
 :::note[Behavior in Development Environment]
-In the development environment, a local EventEmitter is used, so events are only sent and received within the same browser. In production, the platform injects a WebSocket implementation, and events are shared across all users in the instance.
+The development environment (`DevEnvironment`) has no other participants, so custom events you send are not delivered anywhere (as in production, they are not delivered to the sender either). Check the receiving side in production by entering the same instance from two tabs.
 :::
 
 ---
