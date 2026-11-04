@@ -116,11 +116,11 @@ If children include physics (such as `RigidBody`), you must provide a **physics-
 :::
 
 :::note[Controls]
-- **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again or click to place it. Use the mouse wheel to move it farther or closer, and **Esc** (releasing pointer lock) to cancel
+- **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again to place it where it is. Use the mouse wheel to move it farther or closer. You keep holding it even when **Esc** or switching tabs releases the pointer lock
 - **VR**: Squeeze the grip to grab what your hand is touching, or what the ray points at if nothing is touching. Release the grip to place it. For objects grabbed with the ray, move the right stick up or down to move them farther or closer
 - Objects held by someone else can't be grabbed
 
-In `DevEnvironment`, you can test it with the PC controls.
+In `DevEnvironment`, you can test it with the PC controls (in `DevEnvironment`, clicking also places it and **Esc** returns it to where it was).
 :::
 
 :::note[0.61.0 and later]
