@@ -120,7 +120,7 @@ If children include physics (such as `RigidBody`), you must provide a **physics-
 - **VR**: Squeeze the grip to grab what your hand is touching, or what the ray points at if nothing is touching. Release the grip to place it. For objects grabbed with the ray, move the right stick up or down to move them farther or closer
 - Objects held by someone else can't be grabbed
 
-In `DevEnvironment`, you can test it with the PC controls (in `DevEnvironment`, clicking also places it and **Esc** returns it to where it was).
+In `DevEnvironment`, you can test it with the same PC controls (`@xrift/world-components` 0.61.1 or later).
 :::
 
 :::note[0.61.0 and later]
@@ -787,12 +787,12 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 
 | Input | Description |
 |-------|-------------|
-| Click | Start pointer lock / Interact / Commit while grabbing / Sit on seats |
+| Click | Start pointer lock / Interact / Sit on seats |
 | WASD / Arrow Keys | Movement (driving while seated) |
 | Space / E | Jump (stand up while seated) |
-| G | Grab / Place (`Grabbable` targets) |
+| G | Grab / Place where it is (`Grabbable` targets) |
 | Mouse Wheel | Adjust distance while grabbing |
-| ESC | Release pointer lock (cancels while grabbing) |
+| ESC | Release pointer lock (keeps holding while grabbing) |
 
 :::note[Prerequisites]
 Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDependency).
