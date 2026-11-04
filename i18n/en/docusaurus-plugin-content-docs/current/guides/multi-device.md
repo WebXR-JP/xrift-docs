@@ -26,8 +26,8 @@ Use mechanisms that deliver input in the same form on every device instead.
 
 Adding shortcuts is fine. But make the same action available through `Interactable` or similar, and keep shortcuts as a convenience for PC users.
 
-:::caution[Grabbable currently works on PC only]
-Grabbing with [`Grabbable`](/world-components/components/#grabbable) currently works only on PC (pointer lock and crosshair). Don't make an action that is required to progress in your world depend on `Grabbable` alone.
+:::caution[Grabbable doesn't work on smartphones]
+Grabbing with [`Grabbable`](/world-components/components/#grabbable) works only on PC (pointer lock and crosshair) and in VR (controller grip). It doesn't work on smartphones or with hand tracking, so don't make an action that is required to progress in your world depend on `Grabbable` alone.
 :::
 
 ## Put HUDs and UI in 3D space, not in the DOM
