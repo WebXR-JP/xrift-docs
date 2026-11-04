@@ -117,10 +117,11 @@ If children include physics (such as `RigidBody`), you must provide a **physics-
 
 :::note[Controls]
 - **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again to place it where it is. Use the mouse wheel to move it farther or closer. You keep holding it even when **Esc** or switching tabs releases the pointer lock
+- **Smartphones and tablets**: Point the crosshair at a grabbable object and a **Grab** button appears above the interact button. Tap it to hold the object; the button turns into **Release**, which places it where it is. While holding, pinch with two fingers to move it farther or closer
 - **VR**: Squeeze the grip to grab what your hand is touching, or what the ray points at if nothing is touching. Release the grip to place it. For objects grabbed with the ray, move the right stick up or down to move them farther or closer
 - Objects held by someone else can't be grabbed
 
-In `DevEnvironment`, you can test it with the PC controls (in `DevEnvironment`, clicking also places it and **Esc** returns it to where it was).
+In `DevEnvironment`, you can test it with the same PC controls (`@xrift/world-components` 0.61.1 or later).
 :::
 
 :::note[0.61.0 and later]
@@ -787,12 +788,12 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 
 | Input | Description |
 |-------|-------------|
-| Click | Start pointer lock / Interact / Commit while grabbing / Sit on seats |
+| Click | Start pointer lock / Interact / Sit on seats |
 | WASD / Arrow Keys | Movement (driving while seated) |
 | Space / E | Jump (stand up while seated) |
-| G | Grab / Place (`Grabbable` targets) |
+| G | Grab / Place where it is (`Grabbable` targets) |
 | Mouse Wheel | Adjust distance while grabbing |
-| ESC | Release pointer lock (cancels while grabbing) |
+| ESC | Release pointer lock (keeps holding while grabbing) |
 
 :::note[Prerequisites]
 Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDependency).
