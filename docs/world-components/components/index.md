@@ -75,6 +75,8 @@ function GrabbableBall() {
 | `transform` | `GrabbableTransform` | - | 対象の姿勢（必須）。親のローカル座標で指定し、ルート group に適用される（子は原点基準で書く） |
 | `onMove` | `(transform: GrabResultTransform) => void` | - | 離した（確定）ときに新しい姿勢を受け取る。`transform` と同じ親ローカル座標で返る。`sync={false}` のときは state に反映して `transform` を更新する |
 | `sync` | `boolean` | `true` | 掴んでいる様子と離した位置をインスタンスの全員に共有するか。自分の画面だけで動かしたい物は `false` にする |
+| `onUseStart` | `(event: GrabUseEvent) => void` | - | 掴んでいる間に「使う」を押したときに呼ばれる（銃を撃つ・棒で殴る・ため始めるなど）。持っている本人の画面だけで呼ばれる |
+| `onUseEnd` | `(event: GrabUseEvent) => void` | - | 「使う」を離したときに呼ばれる。押している途中で置いた・物が消えたときなどにも必ず呼ばれる |
 | `renderGhost` | `() => ReactNode` | - | 掴んでいる間に手元へ表示する代わり（物理なし）をローカル座標で返す。省略時は `children` を流用 |
 | `enabled` | `boolean` | `true` | 掴めるかどうか（`false` で一時的に無効化） |
 | `children` | `ReactNode` | - | 掴む対象のオブジェクト（ローカル座標で書く・必須） |
@@ -96,6 +98,45 @@ const [transform, setTransform] = useState<GrabbableTransform>(INITIAL);
 ```
 :::
 
+#### 掴んでいる物を「使う」
+
+`onUseStart` / `onUseEnd` を書くと、掴んでいる間の操作で好きな動作を仕込めます。押したときと離したときの両方を受け取れるので、連射や「ためて放す」も作れます。物を持っている間は、インタラクトは動きません。
+
+```tsx
+import { Grabbable, type GrabResultTransform, useInstanceEvent } from '@xrift/world-components';
+
+function Gun() {
+  // ほかの人の画面にも弾を見せる（送った本人には届かないので、自分の画面には直接出す）
+  const emitShot = useInstanceEvent<{ from: GrabResultTransform['position'] }>('gun-shot', ({ payload }) => {
+    spawnBullet(payload.from);
+  });
+
+  return (
+    <Grabbable
+      id="gun"
+      transform={INITIAL}
+      onUseStart={({ transform }) => {
+        spawnBullet(transform.position);
+        emitShot({ from: transform.position });
+      }}
+    >
+      <GunModel />
+    </Grabbable>
+  );
+}
+```
+
+- 呼ばれるのは**持っている本人の画面だけ**です。ほかの人に見せたい結果（弾・音・当たり）は、`useInstanceEvent` などでワールド側から送ってください
+- 引数の `transform` は使った瞬間の持っている物の姿勢で、`transform` / `onMove` と同じ親のローカル座標です。`hand` は使った手（`'left'` / `'right'`。PC・スマホは `'right'`）です
+- 押している途中で置いた・持ち替えた・物が消えた・カメラモードに入ったときも `onUseEnd` が呼ばれます。連射などは `onUseEnd` で止めれば、止まらなくなることはありません
+
+```typescript
+interface GrabUseEvent {
+  hand: 'left' | 'right';
+  transform: GrabResultTransform;
+}
+```
+
 #### GrabbableTransform / GrabResultTransform
 
 ```typescript
@@ -116,16 +157,16 @@ interface GrabResultTransform {
 :::
 
 :::note[操作方法]
-- **PC**: 中央のクロスヘアで狙って **G** で右手に持ち、もう一度 **G** でいまの位置に置きます。マウスホイールで遠ざけ・近づけます。**Esc** やタブの切り替えでポインターロックが外れても、持ったままです
-- **スマートフォン・タブレット**: クロスヘアを掴める物に合わせると、インタラクトボタンの上に「掴む」ボタンが出ます。押すと持ち、「離す」に変わったボタンでいまの位置に置きます。持っている間は2本指のピンチで遠ざけ・近づけます
-- **VR**: グリップを握ると、手で触れている物を掴みます。触れていなければレイの先の物を掴みます。離すと置きます。レイで掴んだ物は右スティックの上下で遠ざけ・近づけます
+- **PC**: 中央のクロスヘアで狙って **G** で右手に持ち、もう一度 **G** でいまの位置に置きます。マウスホイールで遠ざけ・近づけます。持っている間の**クリック**が「使う」です。**Esc** やタブの切り替えでポインターロックが外れても、持ったままです
+- **スマートフォン・タブレット**: クロスヘアを掴める物に合わせると、インタラクトボタンの上に「掴む」ボタンが出ます。押すと持ち、「離す」に変わったボタンでいまの位置に置きます。持っている間はインタラクトボタンが「使う」ボタンに変わります（使う動作の無い物では薄く表示）。2本指のピンチで遠ざけ・近づけます
+- **VR**: グリップを握ると、手で触れている物を掴みます。触れていなければレイの先の物を掴みます。離すと置きます。持っている手の**トリガー**が「使う」です（もう片方の手のトリガーはこれまでどおりインタラクト）。レイで掴んだ物は右スティックの上下で遠ざけ・近づけます
 - ほかの人が持っている物は掴めません
 
 `DevEnvironment` でも同じ PC の操作で動作確認できます（`@xrift/world-components` 0.61.1 以降）。
 :::
 
 :::note[0.61.0 以降]
-`onMove` の省略と `sync` は `@xrift/world-components` 0.61.0 以降で使えます。
+`onMove` の省略と `sync` は `@xrift/world-components` 0.61.0 以降で使えます。`onUseStart` / `onUseEnd` は 0.62.0 以降です。
 :::
 
 ---
@@ -769,6 +810,7 @@ createRoot(rootElement).render(
 | WASD / 矢印キー | 移動（着席中は操縦） |
 | Space / E | ジャンプ（着席中は降りる） |
 | G | 掴む / いまの位置に置く（`Grabbable` 対象） |
+| クリック（掴み中） | 掴んでいる物を使う（`onUseStart` / `onUseEnd`。インタラクトはしない） |
 | マウスホイール | 掴み中の距離調整 |
 | ESC | ポインターロック解除（掴み中も持ったまま） |
 

@@ -75,6 +75,8 @@ The coordinates of `transform` and `onMove` are in the **local space of the pare
 | `transform` | `GrabbableTransform` | - | Pose of the object (Required). Specified in the parent's local coordinates and applied to the root group (children are written relative to the origin) |
 | `onMove` | `(transform: GrabResultTransform) => void` | - | Receives the new pose when released/committed, in the same parent-local coordinates as `transform`. With `sync={false}`, reflect it in state to update `transform` |
 | `sync` | `boolean` | `true` | Whether to share the grabbing and the release position with everyone in the instance. Set `false` for objects that should move only on your own screen |
+| `onUseStart` | `(event: GrabUseEvent) => void` | - | Called when "use" is pressed while holding it (fire a gun, swing a stick, start charging, etc.). Called only on the holder's screen |
+| `onUseEnd` | `(event: GrabUseEvent) => void` | - | Called when "use" is released. Always called, also when the object is placed or removed mid-press |
 | `renderGhost` | `() => ReactNode` | - | Returns what is shown in the hand while grabbing (no physics), in local coordinates. Falls back to `children` if omitted |
 | `enabled` | `boolean` | `true` | Whether it is grabbable (`false` to temporarily disable) |
 | `children` | `ReactNode` | - | The grabbable object (written in local coordinates, Required) |
@@ -96,6 +98,45 @@ const [transform, setTransform] = useState<GrabbableTransform>(INITIAL);
 ```
 :::
 
+#### Using a held object
+
+With `onUseStart` / `onUseEnd`, you can attach any action to the controls while the object is held. You get both the press and the release, so you can build rapid fire or charge-and-release. Interactions don't run while the player holds an object.
+
+```tsx
+import { Grabbable, type GrabResultTransform, useInstanceEvent } from '@xrift/world-components';
+
+function Gun() {
+  // Show the bullet on other screens too (the sender doesn't receive its own event, so spawn it locally)
+  const emitShot = useInstanceEvent<{ from: GrabResultTransform['position'] }>('gun-shot', ({ payload }) => {
+    spawnBullet(payload.from);
+  });
+
+  return (
+    <Grabbable
+      id="gun"
+      transform={INITIAL}
+      onUseStart={({ transform }) => {
+        spawnBullet(transform.position);
+        emitShot({ from: transform.position });
+      }}
+    >
+      <GunModel />
+    </Grabbable>
+  );
+}
+```
+
+- They are called **only on the holder's screen**. Send results that others should see (bullets, sounds, hits) from the world yourself, for example with `useInstanceEvent`
+- `transform` is the pose of the held object at that moment, in the same parent-local coordinates as `transform` / `onMove`. `hand` is the hand that used it (`'left'` / `'right'`; always `'right'` on PC and smartphones)
+- `onUseEnd` is also called when the object is placed, switched to the other hand, or removed, or when camera mode starts mid-press. Stop rapid fire in `onUseEnd` and it never gets stuck
+
+```typescript
+interface GrabUseEvent {
+  hand: 'left' | 'right';
+  transform: GrabResultTransform;
+}
+```
+
 #### GrabbableTransform / GrabResultTransform
 
 ```typescript
@@ -116,16 +157,16 @@ If children include physics (such as `RigidBody`), you must provide a **physics-
 :::
 
 :::note[Controls]
-- **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again to place it where it is. Use the mouse wheel to move it farther or closer. You keep holding it even when **Esc** or switching tabs releases the pointer lock
-- **Smartphones and tablets**: Point the crosshair at a grabbable object and a **Grab** button appears above the interact button. Tap it to hold the object; the button turns into **Release**, which places it where it is. While holding, pinch with two fingers to move it farther or closer
-- **VR**: Squeeze the grip to grab what your hand is touching, or what the ray points at if nothing is touching. Release the grip to place it. For objects grabbed with the ray, move the right stick up or down to move them farther or closer
+- **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again to place it where it is. Use the mouse wheel to move it farther or closer. **Click** while holding to "use" it. You keep holding it even when **Esc** or switching tabs releases the pointer lock
+- **Smartphones and tablets**: Point the crosshair at a grabbable object and a **Grab** button appears above the interact button. Tap it to hold the object; the button turns into **Release**, which places it where it is. While holding, the interact button turns into a **Use** button (dimmed for objects with no use action). Pinch with two fingers to move it farther or closer
+- **VR**: Squeeze the grip to grab what your hand is touching, or what the ray points at if nothing is touching. Release the grip to place it. The **trigger** of the holding hand is "use" (the other hand's trigger still interacts). For objects grabbed with the ray, move the right stick up or down to move them farther or closer
 - Objects held by someone else can't be grabbed
 
 In `DevEnvironment`, you can test it with the same PC controls (`@xrift/world-components` 0.61.1 or later).
 :::
 
 :::note[0.61.0 and later]
-Omitting `onMove` and `sync` are available in `@xrift/world-components` 0.61.0 and later.
+Omitting `onMove` and `sync` are available in `@xrift/world-components` 0.61.0 and later. `onUseStart` / `onUseEnd` require 0.62.0 or later.
 :::
 
 ---
@@ -792,6 +833,7 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 | WASD / Arrow Keys | Movement (driving while seated) |
 | Space / E | Jump (stand up while seated) |
 | G | Grab / Place where it is (`Grabbable` targets) |
+| Click (while grabbing) | Use the held object (`onUseStart` / `onUseEnd`; does not interact) |
 | Mouse Wheel | Adjust distance while grabbing |
 | ESC | Release pointer lock (keeps holding while grabbing) |
 
