@@ -822,9 +822,12 @@ createRoot(rootElement).render(
 
 ### Portal
 
-他のインスタンスへの移動ポータルを表示するコンポーネントです。渦巻きシェーダーエフェクト、移動先のサムネイル・ワールド名・インスタンス名・人数、パーティクル、グロー、クリック可能な台座で構成されます。
+他のワールドやインスタンスへ移動するポータルを表示するコンポーネントです。渦巻きシェーダーエフェクト、移動先のサムネイルとワールド名（インスタンス指定のときはインスタンス名と人数も）、パーティクル、グロー、クリック可能な台座で構成されます。
 
-`instanceId` を指定すると、対象インスタンスの情報を自動取得して表示します。台座をクリックすると確認モーダル（useConfirm）を経て対象インスタンスへ遷移します。
+行き先は `worldId` か `instanceId` のどちらか一方で指定します。**基本は `worldId` を使ってください。** 台座をクリックすると確認モーダル（useConfirm）を経て移動します。
+
+- `worldId`: そのワールドの入れるインスタンスへ移動します。合流できる公開インスタンスがあればそこへ、無ければ新しく作られたインスタンスへ、プラットフォームが振り分けます。
+- `instanceId`: 指定したインスタンスへ直接移動します。**XRift Plus の常設インスタンス専用**です。通常のインスタンスは全員が退出してから 5 分で削除されるため、ID で指定するとポータルが行き先を失います。
 
 ```tsx
 import { Portal } from '@xrift/world-components'
@@ -832,7 +835,7 @@ import { Portal } from '@xrift/world-components'
 function MyWorld() {
   return (
     <Portal
-      instanceId="ceffb128-23c7-4120-b4e6-19bf6c604c47"
+      worldId="7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35"
       position={[5, 0, 0]}
       rotation={[0, Math.PI / 2, 0]}
     />
@@ -844,18 +847,25 @@ function MyWorld() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `instanceId` | `string` | - | 移動先のインスタンスID（必須） |
+| `worldId` | `string` | - | 移動先のワールドID。`instanceId` とはどちらか一方だけ指定します |
+| `instanceId` | `string` | - | 移動先のインスタンスID。**常設インスタンス専用**。`worldId` とはどちらか一方だけ指定します |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | ポータルの座標 |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | ポータルの回転 |
 | `disabled` | `boolean` | `false` | ポータルを無効にする |
 
-:::tip[インスタンスIDの確認方法]
-インスタンスIDはインスタンスページのURLに含まれる UUID です。例えば `https://app.xrift.net/instance/ceffb128-23c7-4120-b4e6-19bf6c604c47` の場合、`ceffb128-23c7-4120-b4e6-19bf6c604c47` がインスタンスIDです。
+:::tip[ワールドIDの確認方法]
+ワールドIDはワールドページのURLに含まれる UUID です。例えば `https://app.xrift.net/world/7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35` の場合、`7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35` がワールドIDです。インスタンスIDも同じように `https://app.xrift.net/instance/<ID>` の URL から確認できます。
+:::
+
+:::warning[インスタンスの寿命]
+インスタンスは人がいる間だけ存在し、全員が退出してから 5 分で自動的に削除されます。削除されたインスタンスの URL を開くと「このインスタンスは削除されました」と表示され、ワールドページへ案内されます。残り続けるのは XRift Plus の常設インスタンスだけなので、`instanceId` はそれにだけ使ってください。
 :::
 
 :::note[内部で使用するフック]
-`Portal` は内部で `useInstance` フックを使用してインスタンス情報の取得と遷移を行っています。
+`Portal` は `worldId` 指定のとき `useWorld`、`instanceId` 指定のとき `useInstance` で行き先の情報を取得します。移動には `useInstanceContext` の `navigateToWorld` / `navigateToInstance` を使っています。
 :::
+
+`worldId` の指定は `@xrift/world-components` **0.63.0 以降**で利用できます。
 
 ---
 
@@ -1825,7 +1835,7 @@ iPhone 等のモバイルブラウザでは、ユーザー操作を起点とし�
 :::
 
 :::note[Portal コンポーネントとの関係]
-`Portal` コンポーネントは内部で `useInstance` フックを経由して `useConfirm` を使用しています。Portal を使う場合は `useConfirm` を直接呼ぶ必要はありません。
+`Portal` コンポーネントは内部で `useConfirm` を使用しています。Portal を使う場合は `useConfirm` を直接呼ぶ必要はありません。
 :::
 
 ---
@@ -1833,6 +1843,10 @@ iPhone 等のモバイルブラウザでは、ユーザー操作を起点とし�
 ### useInstance
 
 インスタンス情報の取得と確認付き遷移を提供するフックです。内部で `useConfirm` を使い、遷移前に確認モーダルを表示します。
+
+:::warning[ID を固定して参照できるのは常設インスタンスだけ]
+インスタンスは全員が退出してから 5 分で自動的に削除されるため、通常のインスタンスの ID をワールドに埋め込んでも、すぐに参照先が無くなります。ID を固定して使えるのは XRift Plus の常設インスタンスだけです。ワールド単位で移動させたいときは `Portal` の `worldId` か、`useInstanceContext` の `navigateToWorld` を使ってください。
+:::
 
 ```tsx
 import { useInstance } from '@xrift/world-components'
@@ -1926,6 +1940,49 @@ function MyComponent() {
 | `favoriteCount` | `number` | お気に入り数 |
 | `owner` | `{ id, displayName, userIconUrl? }` | オーナー情報（任意） |
 | `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | ワールドが必要とする権限（[詳細](/guides/configuration#permissions)） |
+
+---
+
+### useInstanceContext
+
+インスタンス情報の取得と、ワールドやインスタンスへの移動を提供する Context を取得するフックです。`Portal` や `useInstance` の内部でも使われています。確認モーダルは出さないので、移動前に確認を取りたいときは `useConfirm` と組み合わせてください。
+
+```tsx
+import { useInstanceContext, useConfirm, Interactable } from '@xrift/world-components'
+
+function WorldGate() {
+  const { navigateToWorld } = useInstanceContext()
+  const { requestConfirm } = useConfirm()
+
+  const handleEnter = async () => {
+    const ok = await requestConfirm({ message: 'ハブワールドへ移動しますか？' })
+    if (ok) await navigateToWorld('7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35')
+  }
+
+  return (
+    <Interactable id="world-gate" onInteract={handleEnter}>
+      <mesh>
+        <torusGeometry />
+        <meshStandardMaterial color="purple" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+#### 戻り値
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `navigateToWorld` | `(worldId: string) => void \| Promise<void>` | 指定したワールドへ移動します。入るインスタンス（公開インスタンスに合流、無ければ新規作成）はプラットフォームが決めます。ポータルの行き先は原則こちらを使ってください。満員やレート制限などで失敗すると reject されます |
+| `navigateToInstance` | `(instanceId: string) => void \| Promise<void>` | 指定したインスタンスへ移動します。**常設インスタンス専用**です。失敗すると reject されます |
+| `getInstanceInfo` | `(instanceId: string) => Promise<InstanceInfo>` | インスタンス情報を取得します |
+
+:::note[開発環境での動作]
+`DevEnvironment` ではデフォルト実装が使われ、移動は行わずコンソールにログを出します。実際の移動は XRift 上で確認してください。
+:::
+
+`navigateToWorld` は `@xrift/world-components` **0.63.0 以降**で利用できます。
 
 ---
 

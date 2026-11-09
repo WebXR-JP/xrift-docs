@@ -845,9 +845,12 @@ Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDepen
 
 ### Portal
 
-A component that displays a portal for moving to another instance. It consists of a swirl shader effect, destination thumbnail/world name/instance name/user count, particles, glow, and a clickable pedestal.
+A component that displays a portal for moving to another world or instance. It consists of a swirl shader effect, the destination thumbnail and world name (plus instance name and user count when an instance is specified), particles, glow, and a clickable pedestal.
 
-When `instanceId` is specified, it automatically fetches and displays information about the target instance. Clicking the pedestal triggers a confirmation modal (useConfirm) before transitioning to the target instance.
+Specify the destination with either `worldId` or `instanceId`, never both. **Use `worldId` by default.** Clicking the pedestal shows a confirmation modal (useConfirm) and then moves the user.
+
+- `worldId`: Moves to a joinable instance of that world. The platform picks the instance: an open public instance if one exists, otherwise a newly created one.
+- `instanceId`: Moves directly to the given instance. **Only for XRift Plus persistent instances.** A regular instance is deleted 5 minutes after everyone leaves, so a portal pointing at one by ID loses its destination.
 
 ```tsx
 import { Portal } from '@xrift/world-components'
@@ -855,7 +858,7 @@ import { Portal } from '@xrift/world-components'
 function MyWorld() {
   return (
     <Portal
-      instanceId="ceffb128-23c7-4120-b4e6-19bf6c604c47"
+      worldId="7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35"
       position={[5, 0, 0]}
       rotation={[0, Math.PI / 2, 0]}
     />
@@ -867,18 +870,25 @@ function MyWorld() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `instanceId` | `string` | - | ID of the destination instance (Required) |
+| `worldId` | `string` | - | ID of the destination world. Specify either this or `instanceId`, not both |
+| `instanceId` | `string` | - | ID of the destination instance. **Persistent instances only.** Specify either this or `worldId`, not both |
 | `position` | `[number, number, number]` | `[0, 0, 0]` | Position of the portal |
 | `rotation` | `[number, number, number]` | `[0, 0, 0]` | Rotation of the portal |
 | `disabled` | `boolean` | `false` | Disable portal navigation |
 
-:::tip[How to find the Instance ID]
-The instance ID is a UUID found in the instance page URL. For example, in `https://app.xrift.net/instance/ceffb128-23c7-4120-b4e6-19bf6c604c47`, the instance ID is `ceffb128-23c7-4120-b4e6-19bf6c604c47`.
+:::tip[How to find the World ID]
+The world ID is the UUID in the world page URL. For example, in `https://app.xrift.net/world/7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35`, the world ID is `7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35`. Instance IDs can likewise be read from `https://app.xrift.net/instance/<ID>`.
 :::
 
-:::note[Internally Used Hook]
-`Portal` internally uses the `useInstance` hook to fetch instance information and handle navigation.
+:::warning[Instance lifetime]
+An instance exists only while people are in it, and is deleted automatically 5 minutes after everyone leaves. Opening the URL of a deleted instance shows "This instance has been deleted" and points the visitor to the world page. The only instances that stay are XRift Plus persistent instances, so use `instanceId` only for those.
 :::
+
+:::note[Internally Used Hooks]
+`Portal` fetches the destination with `useWorld` when `worldId` is given and with `useInstance` when `instanceId` is given. Navigation goes through `navigateToWorld` / `navigateToInstance` from `useInstanceContext`.
+:::
+
+`worldId` is available in `@xrift/world-components` **0.63.0 and later**.
 
 ---
 
@@ -1849,7 +1859,7 @@ On mobile browsers like iPhone, `window.open` and external site navigation are b
 :::
 
 :::note[Relationship with Portal component]
-The `Portal` component internally uses `useConfirm` via the `useInstance` hook. When using Portal, you don't need to call `useConfirm` directly.
+The `Portal` component internally uses `useConfirm`. When using Portal, you don't need to call `useConfirm` directly.
 :::
 
 ---
@@ -1857,6 +1867,10 @@ The `Portal` component internally uses `useConfirm` via the `useInstance` hook. 
 ### useInstance
 
 A hook that provides instance information retrieval and navigation with confirmation. It internally uses `useConfirm` to display a confirmation modal before navigation.
+
+:::warning[Only persistent instances can be referenced by a fixed ID]
+An instance is deleted automatically 5 minutes after everyone leaves, so hard-coding a regular instance's ID in your world soon points at nothing. Only XRift Plus persistent instances keep a stable ID. To send users to a world instead, use `Portal` with `worldId`, or `navigateToWorld` from `useInstanceContext`.
+:::
 
 ```tsx
 import { useInstance } from '@xrift/world-components'
@@ -1950,6 +1964,49 @@ function MyComponent() {
 | `favoriteCount` | `number` | Favorite count |
 | `owner` | `{ id, displayName, userIconUrl? }` | Owner information (optional) |
 | `permissions` | `{ allowedDomains: string[], allowedCodeRules: string[] } \| undefined` | Permissions required by the world ([details](/guides/configuration#permissions)) |
+
+---
+
+### useInstanceContext
+
+A hook that returns the Context for fetching instance information and navigating to a world or instance. `Portal` and `useInstance` use it internally. It does not show a confirmation modal, so combine it with `useConfirm` when you want to ask before moving.
+
+```tsx
+import { useInstanceContext, useConfirm, Interactable } from '@xrift/world-components'
+
+function WorldGate() {
+  const { navigateToWorld } = useInstanceContext()
+  const { requestConfirm } = useConfirm()
+
+  const handleEnter = async () => {
+    const ok = await requestConfirm({ message: 'Move to the hub world?' })
+    if (ok) await navigateToWorld('7d3f0a2b-5c4e-4b8a-9f1d-6e2c8b4a0d35')
+  }
+
+  return (
+    <Interactable id="world-gate" onInteract={handleEnter}>
+      <mesh>
+        <torusGeometry />
+        <meshStandardMaterial color="purple" />
+      </mesh>
+    </Interactable>
+  )
+}
+```
+
+#### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `navigateToWorld` | `(worldId: string) => void \| Promise<void>` | Moves to the given world. The platform picks the instance (joins an open public instance, or creates a new one). Use this for portal destinations by default. Rejects on failure such as a full instance or rate limiting |
+| `navigateToInstance` | `(instanceId: string) => void \| Promise<void>` | Moves to the given instance. **Persistent instances only.** Rejects on failure |
+| `getInstanceInfo` | `(instanceId: string) => Promise<InstanceInfo>` | Fetches instance information |
+
+:::note[Behavior in the development environment]
+In `DevEnvironment` the default implementation is used: it logs to the console and does not navigate. Verify actual navigation on XRift.
+:::
+
+`navigateToWorld` is available in `@xrift/world-components` **0.63.0 and later**.
 
 ---
 
