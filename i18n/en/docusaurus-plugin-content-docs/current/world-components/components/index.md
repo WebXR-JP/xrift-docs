@@ -77,7 +77,8 @@ The coordinates of `transform` and `onMove` are in the **local space of the pare
 | `sync` | `boolean` | `true` | Whether to share the grabbing and the release position with everyone in the instance. Set `false` for objects that should move only on your own screen |
 | `onUseStart` | `(event: GrabUseEvent) => void` | - | Called when "use" is pressed while holding it (fire a gun, swing a stick, start charging, etc.). Called only on the holder's screen |
 | `onUseEnd` | `(event: GrabUseEvent) => void` | - | Called when "use" is released. Always called, also when the object is placed or removed mid-press |
-| `renderGhost` | `() => ReactNode` | - | Returns what is shown in the hand while grabbing (no physics), in local coordinates. Falls back to `children` if omitted |
+| `onGrab` | `(event: GrabHoldEvent) => void` | - | Called when someone picks it up. Runs on everyone's screen, whether you or someone else is holding it |
+| `onRelease` | `(event: GrabHoldEvent) => void` | - | Called when it leaves the hand (put down, cancelled, or the holder left). Runs on everyone's screen; when put down, it comes after `onMove` |
 | `enabled` | `boolean` | `true` | Whether it is grabbable (`false` to temporarily disable) |
 | `children` | `ReactNode` | - | The grabbable object (written in local coordinates, Required) |
 
@@ -152,9 +153,43 @@ interface GrabResultTransform {
 }
 ```
 
-:::caution[When including physics]
-If children include physics (such as `RigidBody`), you must provide a **physics-free** version via `renderGhost`. Otherwise `children` is rendered in the hand as is, and the colliders of the real object and the one in the hand overlap while grabbing.
-:::
+#### When picked up or released
+
+While held, `children` itself moves to the holder's hand (no copy is made). `onGrab` / `onRelease` are called when it is picked up and when it leaves the hand, so you can change how it looks or behaves only while it is held.
+
+If children include physics (such as `RigidBody`), remove the colliders in `onGrab` and restore them in `onRelease`. Otherwise the colliders stay active while it is held.
+
+```tsx
+function Crate() {
+  const [isHeld, setIsHeld] = useState(false);
+  const handleGrab = useCallback(() => setIsHeld(true), []);
+  const handleRelease = useCallback(() => setIsHeld(false), []);
+
+  return (
+    <Grabbable id="crate" transform={INITIAL} onGrab={handleGrab} onRelease={handleRelease}>
+      <mesh>
+        <boxGeometry args={[0.5, 0.5, 0.5]} />
+        <meshStandardMaterial color="#a2845e" />
+      </mesh>
+      {/* Keep the visuals; only remove the collider while held */}
+      {!isHeld && (
+        <RigidBody type="fixed" colliders={false}>
+          <CuboidCollider args={[0.25, 0.25, 0.25]} />
+        </RigidBody>
+      )}
+    </Grabbable>
+  );
+}
+```
+
+- `isMine` tells you whether you are (or were) the one holding it. Use it for things only the holder should do, such as playing a sound
+- When the holder changes, `onRelease` is called and then `onGrab`
+
+```typescript
+interface GrabHoldEvent {
+  isMine: boolean;
+}
+```
 
 :::note[Controls]
 - **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again to place it where it is. **Click** while holding to "use" it. You keep holding it even when **Esc** or switching tabs releases the pointer lock
@@ -166,7 +201,7 @@ In `DevEnvironment`, you can test it with the same PC controls (`@xrift/world-co
 :::
 
 :::note[0.61.0 and later]
-Omitting `onMove` and `sync` are available in `@xrift/world-components` 0.61.0 and later. `onUseStart` / `onUseEnd` require 0.62.0 or later.
+Omitting `onMove` and `sync` are available in `@xrift/world-components` 0.61.0 and later. `onUseStart` / `onUseEnd` require 0.62.0 or later, and `onGrab` / `onRelease` require 0.64.0 or later. From 0.64.0, `children` itself moves while held, so `renderGhost` is no longer used (it is ignored if passed).
 :::
 
 ---
