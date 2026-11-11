@@ -77,7 +77,8 @@ function GrabbableBall() {
 | `sync` | `boolean` | `true` | 掴んでいる様子と離した位置をインスタンスの全員に共有するか。自分の画面だけで動かしたい物は `false` にする |
 | `onUseStart` | `(event: GrabUseEvent) => void` | - | 掴んでいる間に「使う」を押したときに呼ばれる（銃を撃つ・棒で殴る・ため始めるなど）。持っている本人の画面だけで呼ばれる |
 | `onUseEnd` | `(event: GrabUseEvent) => void` | - | 「使う」を離したときに呼ばれる。押している途中で置いた・物が消えたときなどにも必ず呼ばれる |
-| `renderGhost` | `() => ReactNode` | - | 掴んでいる間に手元へ表示する代わり（物理なし）をローカル座標で返す。省略時は `children` を流用 |
+| `onGrab` | `(event: GrabHoldEvent) => void` | - | 誰かが持ち上げたときに呼ばれる。自分・ほかの人のどちらでも、全員の画面で呼ばれる |
+| `onRelease` | `(event: GrabHoldEvent) => void` | - | 手から離れたとき（置いた・やめた・持っていた人が退室した）に呼ばれる。全員の画面で呼ばれ、置いたときは `onMove` の後になる |
 | `enabled` | `boolean` | `true` | 掴めるかどうか（`false` で一時的に無効化） |
 | `children` | `ReactNode` | - | 掴む対象のオブジェクト（ローカル座標で書く・必須） |
 
@@ -152,9 +153,43 @@ interface GrabResultTransform {
 }
 ```
 
-:::caution[物理を含む場合]
-子に物理（`RigidBody` など）を含む場合、`renderGhost` に**物理なし版**を必ず指定してください。省略すると `children` がそのまま手元に描画され、掴み中に実体と手元のコライダーが重複します。
-:::
+#### 持ち上げた・離したとき
+
+持っている間は、`children` そのものが持っている人の手元へ動きます（コピーは作りません）。持ち上げたときと手から離れたときに `onGrab` / `onRelease` が呼ばれるので、持っている間だけ見た目や動きを変えられます。
+
+子に物理（`RigidBody` など）を含む場合は、`onGrab` で当たり判定を外し、`onRelease` で戻してください。外さないと、持っている間も当たり判定が残ります。
+
+```tsx
+function Crate() {
+  const [isHeld, setIsHeld] = useState(false);
+  const handleGrab = useCallback(() => setIsHeld(true), []);
+  const handleRelease = useCallback(() => setIsHeld(false), []);
+
+  return (
+    <Grabbable id="crate" transform={INITIAL} onGrab={handleGrab} onRelease={handleRelease}>
+      <mesh>
+        <boxGeometry args={[0.5, 0.5, 0.5]} />
+        <meshStandardMaterial color="#a2845e" />
+      </mesh>
+      {/* 見た目は残し、当たり判定だけ持っている間は外す */}
+      {!isHeld && (
+        <RigidBody type="fixed" colliders={false}>
+          <CuboidCollider args={[0.25, 0.25, 0.25]} />
+        </RigidBody>
+      )}
+    </Grabbable>
+  );
+}
+```
+
+- `isMine` は自分が持っている（持っていた）かです。音を鳴らすなど、持っている本人だけにしたい動作に使えます
+- 持っている人が入れ替わったときは、`onRelease` の後に `onGrab` が呼ばれます
+
+```typescript
+interface GrabHoldEvent {
+  isMine: boolean;
+}
+```
 
 :::note[操作方法]
 - **PC**: 中央のクロスヘアで狙って **G** で右手に持ち、もう一度 **G** でいまの位置に置きます。持っている間の**クリック**が「使う」です。**Esc** やタブの切り替えでポインターロックが外れても、持ったままです
@@ -166,7 +201,7 @@ interface GrabResultTransform {
 :::
 
 :::note[0.61.0 以降]
-`onMove` の省略と `sync` は `@xrift/world-components` 0.61.0 以降で使えます。`onUseStart` / `onUseEnd` は 0.62.0 以降です。
+`onMove` の省略と `sync` は `@xrift/world-components` 0.61.0 以降で使えます。`onUseStart` / `onUseEnd` は 0.62.0 以降、`onGrab` / `onRelease` は 0.64.0 以降です。0.64.0 からは持っている間に `children` そのものが動くので、`renderGhost` は使われません（渡しても無視されます）。
 :::
 
 ---
