@@ -157,8 +157,8 @@ If children include physics (such as `RigidBody`), you must provide a **physics-
 :::
 
 :::note[Controls]
-- **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again to place it where it is. Use the mouse wheel to move it farther or closer. **Click** while holding to "use" it. You keep holding it even when **Esc** or switching tabs releases the pointer lock
-- **Smartphones and tablets**: Point the crosshair at a grabbable object and a **Grab** button appears above the interact button. Tap it to hold the object; the button turns into **Release**, which places it where it is. While holding, the interact button turns into a **Use** button (dimmed for objects with no use action). Pinch with two fingers to move it farther or closer
+- **PC**: Aim with the center crosshair and press **G** to hold it in your right hand. Press **G** again to place it where it is. **Click** while holding to "use" it. You keep holding it even when **Esc** or switching tabs releases the pointer lock
+- **Smartphones and tablets**: Point the crosshair at a grabbable object and a **Grab** button appears above the interact button. Tap it to hold the object; the button turns into **Release**, which places it where it is. While holding, the interact button turns into a **Use** button (dimmed for objects with no use action)
 - **VR**: Squeeze the grip to grab what your hand is touching, or what the ray points at if nothing is touching. Release the grip to place it. The **trigger** of the holding hand is "use" (the other hand's trigger still interacts). For objects grabbed with the ray, move the right stick up or down to move them farther or closer
 - Objects held by someone else can't be grabbed
 
@@ -834,7 +834,6 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 | Space / E | Jump (stand up while seated) |
 | G | Grab / Place where it is (`Grabbable` targets) |
 | Click (while grabbing) | Use the held object (`onUseStart` / `onUseEnd`; does not interact) |
-| Mouse Wheel | Adjust distance while grabbing |
 | ESC | Release pointer lock (keeps holding while grabbing) |
 
 :::note[Prerequisites]
