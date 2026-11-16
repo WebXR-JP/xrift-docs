@@ -886,6 +886,8 @@ Specify the destination with either `worldId` or `instanceId`, never both. **Use
 - `worldId`: Moves to a joinable instance of that world. The platform picks the instance: an open public instance if one exists, otherwise a newly created one.
 - `instanceId`: Moves directly to the given instance. **Only for XRift Plus persistent instances.** A regular instance is deleted 5 minutes after everyone leaves, so a portal pointing at one by ID loses its destination.
 
+Aiming at the portal (around the thumbnail) and interacting opens the destination world's details in the dashboard, where the player can pick an instance to join. With `instanceId`, it opens that instance's world. Nothing needs to be set up in the world. Guests cannot interact with it.
+
 ```tsx
 import { Portal } from '@xrift/world-components'
 
@@ -922,7 +924,7 @@ An instance exists only while people are in it, and is deleted automatically 5 m
 `Portal` fetches the destination with `useWorld` when `worldId` is given and with `useInstance` when `instanceId` is given. Navigation goes through `navigateToWorld` / `navigateToInstance` from `useInstanceContext`.
 :::
 
-`worldId` is available in `@xrift/world-components` **0.63.0 and later**.
+`worldId` is available in `@xrift/world-components` **0.63.0 and later**. Opening the world details by interacting requires 0.65.0 or later (0.66.0 or later for `instanceId`).
 
 ---
 
