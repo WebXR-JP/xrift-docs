@@ -863,6 +863,8 @@ createRoot(rootElement).render(
 - `worldId`: そのワールドの入れるインスタンスへ移動します。合流できる公開インスタンスがあればそこへ、無ければ新しく作られたインスタンスへ、プラットフォームが振り分けます。
 - `instanceId`: 指定したインスタンスへ直接移動します。**XRift Plus の常設インスタンス専用**です。通常のインスタンスは全員が退出してから 5 分で削除されるため、ID で指定するとポータルが行き先を失います。
 
+ポータル（サムネイルのあたり）を狙ってインタラクトすると、行き先のワールドの詳細がダッシュボードで開き、インスタンス一覧から入る先を選べます。`instanceId` 指定のときは、そのインスタンスのワールドが開きます。ワールド側で設定することはありません。ゲストはインタラクトできません。
+
 ```tsx
 import { Portal } from '@xrift/world-components'
 
@@ -899,7 +901,7 @@ function MyWorld() {
 `Portal` は `worldId` 指定のとき `useWorld`、`instanceId` 指定のとき `useInstance` で行き先の情報を取得します。移動には `useInstanceContext` の `navigateToWorld` / `navigateToInstance` を使っています。
 :::
 
-`worldId` の指定は `@xrift/world-components` **0.63.0 以降**で利用できます。
+`worldId` の指定は `@xrift/world-components` **0.63.0 以降**で利用できます。インタラクトでワールドの詳細を開く動作は 0.65.0 以降（`instanceId` 指定は 0.66.0 以降）です。
 
 ---
 
