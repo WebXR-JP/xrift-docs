@@ -44,6 +44,25 @@ Place UI such as scores, instructions, and menus as objects in 3D space.
 - Wrap UI in [`BillboardY`](/world-components/components/#billboardy) to keep it facing the player
 - Wrap it in `Interactable` to make it a button
 
+## Test VR locally
+
+Use the "VR に入る" (Enter VR) button at the bottom of the `npm run dev` page to enter VR without uploading (`@xrift/world-components` 0.67.0+).
+
+- **No headset needed**: on `localhost`, an emulator (Meta Quest 3) is installed and you move the controllers from its control panel
+- **On a headset**: WebXR requires HTTPS, so start with `npm run dev:vr` and open `https://<your PC's IP>:5173` in the headset browser (the certificate is self-signed; continue past the warning)
+
+| Action | Controller |
+|--------|------------|
+| Move | Left stick |
+| Turn | Right stick (45° steps) |
+| Jump / stand up from a seat | A |
+| Interact | Trigger (pinch with hand tracking) |
+
+For projects created from an older template, update two things:
+
+- `npm run dev:vr` is a template script. Install `@vitejs/plugin-basic-ssl` and add `basicSsl()` to `vite.config.ts` only when running `vite --host --mode https`
+- If `react` / `react-dom` are older than 19.2.6, the emulator control panel does not appear. Upgrade within 19.2 (for example `~19.2.8`); 19.3 is not supported by `@react-three/fiber`
+
 ## Checklist before publishing
 
 - [ ] Every feature is reachable without a keyboard
@@ -51,4 +70,4 @@ Place UI such as scores, instructions, and menus as objects in 3D space.
 - [ ] Text and UI live in 3D space and are large enough to read on a smartphone screen
 - [ ] No action required to progress depends on `Grabbable` alone
 - [ ] After uploading, you can join and operate the world on a real smartphone
-- [ ] (If possible) You can join with a VR headset and see and operate the UI
+- [ ] (If possible) Using the local "Enter VR" button or a headset, you can see and operate the UI in VR
