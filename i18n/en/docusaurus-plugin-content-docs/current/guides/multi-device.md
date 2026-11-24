@@ -57,6 +57,7 @@ Use the "VR に入る" (Enter VR) button at the bottom of the `npm run dev` page
 | Turn | Right stick (45° steps) |
 | Jump / stand up from a seat | A |
 | Interact | Trigger (pinch with hand tracking) |
+| Grab (`Grabbable`) | Grip (0.68.0+) |
 
 For projects created from an older template, update two things:
 

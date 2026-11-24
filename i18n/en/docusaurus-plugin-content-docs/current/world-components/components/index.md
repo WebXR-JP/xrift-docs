@@ -197,7 +197,7 @@ interface GrabHoldEvent {
 - **VR**: Squeeze the grip to grab what your hand is touching, or what the ray points at if nothing is touching. Release the grip to place it. The **trigger** of the holding hand is "use" (the other hand's trigger still interacts). For objects grabbed with the ray, move the right stick up or down to move them farther or closer
 - Objects held by someone else can't be grabbed
 
-In `DevEnvironment`, you can test it with the same PC controls (`@xrift/world-components` 0.61.1 or later).
+In `DevEnvironment`, you can test it with the same PC controls (`@xrift/world-components` 0.61.1 or later), and with the VR controls too (0.68.0 or later).
 :::
 
 :::note[0.61.0 and later]
@@ -856,7 +856,7 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 - **Interaction**: Raycasting to INTERACTABLE layer + click interaction
 - **Grabbing (Grabbable)**: Raycasting to GRABBABLE layer + following the view and committing
 - **Sitting & Driving (Seat / Vehicle)**: Single-player seat system. Aim at a seat and click to sit; WASD becomes drive input while seated, Space to stand up
-- **VR (0.67.0+)**: Enter VR with the "VR に入る" (Enter VR) button at the bottom. On `localhost` an emulator lets you test without a headset. Controls match production (table below). Grabbing (grip) is not supported yet
+- **VR (0.67.0+)**: Enter VR with the "VR に入る" (Enter VR) button at the bottom. On `localhost` an emulator lets you test without a headset. Controls match production (table below). Grabbing with the grip requires 0.68.0+
 - **Crosshair UI**: Center-screen crosshair (highlights on hit)
 - **Guide UI**: Pointer lock state guidance UI
 - **Controls Help UI**: UI displaying control instructions
@@ -877,7 +877,9 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 | Left stick | Movement (driving while seated) |
 | Right stick | Turn in 45° steps |
 | A | Jump (stand up while seated) |
-| Trigger (pinch with hands) | Interact / Sit on seats |
+| Trigger (pinch with hands) | Interact / Sit on seats ("use" on the hand holding an object) |
+| Grip | Grab / release to place (0.68.0+) |
+| Right stick up/down | Move an object held by the ray farther or closer |
 
 :::note[Prerequisites]
 Installation of `@react-three/rapier` (`^2.0.0`) is required (optional peerDependency).
