@@ -831,6 +831,7 @@ createRoot(rootElement).render(
 | `respawnThreshold` | `number` | `-10` | Y-coordinate threshold for respawn |
 | `physicsConfig` | `PhysicsConfig` | - | Physics settings |
 | `items` | `Record<string, ComponentType>` | - | Local item components to inject into `<Item itemId>` (itemId → component). Undeclared IDs load the production bundle via the `xriftDev()` proxy |
+| `worldStorageKey` | `string` | `'xrift-dev-world-storage'` | localStorage key where World Storage is saved (0.70.0+). Change it to separate worlds developed on the same localhost |
 
 #### CameraConfig
 
@@ -856,6 +857,8 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 - **Interaction**: Raycasting to INTERACTABLE layer + click interaction
 - **Grabbing (Grabbable)**: Raycasting to GRABBABLE layer + following the view and committing
 - **Sitting & Driving (Seat / Vehicle)**: Single-player seat system. Aim at a seat and click to sit; WASD becomes drive input while seated, Space to stand up
+- **Confirm & text input (0.69.0+)**: `useConfirm` and `TextInput` show the same screens as production (a 3D panel in front of you for confirm in VR; text input leaves VR first)
+- **World Storage (0.70.0+)**: `useWorldStorage` values are saved to localStorage and survive reloads. Limits and errors match production
 - **VR (0.67.0+)**: Enter VR with the "VR に入る" (Enter VR) button at the bottom. On `localhost` an emulator lets you test without a headset. Controls match production (table below). Grabbing with the grip requires 0.68.0+
 - **Crosshair UI**: Center-screen crosshair (highlights on hit)
 - **Guide UI**: Pointer lock state guidance UI
