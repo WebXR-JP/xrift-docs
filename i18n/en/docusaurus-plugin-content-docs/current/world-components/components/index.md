@@ -859,6 +859,7 @@ Clipping distances configurable via the `camera` prop. Corresponds to the `world
 - **Sitting & Driving (Seat / Vehicle)**: Single-player seat system. Aim at a seat and click to sit; WASD becomes drive input while seated, Space to stand up
 - **Confirm & text input (0.69.0+)**: `useConfirm` and `TextInput` show the same screens as production (a 3D panel in front of you for confirm in VR; text input leaves VR first)
 - **World Storage (0.70.0+)**: `useWorldStorage` values are saved to localStorage and survive reloads. Limits and errors match production
+- **Mobile controls (0.71.0+)**: On touch devices (including DevTools device mode), shows the same virtual joystick and buttons (grab / release, interact, jump) as production. Drag on the screen to look around
 - **VR (0.67.0+)**: Enter VR with the "VR に入る" (Enter VR) button at the bottom. On `localhost` an emulator lets you test without a headset. Controls match production (table below). Grabbing with the grip requires 0.68.0+
 - **Crosshair UI**: Center-screen crosshair (highlights on hit)
 - **Guide UI**: Pointer lock state guidance UI

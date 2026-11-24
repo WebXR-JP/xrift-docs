@@ -44,6 +44,10 @@ Place UI such as scores, instructions, and menus as objects in 3D space.
 - Wrap UI in [`BillboardY`](/world-components/components/#billboardy) to keep it facing the player
 - Wrap it in `Interactable` to make it a button
 
+## Test mobile controls locally
+
+Open the `npm run dev` page with Chrome DevTools device mode (touch) to get the same virtual joystick and buttons (grab / release, interact, jump) as production (`@xrift/world-components` 0.71.0+). Drag on the screen to look around. You can also open it from a smartphone on the same LAN with `npm run dev -- --host`.
+
 ## Test VR locally
 
 Use the "VR に入る" (Enter VR) button at the bottom of the `npm run dev` page to enter VR without uploading (`@xrift/world-components` 0.67.0+).
@@ -70,5 +74,5 @@ For projects created from an older template, update two things:
 - [ ] No DOM UI is overlaid on the screen
 - [ ] Text and UI live in 3D space and are large enough to read on a smartphone screen
 - [ ] No action required to progress depends on `Grabbable` alone
-- [ ] After uploading, you can join and operate the world on a real smartphone
+- [ ] With local device mode or a real smartphone, the world is playable with mobile controls alone
 - [ ] (If possible) Using the local "Enter VR" button or a headset, you can see and operate the UI in VR
