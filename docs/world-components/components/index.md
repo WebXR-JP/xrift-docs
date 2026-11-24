@@ -808,6 +808,7 @@ createRoot(rootElement).render(
 | `respawnThreshold` | `number` | `-10` | リスポーンのY座標閾値 |
 | `physicsConfig` | `PhysicsConfig` | - | 物理設定 |
 | `items` | `Record<string, ComponentType>` | - | `<Item itemId>` に差し込むローカルのアイテム（itemId → コンポーネント）。指定の無い ID は `xriftDev()` の中継経由で本番のバンドルを読む |
+| `worldStorageKey` | `string` | `'xrift-dev-world-storage'` | World Storage を保存する localStorage のキー（0.70.0 以降）。同じ localhost で別のワールドを作るときに分ける |
 
 #### CameraConfig
 
@@ -833,6 +834,8 @@ createRoot(rootElement).render(
 - **インタラクション**: INTERACTABLE レイヤーへのレイキャスト + クリックインタラクション
 - **掴む（Grabbable）**: GRABBABLE レイヤーへのレイキャスト + 視点前方への追従・確定
 - **座る・操縦（Seat / Vehicle）**: 単独プレイヤー用の座席システム。座席を狙ってクリックで着席、着席中は WASD が操縦入力になり、Space で降車
+- **確認画面・文字入力（0.69.0 以降）**: `useConfirm` と `TextInput` は本番と同じ画面を出す（VR の確認は目の前の 3D パネル、VR 中の文字入力は VR を抜けてから）
+- **World Storage（0.70.0 以降）**: `useWorldStorage` の値を localStorage に保存し、リロードしても残る。制限とエラーは本番と同じ
 - **VR（0.67.0 以降）**: 画面下の「VR に入る」で VR に入れる。`localhost` ではヘッドセットが無くてもエミュレーターで試せる。操作は本番と同じ割り当て（下の表）。掴む（グリップ）は 0.68.0 以降
 - **クロスヘアUI**: 画面中央のクロスヘア（ヒット時ハイライト）
 - **案内UI**: ポインターロック状態の案内UI
