@@ -19,7 +19,7 @@ npx skills add WebXR-JP/xrift-skills
 The skill files are placed inside your project, and supported agents will reference them automatically.
 
 :::tip Starting from the template
-Projects created with `xrift create world` ([xrift-world-template](https://github.com/WebXR-JP/xrift-world-template)) already include the `xrift-world` skill. You can hand tasks to your AI agent right away without any additional installation.
+Projects created with `xrift create world` ([xrift-world-template](https://github.com/WebXR-JP/xrift-world-template)) include basic rules for AI agents (`AGENTS.md` / `CLAUDE.md`). The skills themselves are not included, so install them with the command above.
 :::
 
 ## Updating

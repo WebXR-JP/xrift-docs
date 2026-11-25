@@ -19,7 +19,7 @@ npx skills add WebXR-JP/xrift-skills
 プロジェクト内にスキルのファイルが配置され、対応エージェントが自動的に参照するようになります。
 
 :::tip テンプレートから始める場合
-`xrift create world` で作成したプロジェクト（[xrift-world-template](https://github.com/WebXR-JP/xrift-world-template)）には `xrift-world` スキルが同梱されています。追加のインストールなしで、そのまま AI エージェントに作業を依頼できます。
+`xrift create world` で作成したプロジェクト（[xrift-world-template](https://github.com/WebXR-JP/xrift-world-template)）には、AI エージェント向けの基本ルール（`AGENTS.md` / `CLAUDE.md`）が入っています。スキル本体は含まれないので、上のコマンドでインストールしてください。
 :::
 
 ## 更新
