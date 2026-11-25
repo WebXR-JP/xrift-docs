@@ -36,7 +36,7 @@ With the free models, what you type may be used to improve the model, and the mo
 
 Paste the following prompt as it is. The agent installs the XRift CLI, creates the project, and installs XRift knowledge ([xrift-skills](/guides/ai-agents)).
 
-```text
+```prompt
 Set up an XRift world project. Run the following steps in order. If a step fails, find the cause and fix it.
 
 1. Install the XRift CLI with `npm install -g @xrift/cli`
@@ -53,7 +53,7 @@ When the agent asks whether it may run a command, check what it is and allow it.
 :::tip If you already have a project
 To install only the skills, paste this prompt.
 
-```text
+```prompt
 Run `npx skills add WebXR-JP/xrift-skills -y` to install the XRift skills. Then read the xrift-world skill and follow it from now on.
 ```
 :::
@@ -76,17 +76,17 @@ The browser updates automatically when files change.
 
 Start with something small.
 
-```text
+```prompt
 Place a red cube 3m in front of the spawn point
 ```
 
 Go back to the browser. If the cube is there, it worked. Keep going with requests like these.
 
-```text
+```prompt
 Make the cube change color each time it is clicked, and make everyone see the same color
 ```
 
-```text
+```prompt
 Load public/tree.glb and place it at the four corners of the floor
 ```
 
@@ -104,7 +104,7 @@ To use 3D models or images, put the files in the `public/` folder first, then te
 
 You can ask the agent to publish, too.
 
-```text
+```prompt
 I want to publish this world to XRift. Log in with `xrift login`, then run `xrift upload world`. Ask me whenever input is needed.
 ```
 
