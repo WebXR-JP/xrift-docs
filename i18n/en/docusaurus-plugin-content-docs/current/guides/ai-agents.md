@@ -64,4 +64,5 @@ The agent will consult the code templates and API reference in the skill and gen
 
 - [xrift-skills (GitHub)](https://github.com/WebXR-JP/xrift-skills)
 - [Agent Skills Directory](https://skills.sh)
+- [Build Your First World with AI](/getting-started/ai-first-steps)
 - [Create Your First World](/guides/create-first-world)

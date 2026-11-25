@@ -64,4 +64,5 @@ public/models/tree.glb を読み込んで、プレイヤーの正面 5m の位�
 
 - [xrift-skills (GitHub)](https://github.com/WebXR-JP/xrift-skills)
 - [Agent Skills Directory](https://skills.sh)
+- [AI と一緒に初めてのワールドを作る](/getting-started/ai-first-steps)
 - [最初のワールドを作成する](/guides/create-first-world)
