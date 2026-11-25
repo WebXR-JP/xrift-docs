@@ -28,3 +28,9 @@
   --ifm-color-primary-lightest: #ede9fe;
   --docusaurus-highlighted-code-line-bg: rgba(167, 139, 250, 0.2);
 }
+
+/* AI に貼るプロンプト（```prompt）は文章なので、横スクロールさせずに折り返す */
+.language-prompt code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
